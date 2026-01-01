@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pull All The Things Prog Raid Roster</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #ffd700, #ff8c00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        @media (min-width: 600px) {
+            h1 {
+                font-size: 2.4rem;
+            }
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 1rem;
+        }
+
+        .form-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        @media (min-width: 600px) {
+            .form-section {
+                padding: 25px;
+                margin-bottom: 20px;
+            }
+        }
+
+        .form-section h2 {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: #ccc;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-section h2 .step {
+            background: linear-gradient(90deg, #ffd700, #ff8c00);
+            color: #1a1a2e;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            color: #fff;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: #ffd700;
+            box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+        }
+
+        input[type="text"]::placeholder, textarea::placeholder {
+            color: #666;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .info-box {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            color: #93c5fd;
+        }
+
+        /* Availability Grid */
+        .availability-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .day-btn {
+            padding: 12px 5px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            color: #888;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .day-btn:hover {
+            background: rgba(0, 0, 0, 0.5);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .day-btn.selected {
+            border-color: #22c55e;
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+        }
+
+        .day-btn .check {
+            font-size: 1.2rem;
+            height: 1.2rem;
+        }
+
+        .day-btn .day-name {
+            font-weight: 600;
+        }
+
+        /* Class Grid */
+        .class-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        @media (min-width: 500px) {
+            .class-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .class-btn {
+            padding: 12px 10px;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.4);
+            color: #fff;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+            font-weight: 500;
+        }
+
+        .class-btn:hover {
+            background: rgba(0, 0, 0, 0.6);
+            transform: translateY(-1px);
+        }
+
+        .class-btn.selected {
+            border-color: currentColor;
+            background: rgba(0, 0, 0, 0.6);
+        }
+
+        /* WoW Class Colors */
+        .class-death-knight { color: #C41E3A; }
+        .class-demon-hunter { color: #A330C9; }
+        .class-druid { color: #FF7C0A; }
+        .class-evoker { color: #33937F; }
+        .class-hunter { color: #AAD372; }
+        .class-mage { color: #3FC7EB; }
+        .class-monk { color: #00FF98; }
+        .class-paladin { color: #F48CBA; }
+        .class-priest { color: #FFFFFF; }
+        .class-rogue { color: #FFF468; }
+        .class-shaman { color: #0070DD; }
+        .class-warlock { color: #8788EE; }
+        .class-warrior { color: #C69B6D; }
+
+        /* Spec Grid */
+        .spec-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .spec-btn {
+            padding: 14px 18px;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.4);
+            color: #fff;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .spec-btn:hover {
+            background: rgba(0, 0, 0, 0.6);
+        }
+
+        .spec-btn.selected {
+            border-color: currentColor;
+            background: rgba(0, 0, 0, 0.6);
+        }
+
+        .spec-btn .role-badge {
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin-left: auto;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .role-tank { background: #3b82f6; color: #fff; }
+        .role-healer { background: #22c55e; color: #fff; }
+        .role-dps { background: #ef4444; color: #fff; }
+
+        /* Main/Alt */
+        .main-alt-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .main-alt-btn {
+            padding: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            color: #fff;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .main-alt-btn:hover {
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .main-alt-btn.selected {
+            border-color: #ffd700;
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        .main-alt-btn .label {
+            font-size: 1.1rem;
+            margin-bottom: 4px;
+        }
+
+        .main-alt-btn .desc {
+            font-size: 0.8rem;
+            color: #888;
+        }
+
+        /* Submit */
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(90deg, #ffd700, #ff8c00);
+            color: #1a1a2e;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.3);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .status-message {
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .status-message.success {
+            display: block;
+            background: rgba(34, 197, 94, 0.2);
+            border: 1px solid #22c55e;
+            color: #22c55e;
+        }
+
+        .status-message.error {
+            display: block;
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid #ef4444;
+            color: #ef4444;
+        }
+
+        .status-message .add-another {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 8px 16px;
+            background: rgba(255, 215, 0, 0.2);
+            border: 1px solid #ffd700;
+            color: #ffd700;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .status-message .add-another:hover {
+            background: rgba(255, 215, 0, 0.3);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        footer a {
+            color: #ffd700;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .availability-note {
+            font-size: 0.85rem;
+            color: #888;
+            margin-bottom: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Pull All The Things Prog Raid Roster</h1>
+            <p class="subtitle">Sign up with your main and/or alts for the new expansion</p>
+        </header>
+
+        <div class="info-box">
+            <strong>📋 How this works:</strong> Enter your Discord name and availability once, then add as many characters as you want. You can only have <strong>one main</strong> — submitting a new main automatically converts your previous one to an alt. Come back anytime to update!
+        </div>
+
+        <form id="rosterForm">
+            <!-- Step 1: Discord Name -->
+            <div class="form-section">
+                <h2><span class="step">1</span> Your Discord Name</h2>
+                <input type="text" id="discordName" name="discordName" placeholder="e.g., Trog" required>
+            </div>
+
+            <!-- Step 2: Availability -->
+            <div class="form-section">
+                <h2><span class="step">2</span> Your Raid Availability</h2>
+                <p class="availability-note">Check all days you're generally available for raid (9pm - 11pm EST)</p>
+                
+                <div class="availability-grid" id="availabilityGrid">
+                    <button type="button" class="day-btn" data-day="Monday">
+                        <span class="check"></span>
+                        <span class="day-name">Mon</span>
+                    </button>
+                    <button type="button" class="day-btn" data-day="Tuesday">
+                        <span class="check"></span>
+                        <span class="day-name">Tue</span>
+                    </button>
+                    <button type="button" class="day-btn" data-day="Wednesday">
+                        <span class="check"></span>
+                        <span class="day-name">Wed</span>
+                    </button>
+                    <button type="button" class="day-btn" data-day="Thursday">
+                        <span class="check"></span>
+                        <span class="day-name">Thu</span>
+                    </button>
+                    <button type="button" class="day-btn" data-day="Friday">
+                        <span class="check"></span>
+                        <span class="day-name">Fri</span>
+                    </button>
+                    <button type="button" class="day-btn" data-day="Saturday">
+                        <span class="check"></span>
+                        <span class="day-name">Sat</span>
+                    </button>
+                    <button type="button" class="day-btn" data-day="Sunday">
+                        <span class="check"></span>
+                        <span class="day-name">Sun</span>
+                    </button>
+                </div>
+
+                <label for="availabilityNotes">Notes (optional)</label>
+                <textarea id="availabilityNotes" placeholder="e.g., Can't do Thursdays during football season, available after 10pm only on Fridays..."></textarea>
+            </div>
+
+            <!-- Step 3: Character -->
+            <div class="form-section">
+                <h2><span class="step">3</span> Character Info</h2>
+                <label for="characterName">Character Name</label>
+                <input type="text" id="characterName" name="characterName" placeholder="e.g., Trogtotem" required>
+                
+                <label style="margin-top: 15px;">Select Class</label>
+                <div class="class-grid" id="classGrid"></div>
+
+                <div id="specSection" class="hidden" style="margin-top: 15px;">
+                    <label>Select Spec</label>
+                    <div class="spec-grid" id="specGrid"></div>
+                </div>
+            </div>
+
+            <!-- Step 4: Main/Alt -->
+            <div class="form-section hidden" id="mainAltSection">
+                <h2><span class="step">4</span> Main or Alt?</h2>
+                <div class="main-alt-section">
+                    <button type="button" class="main-alt-btn" data-value="Main">
+                        <div class="label">⭐ Main</div>
+                        <div class="desc">Your primary character</div>
+                    </button>
+                    <button type="button" class="main-alt-btn" data-value="Alt">
+                        <div class="label">🔄 Alt</div>
+                        <div class="desc">Secondary character</div>
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn" id="submitBtn" disabled>Submit to Roster</button>
+        </form>
+
+        <div class="status-message" id="statusMessage"></div>
+
+        <footer>
+            <div class="footer-links">
+                <a href="roster-view.html">📊 View Roster Dashboard</a>
+                <a href="https://shadowedvaca.com">← Back to Shadowedvaca LLC</a>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // ===========================================
+        // CONFIGURATION - UPDATE THIS WITH YOUR APPS SCRIPT URL
+        // ===========================================
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyS-X2rTSq9T8LxWmY4f5FzX-jKnpZvZvybFrUNbjjvrn1_nFSYbL0oFXfBDVWjEFFX/exec';
+        // ===========================================
+
+        const classData = {
+            'Death Knight': {
+                color: 'class-death-knight',
+                specs: [
+                    { name: 'Blood', role: 'Tank' },
+                    { name: 'Frost', role: 'DPS' },
+                    { name: 'Unholy', role: 'DPS' }
+                ]
+            },
+            'Demon Hunter': {
+                color: 'class-demon-hunter',
+                specs: [
+                    { name: 'Havoc', role: 'DPS' },
+                    { name: 'Vengeance', role: 'Tank' },
+                    { name: 'Devourer', role: 'DPS' }
+                ]
+            },
+            'Druid': {
+                color: 'class-druid',
+                specs: [
+                    { name: 'Balance', role: 'DPS' },
+                    { name: 'Feral', role: 'DPS' },
+                    { name: 'Guardian', role: 'Tank' },
+                    { name: 'Restoration', role: 'Healer' }
+                ]
+            },
+            'Evoker': {
+                color: 'class-evoker',
+                specs: [
+                    { name: 'Devastation', role: 'DPS' },
+                    { name: 'Preservation', role: 'Healer' },
+                    { name: 'Augmentation', role: 'DPS' }
+                ]
+            },
+            'Hunter': {
+                color: 'class-hunter',
+                specs: [
+                    { name: 'Beast Mastery', role: 'DPS' },
+                    { name: 'Marksmanship', role: 'DPS' },
+                    { name: 'Survival', role: 'DPS' }
+                ]
+            },
+            'Mage': {
+                color: 'class-mage',
+                specs: [
+                    { name: 'Arcane', role: 'DPS' },
+                    { name: 'Fire', role: 'DPS' },
+                    { name: 'Frost', role: 'DPS' }
+                ]
+            },
+            'Monk': {
+                color: 'class-monk',
+                specs: [
+                    { name: 'Brewmaster', role: 'Tank' },
+                    { name: 'Mistweaver', role: 'Healer' },
+                    { name: 'Windwalker', role: 'DPS' }
+                ]
+            },
+            'Paladin': {
+                color: 'class-paladin',
+                specs: [
+                    { name: 'Holy', role: 'Healer' },
+                    { name: 'Protection', role: 'Tank' },
+                    { name: 'Retribution', role: 'DPS' }
+                ]
+            },
+            'Priest': {
+                color: 'class-priest',
+                specs: [
+                    { name: 'Discipline', role: 'Healer' },
+                    { name: 'Holy', role: 'Healer' },
+                    { name: 'Shadow', role: 'DPS' }
+                ]
+            },
+            'Rogue': {
+                color: 'class-rogue',
+                specs: [
+                    { name: 'Assassination', role: 'DPS' },
+                    { name: 'Outlaw', role: 'DPS' },
+                    { name: 'Subtlety', role: 'DPS' }
+                ]
+            },
+            'Shaman': {
+                color: 'class-shaman',
+                specs: [
+                    { name: 'Elemental', role: 'DPS' },
+                    { name: 'Enhancement', role: 'DPS' },
+                    { name: 'Restoration', role: 'Healer' }
+                ]
+            },
+            'Warlock': {
+                color: 'class-warlock',
+                specs: [
+                    { name: 'Affliction', role: 'DPS' },
+                    { name: 'Demonology', role: 'DPS' },
+                    { name: 'Destruction', role: 'DPS' }
+                ]
+            },
+            'Warrior': {
+                color: 'class-warrior',
+                specs: [
+                    { name: 'Arms', role: 'DPS' },
+                    { name: 'Fury', role: 'DPS' },
+                    { name: 'Protection', role: 'Tank' }
+                ]
+            }
+        };
+
+        let selectedClass = null;
+        let selectedSpec = null;
+        let selectedMainAlt = null;
+        let availability = {
+            Monday: false,
+            Tuesday: false,
+            Wednesday: false,
+            Thursday: false,
+            Friday: false,
+            Saturday: false,
+            Sunday: false
+        };
+
+        // Initialize class buttons
+        const classGrid = document.getElementById('classGrid');
+        Object.keys(classData).forEach(className => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = `class-btn ${classData[className].color}`;
+            btn.textContent = className;
+            btn.dataset.class = className;
+            btn.addEventListener('click', () => selectClass(className));
+            classGrid.appendChild(btn);
+        });
+
+        // Availability day buttons
+        document.querySelectorAll('.day-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const day = btn.dataset.day;
+                availability[day] = !availability[day];
+                btn.classList.toggle('selected', availability[day]);
+                btn.querySelector('.check').textContent = availability[day] ? '✓' : '';
+                updateSubmitButton();
+            });
+        });
+
+        function selectClass(className) {
+            selectedClass = className;
+            selectedSpec = null;
+            
+            document.querySelectorAll('.class-btn').forEach(btn => {
+                btn.classList.toggle('selected', btn.dataset.class === className);
+            });
+
+            const specSection = document.getElementById('specSection');
+            const specGrid = document.getElementById('specGrid');
+            specSection.classList.remove('hidden');
+            specGrid.innerHTML = '';
+
+            const colorClass = classData[className].color;
+            classData[className].specs.forEach(spec => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = `spec-btn ${colorClass}`;
+                btn.dataset.spec = spec.name;
+                btn.dataset.role = spec.role;
+                btn.innerHTML = `
+                    <span>${spec.name}</span>
+                    <span class="role-badge role-${spec.role.toLowerCase()}">${spec.role}</span>
+                `;
+                btn.addEventListener('click', () => selectSpec(spec.name, spec.role));
+                specGrid.appendChild(btn);
+            });
+
+            document.getElementById('mainAltSection').classList.add('hidden');
+            updateSubmitButton();
+        }
+
+        function selectSpec(specName, role) {
+            selectedSpec = { name: specName, role: role };
+
+            document.querySelectorAll('.spec-btn').forEach(btn => {
+                btn.classList.toggle('selected', btn.dataset.spec === specName);
+            });
+
+            document.getElementById('mainAltSection').classList.remove('hidden');
+            updateSubmitButton();
+        }
+
+        // Main/Alt buttons
+        document.querySelectorAll('.main-alt-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                selectedMainAlt = btn.dataset.value;
+                document.querySelectorAll('.main-alt-btn').forEach(b => {
+                    b.classList.toggle('selected', b.dataset.value === selectedMainAlt);
+                });
+                updateSubmitButton();
+            });
+        });
+
+        function updateSubmitButton() {
+            const discordName = document.getElementById('discordName').value.trim();
+            const characterName = document.getElementById('characterName').value.trim();
+            const isValid = discordName && characterName && selectedClass && selectedSpec && selectedMainAlt;
+            document.getElementById('submitBtn').disabled = !isValid;
+        }
+
+        document.getElementById('discordName').addEventListener('input', updateSubmitButton);
+        document.getElementById('characterName').addEventListener('input', updateSubmitButton);
+
+        // Form submission
+        document.getElementById('rosterForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const statusMessage = document.getElementById('statusMessage');
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+            statusMessage.className = 'status-message';
+            statusMessage.style.display = 'none';
+
+            const data = {
+                discordName: document.getElementById('discordName').value.trim(),
+                characterName: document.getElementById('characterName').value.trim(),
+                className: selectedClass,
+                spec: selectedSpec.name,
+                role: selectedSpec.role,
+                mainAlt: selectedMainAlt,
+                availability: availability,
+                availabilityNotes: document.getElementById('availabilityNotes').value.trim(),
+                timestamp: new Date().toISOString()
+            };
+
+            try {
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                statusMessage.className = 'status-message success';
+                statusMessage.innerHTML = `
+                    <strong>✅ Submitted!</strong><br>
+                    ${data.characterName} (${data.className} - ${data.spec}) added as your ${data.mainAlt}.
+                    ${data.mainAlt === 'Main' ? '<br><em>If you had a previous main, it\'s now marked as an alt.</em>' : ''}
+                    <br><button type="button" class="add-another" onclick="resetForAnotherCharacter()">Add Another Character</button>
+                `;
+                
+                // Reset character-specific fields but keep Discord name and availability
+                resetCharacterFields();
+                
+            } catch (error) {
+                statusMessage.className = 'status-message error';
+                statusMessage.textContent = '❌ Something went wrong. Please try again.';
+                console.error('Submission error:', error);
+            }
+
+            submitBtn.textContent = 'Submit to Roster';
+            updateSubmitButton();
+        });
+
+        function resetCharacterFields() {
+            document.getElementById('characterName').value = '';
+            selectedClass = null;
+            selectedSpec = null;
+            selectedMainAlt = null;
+            document.querySelectorAll('.class-btn').forEach(btn => btn.classList.remove('selected'));
+            document.querySelectorAll('.spec-btn').forEach(btn => btn.classList.remove('selected'));
+            document.querySelectorAll('.main-alt-btn').forEach(btn => btn.classList.remove('selected'));
+            document.getElementById('specSection').classList.add('hidden');
+            document.getElementById('mainAltSection').classList.add('hidden');
+        }
+
+        function resetForAnotherCharacter() {
+            document.getElementById('statusMessage').style.display = 'none';
+            resetCharacterFields();
+            document.getElementById('characterName').focus();
+        }
+    </script>
+</body>
+</html>
