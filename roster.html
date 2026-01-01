@@ -411,7 +411,7 @@
     <div class="container">
         <header>
             <h1>Pull All The Things Prog Raid Roster</h1>
-            <p class="subtitle">Sign up with your main and/or alts for the new expansion</p>
+            <p class="subtitle">Sign up with your main and/or alts for the guild's prog raiding</p>
         </header>
 
         <div class="info-box">
@@ -757,16 +757,17 @@
                     body: JSON.stringify(data)
                 });
 
+                // Redirect to roster view after short delay
                 statusMessage.className = 'status-message success';
                 statusMessage.innerHTML = `
                     <strong>✅ Submitted!</strong><br>
-                    ${data.characterName} (${data.className} - ${data.spec}) added as your ${data.mainAlt}.
-                    ${data.mainAlt === 'Main' ? '<br><em>If you had a previous main, it\'s now marked as an alt.</em>' : ''}
-                    <br><button type="button" class="add-another" onclick="resetForAnotherCharacter()">Add Another Character</button>
+                    ${data.characterName} (${data.className} - ${data.spec}) added as your ${data.mainAlt}.<br>
+                    Redirecting to roster...
                 `;
                 
-                // Reset character-specific fields but keep Discord name and availability
-                resetCharacterFields();
+                setTimeout(() => {
+                    window.location.href = 'roster-view.html?view=roster';
+                }, 1500);
                 
             } catch (error) {
                 statusMessage.className = 'status-message error';

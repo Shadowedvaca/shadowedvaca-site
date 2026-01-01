@@ -870,7 +870,21 @@
             }
         }
 
+        // Check URL params for initial view
+        function getInitialView() {
+            const params = new URLSearchParams(window.location.search);
+            const view = params.get('view');
+            if (view && ['availability', 'roster', 'composition'].includes(view)) {
+                return view;
+            }
+            return 'availability';
+        }
+
         // Initialize
+        currentView = getInitialView();
+        document.querySelectorAll('.view-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.view === currentView);
+        });
         loadData();
     </script>
 </body>
