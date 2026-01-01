@@ -497,6 +497,37 @@
             display: none !important;
         }
 
+        /* Wowhead Export */
+        .wowhead-btn {
+            width: 100%;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(90deg, #b35900, #8b4500);
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .wowhead-btn:hover {
+            background: linear-gradient(90deg, #cc6600, #a05000);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(179, 89, 0, 0.3);
+        }
+
+        .wowhead-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .wowhead-note {
+            margin-top: 10px;
+            font-size: 0.85rem;
+            color: #888;
+        }
+
         /* Responsive Table */
         @media (max-width: 600px) {
             .roster-table {
@@ -615,6 +646,20 @@
             <div class="gaps-alert" id="gapsAlert">
                 <h3>⚠️ Potential Gaps</h3>
                 <ul id="gapsList"></ul>
+            </div>
+
+            <!-- Wowhead Export -->
+            <div class="card" style="margin-top: 20px;">
+                <h2>🔗 Wowhead Raid Composition Tool</h2>
+                <p style="color: #888; font-size: 0.9rem; margin-bottom: 15px;">
+                    Export your mains to Wowhead's raid comp tool to see buff/debuff coverage, missing utilities, and more.
+                </p>
+                <button id="wowheadExportBtn" class="wowhead-btn" onclick="openWowheadRaidComp()">
+                    Open in Wowhead Raid Composition →
+                </button>
+                <p id="wowheadNote" class="wowhead-note">
+                    <span id="mainsSummary"></span>
+                </p>
             </div>
         </div>
 
@@ -868,6 +913,115 @@
                 gapsAlert.classList.remove('hidden');
                 gapsList.innerHTML = gaps.map(g => `<li>${g}</li>`).join('');
             }
+
+            // Update Wowhead export summary
+            const mainsSummary = document.getElementById('mainsSummary');
+            if (mains.length > 0) {
+                mainsSummary.textContent = `Ready to export ${mains.length} mains: ${tankCount} tanks, ${healerCount} healers, ${dpsCount} DPS`;
+            } else {
+                mainsSummary.textContent = 'No mains to export yet';
+            }
+        }
+
+        // Wowhead Raid Composition URL builder
+        // Spec codes for retail WoW (verified from Wowhead's raid-composition tool)
+        const wowheadSpecCodes = {
+            // Death Knight
+            'Death Knight|Blood': 's',
+            'Death Knight|Frost': 't',
+            'Death Knight|Unholy': 'v',
+            // Demon Hunter
+            'Demon Hunter|Havoc': 'S',
+            'Demon Hunter|Vengeance': 'T',
+            'Demon Hunter|Devourer': null, // New Midnight spec - not in Wowhead yet
+            // Druid
+            'Druid|Balance': 'n',
+            'Druid|Feral': 'p',
+            'Druid|Guardian': 'q',
+            'Druid|Restoration': 'r',
+            // Evoker
+            'Evoker|Devastation': 'V',
+            'Evoker|Preservation': 'W',
+            'Evoker|Augmentation': 'X',
+            // Hunter
+            'Hunter|Beast Mastery': 'w',
+            'Hunter|Marksmanship': 'x',
+            'Hunter|Survival': 'y',
+            // Mage
+            'Mage|Arcane': 'b',
+            'Mage|Fire': 'c',
+            'Mage|Frost': 'd',
+            // Monk
+            'Monk|Brewmaster': 'P',
+            'Monk|Mistweaver': 'R',
+            'Monk|Windwalker': 'Q',
+            // Paladin
+            'Paladin|Holy': 'f',
+            'Paladin|Protection': 'g',
+            'Paladin|Retribution': 'h',
+            // Priest
+            'Priest|Discipline': 'z',
+            'Priest|Holy': 'B',
+            'Priest|Shadow': 'C',
+            // Rogue
+            'Rogue|Assassination': 'D',
+            'Rogue|Outlaw': 'F',
+            'Rogue|Subtlety': 'G',
+            // Shaman
+            'Shaman|Elemental': 'H',
+            'Shaman|Enhancement': 'J',
+            'Shaman|Restoration': 'K',
+            // Warlock
+            'Warlock|Affliction': 'L',
+            'Warlock|Demonology': 'M',
+            'Warlock|Destruction': 'N',
+            // Warrior
+            'Warrior|Arms': 'j',
+            'Warrior|Fury': 'k',
+            'Warrior|Protection': 'm'
+        };
+
+        function openWowheadRaidComp() {
+            const mains = charactersData.filter(c => c.mainAlt === 'Main');
+            
+            if (mains.length === 0) {
+                alert('No mains found in the roster yet!');
+                return;
+            }
+
+            let specCodes = '';
+            let names = [];
+            let unmappedSpecs = [];
+
+            mains.forEach(char => {
+                const key = char.class + '|' + char.spec;
+                const code = wowheadSpecCodes[key];
+                
+                if (code) {
+                    specCodes += code;
+                    names.push(char.character);
+                } else {
+                    unmappedSpecs.push(char.spec + ' ' + char.class + ' (' + char.character + ')');
+                }
+            });
+
+            // Build URL: https://www.wowhead.com/raid-composition#0[specs];[names]
+            let url = 'https://www.wowhead.com/raid-composition#0' + specCodes;
+            if (names.length > 0) {
+                url += ';' + names.join(';');
+            }
+
+            // Show note about any unmapped specs
+            const noteEl = document.getElementById('wowheadNote');
+            if (unmappedSpecs.length > 0) {
+                noteEl.innerHTML = '⚠️ Could not export: ' + unmappedSpecs.join(', ') + 
+                    '<br><small>These specs may need to be added manually on Wowhead.</small>';
+            } else {
+                noteEl.textContent = '✓ Exported ' + mains.length + ' characters';
+            }
+
+            // Open in new tab
+            window.open(url, '_blank');
         }
 
         // Check URL params for initial view
