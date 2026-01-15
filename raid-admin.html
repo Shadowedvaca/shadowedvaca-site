@@ -1127,7 +1127,7 @@
         // ==========================================
         async function refreshData() {
             const config = getConfig();
-            if (!config.rosterUrl) {
+            if (!config.rosterUrl || config.rosterUrl === 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE') {
                 alert('Please configure your roster URL in Settings first.');
                 showPage('settings');
                 return;
@@ -1148,6 +1148,17 @@
                         availability: data.availability || [],
                         characters: data.characters || []
                     };
+                    
+                    // Load Discord IDs from sheet (merge with localStorage, sheet wins)
+                    if (data.discordIds && Object.keys(data.discordIds).length > 0) {
+                        discordIdMapping = { ...discordIdMapping, ...data.discordIds };
+                        // Save merged data back to localStorage
+                        const localConfig = getConfig();
+                        localConfig.discordIdMapping = discordIdMapping;
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(localConfig));
+                        console.log('Loaded', Object.keys(data.discordIds).length, 'Discord ID mappings from sheet');
+                    }
+                    
                     processAndDisplayData();
                 } else {
                     alert('Failed to load roster data: ' + (data.error || 'Unknown error'));
@@ -1264,11 +1275,59 @@
             }
         }
 
-        function saveDiscordMapping() {
+        async function saveDiscordMapping() {
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+            
+            // Save to localStorage first (for quick access)
             const config = getConfig();
             config.discordIdMapping = discordIdMapping;
             localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
-            alert('Discord ID mapping saved!');
+            
+            // Also save to Google Sheet for persistence
+            if (!config.rosterUrl || config.rosterUrl === 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE') {
+                alert('Discord ID mapping saved locally only.\nConfigure roster URL to sync to Google Sheet.');
+                btn.disabled = false;
+                btn.textContent = originalText;
+                return;
+            }
+            
+            try {
+                // Send each mapping to the backend
+                const entries = Object.entries(discordIdMapping);
+                let saved = 0;
+                
+                for (const [name, id] of entries) {
+                    if (id) { // Only save entries that have an ID
+                        await fetch(config.rosterUrl, {
+                            method: 'POST',
+                            mode: 'no-cors',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                action: 'updateDiscordId',
+                                discordName: name,
+                                discordUserId: id
+                            })
+                        });
+                        saved++;
+                    }
+                }
+                
+                btn.textContent = '✓ Saved!';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                }, 2000);
+                
+                console.log(`Saved ${saved} Discord ID mappings to Google Sheet`);
+                
+            } catch (error) {
+                alert('Saved locally, but failed to sync to sheet: ' + error.message);
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
         }
 
         // ==========================================
