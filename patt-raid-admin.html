@@ -860,7 +860,8 @@
                                 <th>Class</th>
                                 <th>Role</th>
                                 <th>Main/Alt</th>
-                                <th>Availability</th>
+                                <th>Auto-Signup</th>
+                                <th>Reminders</th>
                                 <th>Status</th>
                             </tr>
                         </thead>
@@ -932,12 +933,31 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label>Signup Channel ID</label>
-                            <input type="text" id="channelId" placeholder="Channel for raid signups">
+                            <input type="text" id="channelId" placeholder="Main channel for raid signups">
+                            <p class="help-text">Where the event embed gets posted</p>
                         </div>
                         <div class="form-group">
                             <label>Voice Channel ID</label>
                             <input type="text" id="voiceChannelId" placeholder="Raid voice channel">
+                            <p class="help-text">Links event to voice room</p>
                         </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Announcement Channel ID</label>
+                            <input type="text" id="announcementChannelId" placeholder="Guild general channel">
+                            <p class="help-text">Where @everyone ping goes when event is created</p>
+                        </div>
+                        <div class="form-group">
+                            <label>Pug Channel ID</label>
+                            <input type="text" id="pugChannelId" placeholder="Pug channel for visibility">
+                            <p class="help-text">Secondary channel to show signups</p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Notification Channel ID</label>
+                        <input type="text" id="notificationChannelId" placeholder="spam spam spam channel">
+                        <p class="help-text">Where signup notifications get posted</p>
                     </div>
                 </div>
 
@@ -1013,6 +1033,9 @@
                 document.getElementById('serverId').value = config.serverId || '';
                 document.getElementById('channelId').value = config.channelId || '';
                 document.getElementById('voiceChannelId').value = config.voiceChannelId || '';
+                document.getElementById('announcementChannelId').value = config.announcementChannelId || '';
+                document.getElementById('pugChannelId').value = config.pugChannelId || '';
+                document.getElementById('notificationChannelId').value = config.notificationChannelId || '';
                 discordIdMapping = config.discordIdMapping || {};
             }
             updateConnectionStatus();
@@ -1029,6 +1052,9 @@
                 serverId: document.getElementById('serverId').value,
                 channelId: document.getElementById('channelId').value,
                 voiceChannelId: document.getElementById('voiceChannelId').value,
+                announcementChannelId: document.getElementById('announcementChannelId').value,
+                pugChannelId: document.getElementById('pugChannelId').value,
+                notificationChannelId: document.getElementById('notificationChannelId').value,
                 discordIdMapping: discordIdMapping
             };
             localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
@@ -1239,12 +1265,17 @@
 
                 if (!mainChar) return;
 
+                const autoSignup = avail.autoSignup === true || avail.autoSignup === 'TRUE';
+                const wantsReminders = avail.wantsReminders === true || avail.wantsReminders === 'TRUE';
+
                 const memberInfo = {
                     discord: discord,
                     character: mainChar.character,
                     class: mainChar.class,
                     role: mainChar.role,
-                    notes: avail.notes
+                    notes: avail.notes,
+                    autoSignup: autoSignup,
+                    wantsReminders: wantsReminders
                 };
 
                 days.forEach(day => {
@@ -1366,7 +1397,13 @@
                     <td class="discord-name">${m.discord}</td>
                     <td class="character">${m.character}</td>
                     <td><span class="role-badge ${m.role?.toLowerCase()}">${m.role || '?'}</span></td>
-                    <td><span class="status-badge available">✓ Available</span></td>
+                    <td>
+                        ${m.autoSignup ? 
+                            '<span class="status-badge available">✓ Auto</span>' : 
+                            '<span class="status-badge" style="background: var(--warning-dim); color: var(--warning);">Tentative</span>'
+                        }
+                        ${m.wantsReminders ? '<span style="margin-left: 5px; font-size: 0.8rem;" title="Wants 5pm reminder">🔔</span>' : ''}
+                    </td>
                 </tr>
             `).join('') || '<tr><td colspan="4" style="text-align: center; color: var(--text-secondary);">No one available</td></tr>';
 
@@ -1396,21 +1433,68 @@
             const createCmd = `/create title:${title} date:${dayData.dateStr} time:${time} duration:${duration} template:${template}`;
             document.getElementById('createCommand').innerHTML = createCmd + '<span class="copy-hint">Click to copy</span>';
 
-            // Signup commands (for tentative)
+            // Signup commands based on preferences
             const signupCmds = [];
+            const autoSignupMembers = [];
+            const tentativeMembers = [];
+            const reminderMembers = [];
             
-            // Add available members as tentative
+            // Separate members by their signup preference
             dayData.available.forEach(m => {
+                if (m.autoSignup) {
+                    autoSignupMembers.push(m);
+                } else {
+                    tentativeMembers.push(m);
+                }
+                if (m.wantsReminders) {
+                    reminderMembers.push(m);
+                }
+            });
+
+            // Auto-signup members get signed up directly
+            autoSignupMembers.forEach(m => {
+                signupCmds.push(`/adduser [EVENT_ID] @${m.discord} class:${m.class || 'DPS'} spec:${m.role || 'DPS'}`);
+            });
+
+            // Tentative members get added as tentative
+            tentativeMembers.forEach(m => {
                 signupCmds.push(`/adduser [EVENT_ID] @${m.discord} class:${m.class || 'DPS'} spec:Tentative`);
             });
 
-            // Add unavailable members as absent
+            // Unavailable members as absent
             dayData.unavailable.forEach(m => {
                 signupCmds.push(`/adduser [EVENT_ID] @${m.discord} status:Absence`);
             });
 
+            // Build output with sections
+            let output = '';
+            if (autoSignupMembers.length > 0) {
+                output += `# Auto-signed up (${autoSignupMembers.length}):\n`;
+                autoSignupMembers.forEach(m => {
+                    output += `/adduser [EVENT_ID] @${m.discord} class:${m.class || 'DPS'} spec:${m.role || 'DPS'}\n`;
+                });
+                output += '\n';
+            }
+            if (tentativeMembers.length > 0) {
+                output += `# Tentative (${tentativeMembers.length}):\n`;
+                tentativeMembers.forEach(m => {
+                    output += `/adduser [EVENT_ID] @${m.discord} class:${m.class || 'DPS'} spec:Tentative\n`;
+                });
+                output += '\n';
+            }
+            if (dayData.unavailable.length > 0) {
+                output += `# Marked absent (${dayData.unavailable.length}):\n`;
+                dayData.unavailable.forEach(m => {
+                    output += `/adduser [EVENT_ID] @${m.discord} status:Absence\n`;
+                });
+                output += '\n';
+            }
+            if (reminderMembers.length > 0) {
+                output += `# Wants 5pm reminder (${reminderMembers.length}): ${reminderMembers.map(m => m.discord).join(', ')}\n`;
+            }
+
             document.getElementById('signupCommands').innerHTML = 
-                (signupCmds.length > 0 ? signupCmds.join('\n') : 'No signup commands (no roster data)') +
+                (output || 'No signup commands (no roster data)') +
                 '<span class="copy-hint">Click to copy</span>';
 
             document.getElementById('commandsSection').style.display = 'block';
@@ -1479,12 +1563,8 @@
             const rows = [];
             Object.entries(grouped).forEach(([discord, chars]) => {
                 const avail = availByDiscord[discord];
-                const availDays = avail ? 
-                    ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
-                        .filter(d => avail[d] === true || avail[d] === 'TRUE' || avail[d] === 'true')
-                        .map(d => d.slice(0, 3).toUpperCase())
-                        .join(', ') 
-                    : 'Not set';
+                const autoSignup = avail?.autoSignup === true || avail?.autoSignup === 'TRUE';
+                const wantsReminders = avail?.wantsReminders === true || avail?.wantsReminders === 'TRUE';
 
                 chars.forEach((char, idx) => {
                     const hasDiscordId = discordIdMapping[char.discord];
@@ -1495,7 +1575,8 @@
                             <td>${char.class || '?'}</td>
                             <td><span class="role-badge ${char.role?.toLowerCase()}">${char.role || '?'}</span></td>
                             <td>${char.mainAlt || '?'}</td>
-                            <td style="font-size: 0.8rem; color: var(--text-secondary);">${idx === 0 ? availDays : ''}</td>
+                            <td>${idx === 0 ? (autoSignup ? '<span style="color: var(--success);">✓ Yes</span>' : '<span style="color: var(--text-muted);">No</span>') : ''}</td>
+                            <td>${idx === 0 ? (wantsReminders ? '<span style="color: var(--success);">✓ Yes</span>' : '<span style="color: var(--text-muted);">No</span>') : ''}</td>
                             <td>
                                 ${hasDiscordId ? 
                                     '<span class="status-badge available">✓ ID Set</span>' : 

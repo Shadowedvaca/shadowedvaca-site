@@ -3,26 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pull All The Things Prog Raid Roster</title>
+    <title>Pull All The Things — Prog Raid Roster</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --bg-dark: #0a0a0b;
+            --bg-card: #141416;
+            --bg-input: #1e1e22;
+            --text-primary: #e8e8e8;
+            --text-secondary: #888;
+            --text-muted: #555;
+            --accent-gold: #d4a84b;
+            --accent-gold-dim: rgba(212, 168, 75, 0.15);
+            --success: #4ade80;
+            --success-dim: rgba(74, 222, 128, 0.15);
+            --warning: #fbbf24;
+            --danger: #f87171;
+            --tank: #60a5fa;
+            --healer: #4ade80;
+            --dps: #f87171;
+            --border: #2a2a2e;
         }
 
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            font-family: 'Source Sans Pro', -apple-system, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
             min-height: 100vh;
-            color: #e0e0e0;
             line-height: 1.6;
         }
 
         .container {
-            max-width: 700px;
+            max-width: 650px;
             margin: 0 auto;
-            padding: 40px 20px;
+            padding: 30px 20px;
         }
 
         header {
@@ -31,771 +47,708 @@
         }
 
         h1 {
-            font-size: 2rem;
-            margin-bottom: 10px;
-            background: linear-gradient(90deg, #ffd700, #ff8c00);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        @media (min-width: 600px) {
-            h1 {
-                font-size: 2.4rem;
-            }
+            font-family: 'Cinzel', serif;
+            font-size: 1.8rem;
+            color: var(--accent-gold);
+            margin-bottom: 5px;
         }
 
         .subtitle {
-            color: #888;
-            font-size: 1rem;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
         }
 
-        .form-section {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
+        .section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
             padding: 20px;
-            margin-bottom: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
         }
 
-        @media (min-width: 600px) {
-            .form-section {
-                padding: 25px;
-                margin-bottom: 20px;
-            }
-        }
-
-        .form-section h2 {
-            font-size: 1.1rem;
-            margin-bottom: 15px;
-            color: #ccc;
+        .section-header {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
+            margin-bottom: 15px;
         }
 
-        .form-section h2 .step {
-            background: linear-gradient(90deg, #ffd700, #ff8c00);
-            color: #1a1a2e;
+        .step-number {
             width: 28px;
             height: 28px;
+            background: var(--accent-gold);
+            color: var(--bg-dark);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
-            font-size: 0.9rem;
-            flex-shrink: 0;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+
+        .section-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1rem;
+            color: var(--text-primary);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
         }
 
         label {
             display: block;
-            margin-bottom: 8px;
-            color: #aaa;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
         }
 
-        input[type="text"], textarea {
+        input[type="text"],
+        select {
             width: 100%;
-            padding: 12px 15px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            background: rgba(0, 0, 0, 0.3);
-            color: #fff;
-            font-size: 1rem;
+            padding: 12px 14px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
             font-family: inherit;
-            transition: border-color 0.3s, box-shadow 0.3s;
+            font-size: 1rem;
+            transition: border-color 0.15s;
         }
 
-        input[type="text"]:focus, textarea:focus {
+        input:focus, select:focus {
             outline: none;
-            border-color: #ffd700;
-            box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+            border-color: var(--accent-gold);
         }
 
-        input[type="text"]::placeholder, textarea::placeholder {
-            color: #666;
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
         }
 
-        textarea {
-            resize: vertical;
-            min-height: 60px;
+        @media (max-width: 500px) {
+            .form-row { grid-template-columns: 1fr; }
         }
 
-        .info-box {
-            background: rgba(59, 130, 246, 0.1);
-            border: 1px solid rgba(59, 130, 246, 0.3);
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 20px;
-            font-size: 0.9rem;
-            color: #93c5fd;
-        }
-
-        /* Availability Grid */
-        .availability-grid {
+        /* Days Grid */
+        .days-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
             gap: 8px;
-            margin-bottom: 15px;
         }
 
-        .day-btn {
-            padding: 12px 5px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            background: rgba(0, 0, 0, 0.3);
-            color: #888;
-            font-size: 0.75rem;
-            cursor: pointer;
-            transition: all 0.2s;
+        @media (max-width: 500px) {
+            .days-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        .day-toggle {
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 4px;
         }
 
-        .day-btn:hover {
-            background: rgba(0, 0, 0, 0.5);
-            border-color: rgba(255, 255, 255, 0.4);
+        .day-toggle input {
+            display: none;
         }
 
-        .day-btn.selected {
-            border-color: #22c55e;
-            background: rgba(34, 197, 94, 0.2);
-            color: #22c55e;
-        }
-
-        .day-btn .check {
-            font-size: 1.2rem;
-            height: 1.2rem;
-        }
-
-        .day-btn .day-name {
-            font-weight: 600;
-        }
-
-        /* Class Grid */
-        .class-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
-        }
-
-        @media (min-width: 500px) {
-            .class-grid {
-                grid-template-columns: repeat(3, 1fr);
-            }
-        }
-
-        .class-btn {
-            padding: 12px 10px;
-            border: 2px solid transparent;
-            border-radius: 8px;
-            background: rgba(0, 0, 0, 0.4);
-            color: #fff;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-align: left;
-            font-weight: 500;
-        }
-
-        .class-btn:hover {
-            background: rgba(0, 0, 0, 0.6);
-            transform: translateY(-1px);
-        }
-
-        .class-btn.selected {
-            border-color: currentColor;
-            background: rgba(0, 0, 0, 0.6);
-        }
-
-        /* WoW Class Colors */
-        .class-death-knight { color: #C41E3A; }
-        .class-demon-hunter { color: #A330C9; }
-        .class-druid { color: #FF7C0A; }
-        .class-evoker { color: #33937F; }
-        .class-hunter { color: #AAD372; }
-        .class-mage { color: #3FC7EB; }
-        .class-monk { color: #00FF98; }
-        .class-paladin { color: #F48CBA; }
-        .class-priest { color: #FFFFFF; }
-        .class-rogue { color: #FFF468; }
-        .class-shaman { color: #0070DD; }
-        .class-warlock { color: #8788EE; }
-        .class-warrior { color: #C69B6D; }
-
-        /* Spec Grid */
-        .spec-grid {
+        .day-toggle label {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            align-items: center;
+            padding: 10px 8px;
+            background: var(--bg-input);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s;
+            width: 100%;
+            margin: 0;
         }
 
-        .spec-btn {
-            padding: 14px 18px;
-            border: 2px solid transparent;
-            border-radius: 8px;
-            background: rgba(0, 0, 0, 0.4);
-            color: #fff;
-            font-size: 1rem;
+        .day-toggle label:hover {
+            border-color: var(--accent-gold);
+        }
+
+        .day-toggle input:checked + label {
+            border-color: var(--success);
+            background: var(--success-dim);
+        }
+
+        .day-name {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--text-primary);
+        }
+
+        /* Main/Alt Toggle */
+        .toggle-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .toggle-option {
+            flex: 1;
+        }
+
+        .toggle-option input {
+            display: none;
+        }
+
+        .toggle-option label {
+            display: block;
+            padding: 12px;
+            text-align: center;
+            background: var(--bg-input);
+            border: 2px solid var(--border);
+            border-radius: 6px;
             cursor: pointer;
-            transition: all 0.2s;
-            text-align: left;
+            font-weight: 600;
+            transition: all 0.15s;
+            margin: 0;
+        }
+
+        .toggle-option label:hover {
+            border-color: var(--accent-gold);
+        }
+
+        .toggle-option input:checked + label {
+            border-color: var(--accent-gold);
+            background: var(--accent-gold-dim);
+            color: var(--accent-gold);
+        }
+
+        /* Role Selection */
+        .role-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .role-option input {
+            display: none;
+        }
+
+        .role-option label {
             display: flex;
             align-items: center;
-            gap: 12px;
-        }
-
-        .spec-btn:hover {
-            background: rgba(0, 0, 0, 0.6);
-        }
-
-        .spec-btn.selected {
-            border-color: currentColor;
-            background: rgba(0, 0, 0, 0.6);
-        }
-
-        .spec-btn .role-badge {
-            font-size: 0.7rem;
-            padding: 3px 8px;
-            border-radius: 4px;
-            margin-left: auto;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .role-tank { background: #3b82f6; color: #fff; }
-        .role-healer { background: #22c55e; color: #fff; }
-        .role-dps { background: #ef4444; color: #fff; }
-
-        /* Main/Alt */
-        .main-alt-section {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-
-        .main-alt-btn {
-            padding: 15px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            background: rgba(0, 0, 0, 0.3);
-            color: #fff;
-            font-size: 1rem;
+            justify-content: center;
+            gap: 6px;
+            padding: 12px;
+            background: var(--bg-input);
+            border: 2px solid var(--border);
+            border-radius: 6px;
             cursor: pointer;
-            transition: all 0.2s;
-            text-align: center;
+            font-weight: 600;
+            transition: all 0.15s;
+            margin: 0;
         }
 
-        .main-alt-btn:hover {
-            background: rgba(0, 0, 0, 0.5);
+        .role-option label:hover {
+            border-color: var(--accent-gold);
         }
 
-        .main-alt-btn.selected {
-            border-color: #ffd700;
-            background: rgba(255, 215, 0, 0.1);
+        .role-option.tank input:checked + label {
+            border-color: var(--tank);
+            background: rgba(96, 165, 250, 0.15);
+            color: var(--tank);
         }
 
-        .main-alt-btn .label {
-            font-size: 1.1rem;
+        .role-option.healer input:checked + label {
+            border-color: var(--healer);
+            background: rgba(74, 222, 128, 0.15);
+            color: var(--healer);
+        }
+
+        .role-option.dps input:checked + label {
+            border-color: var(--dps);
+            background: rgba(248, 113, 113, 0.15);
+            color: var(--dps);
+        }
+
+        /* Checkbox Options */
+        .checkbox-option {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 15px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 12px;
+            transition: all 0.15s;
+        }
+
+        .checkbox-option:hover {
+            border-color: var(--accent-gold);
+        }
+
+        .checkbox-option.checked {
+            border-color: var(--success);
+            background: var(--success-dim);
+        }
+
+        .checkbox-option input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-top: 2px;
+            cursor: pointer;
+            accent-color: var(--accent-gold);
+        }
+
+        .checkbox-content {
+            flex: 1;
+        }
+
+        .checkbox-title {
+            font-weight: 600;
+            color: var(--text-primary);
             margin-bottom: 4px;
         }
 
-        .main-alt-btn .desc {
-            font-size: 0.8rem;
-            color: #888;
+        .checkbox-description {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        /* Notes */
+        textarea {
+            width: 100%;
+            padding: 12px 14px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 1rem;
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent-gold);
         }
 
         /* Submit */
         .submit-btn {
             width: 100%;
-            padding: 16px;
+            padding: 15px;
+            background: var(--accent-gold);
+            color: var(--bg-dark);
             border: none;
             border-radius: 8px;
-            background: linear-gradient(90deg, #ffd700, #ff8c00);
-            color: #1a1a2e;
+            font-family: 'Cinzel', serif;
             font-size: 1.1rem;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.15s;
         }
 
-        .submit-btn:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.3);
+        .submit-btn:hover {
+            filter: brightness(1.1);
+            transform: translateY(-1px);
         }
 
         .submit-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
             transform: none;
-            box-shadow: none;
         }
 
-        .status-message {
-            text-align: center;
+        /* Status Messages */
+        .status {
             padding: 15px;
             border-radius: 8px;
-            margin-top: 20px;
+            margin-top: 15px;
+            text-align: center;
             display: none;
         }
 
-        .status-message.success {
+        .status.success {
             display: block;
-            background: rgba(34, 197, 94, 0.2);
-            border: 1px solid #22c55e;
-            color: #22c55e;
+            background: var(--success-dim);
+            border: 1px solid var(--success);
+            color: var(--success);
         }
 
-        .status-message.error {
+        .status.error {
             display: block;
-            background: rgba(239, 68, 68, 0.2);
-            border: 1px solid #ef4444;
-            color: #ef4444;
+            background: rgba(248, 113, 113, 0.15);
+            border: 1px solid var(--danger);
+            color: var(--danger);
         }
 
-        .status-message .add-another {
-            display: inline-block;
-            margin-top: 10px;
-            padding: 8px 16px;
-            background: rgba(255, 215, 0, 0.2);
-            border: 1px solid #ffd700;
-            color: #ffd700;
-            border-radius: 6px;
-            cursor: pointer;
+        /* Info box */
+        .info-box {
+            background: rgba(96, 165, 250, 0.1);
+            border: 1px solid rgba(96, 165, 250, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-box p {
             font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin: 0;
         }
 
-        .status-message .add-another:hover {
-            background: rgba(255, 215, 0, 0.3);
+        .info-box strong {
+            color: var(--tank);
         }
 
-        footer {
-            text-align: center;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        footer a {
-            color: #ffd700;
-            text-decoration: none;
-            font-size: 0.9rem;
-        }
-
-        footer a:hover {
-            text-decoration: underline;
-        }
-
-        .footer-links {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        .availability-note {
-            font-size: 0.85rem;
-            color: #888;
-            margin-bottom: 12px;
+        /* Help text */
+        .help-text {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 4px;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Pull All The Things Prog Raid Roster</h1>
-            <p class="subtitle">Sign up with your main and/or alts for the guild's prog raiding</p>
+            <h1>⚔️ PATT Prog Raid Roster</h1>
+            <p class="subtitle">Pull All The Things — Sign up for the roster</p>
         </header>
 
         <div class="info-box">
-            <strong>📋 How this works:</strong> Enter your Discord name and availability once, then add as many characters as you want. You can only have <strong>one main</strong> — submitting a new main automatically converts your previous one to an alt. Come back anytime to update!
+            <p>
+                <strong>Raids are Thursday/Friday/Saturday at 9pm EST for 2 hours.</strong><br>
+                Fill out this form to add yourself to the roster. You can submit multiple times to add alts.
+            </p>
         </div>
 
         <form id="rosterForm">
-            <!-- Step 1: Discord Name -->
-            <div class="form-section">
-                <h2><span class="step">1</span> Your Discord Name</h2>
-                <input type="text" id="discordName" name="discordName" placeholder="e.g., Trog" required>
-            </div>
-
-            <!-- Step 2: Availability -->
-            <div class="form-section">
-                <h2><span class="step">2</span> Your Raid Availability</h2>
-                <p class="availability-note">Check all days you're generally available for raid (9pm - 11pm EST)</p>
-                
-                <div class="availability-grid" id="availabilityGrid">
-                    <button type="button" class="day-btn" data-day="Monday">
-                        <span class="check"></span>
-                        <span class="day-name">Mon</span>
-                    </button>
-                    <button type="button" class="day-btn" data-day="Tuesday">
-                        <span class="check"></span>
-                        <span class="day-name">Tue</span>
-                    </button>
-                    <button type="button" class="day-btn" data-day="Wednesday">
-                        <span class="check"></span>
-                        <span class="day-name">Wed</span>
-                    </button>
-                    <button type="button" class="day-btn" data-day="Thursday">
-                        <span class="check"></span>
-                        <span class="day-name">Thu</span>
-                    </button>
-                    <button type="button" class="day-btn" data-day="Friday">
-                        <span class="check"></span>
-                        <span class="day-name">Fri</span>
-                    </button>
-                    <button type="button" class="day-btn" data-day="Saturday">
-                        <span class="check"></span>
-                        <span class="day-name">Sat</span>
-                    </button>
-                    <button type="button" class="day-btn" data-day="Sunday">
-                        <span class="check"></span>
-                        <span class="day-name">Sun</span>
-                    </button>
+            <!-- Discord Name -->
+            <div class="section">
+                <div class="section-header">
+                    <span class="step-number">1</span>
+                    <span class="section-title">Discord Name</span>
                 </div>
-
-                <label for="availabilityNotes">Notes (optional)</label>
-                <textarea id="availabilityNotes" placeholder="e.g., Can't do Thursdays during football season, available after 10pm only on Fridays..."></textarea>
-            </div>
-
-            <!-- Step 3: Character -->
-            <div class="form-section">
-                <h2><span class="step">3</span> Character Info</h2>
-                <label for="characterName">Character Name</label>
-                <input type="text" id="characterName" name="characterName" placeholder="e.g., Trogtotem" required>
-                
-                <label style="margin-top: 15px;">Select Class</label>
-                <div class="class-grid" id="classGrid"></div>
-
-                <div id="specSection" class="hidden" style="margin-top: 15px;">
-                    <label>Select Spec</label>
-                    <div class="spec-grid" id="specGrid"></div>
+                <div class="form-group">
+                    <label for="discordName">Your Discord Username</label>
+                    <input type="text" id="discordName" name="discordName" placeholder="e.g., shadowvaca or username#1234" required>
+                    <p class="help-text">Use your current Discord username (with or without discriminator)</p>
                 </div>
             </div>
 
-            <!-- Step 4: Main/Alt -->
-            <div class="form-section hidden" id="mainAltSection">
-                <h2><span class="step">4</span> Main or Alt?</h2>
-                <div class="main-alt-section">
-                    <button type="button" class="main-alt-btn" data-value="Main">
-                        <div class="label">⭐ Main</div>
-                        <div class="desc">Your primary character</div>
-                    </button>
-                    <button type="button" class="main-alt-btn" data-value="Alt">
-                        <div class="label">🔄 Alt</div>
-                        <div class="desc">Secondary character</div>
-                    </button>
+            <!-- Character Info -->
+            <div class="section">
+                <div class="section-header">
+                    <span class="step-number">2</span>
+                    <span class="section-title">Character Info</span>
+                </div>
+                <div class="form-group">
+                    <label for="characterName">Character Name</label>
+                    <input type="text" id="characterName" name="characterName" placeholder="e.g., Thrall" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="class">Class</label>
+                        <select id="class" name="class" required>
+                            <option value="">Select class...</option>
+                            <option value="Death Knight">Death Knight</option>
+                            <option value="Demon Hunter">Demon Hunter</option>
+                            <option value="Druid">Druid</option>
+                            <option value="Evoker">Evoker</option>
+                            <option value="Hunter">Hunter</option>
+                            <option value="Mage">Mage</option>
+                            <option value="Monk">Monk</option>
+                            <option value="Paladin">Paladin</option>
+                            <option value="Priest">Priest</option>
+                            <option value="Rogue">Rogue</option>
+                            <option value="Shaman">Shaman</option>
+                            <option value="Warlock">Warlock</option>
+                            <option value="Warrior">Warrior</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="spec">Spec</label>
+                        <select id="spec" name="spec" required>
+                            <option value="">Select spec...</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
-            <button type="submit" class="submit-btn" id="submitBtn" disabled>Submit to Roster</button>
+            <!-- Role -->
+            <div class="section">
+                <div class="section-header">
+                    <span class="step-number">3</span>
+                    <span class="section-title">Role</span>
+                </div>
+                <div class="role-grid">
+                    <div class="role-option tank">
+                        <input type="radio" name="role" id="roleTank" value="Tank" required>
+                        <label for="roleTank">🛡️ Tank</label>
+                    </div>
+                    <div class="role-option healer">
+                        <input type="radio" name="role" id="roleHealer" value="Healer">
+                        <label for="roleHealer">💚 Healer</label>
+                    </div>
+                    <div class="role-option dps">
+                        <input type="radio" name="role" id="roleDPS" value="DPS">
+                        <label for="roleDPS">⚔️ DPS</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main/Alt -->
+            <div class="section">
+                <div class="section-header">
+                    <span class="step-number">4</span>
+                    <span class="section-title">Main or Alt?</span>
+                </div>
+                <div class="toggle-group">
+                    <div class="toggle-option">
+                        <input type="radio" name="mainAlt" id="mainYes" value="Main" required>
+                        <label for="mainYes">Main Character</label>
+                    </div>
+                    <div class="toggle-option">
+                        <input type="radio" name="mainAlt" id="mainNo" value="Alt">
+                        <label for="mainNo">Alt Character</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Availability -->
+            <div class="section">
+                <div class="section-header">
+                    <span class="step-number">5</span>
+                    <span class="section-title">Weekly Availability</span>
+                </div>
+                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 15px;">
+                    Select all days you're generally available to raid at 9pm EST
+                </p>
+                <div class="days-grid">
+                    <div class="day-toggle">
+                        <input type="checkbox" id="monday" name="monday">
+                        <label for="monday"><span class="day-name">Mon</span></label>
+                    </div>
+                    <div class="day-toggle">
+                        <input type="checkbox" id="tuesday" name="tuesday">
+                        <label for="tuesday"><span class="day-name">Tue</span></label>
+                    </div>
+                    <div class="day-toggle">
+                        <input type="checkbox" id="wednesday" name="wednesday">
+                        <label for="wednesday"><span class="day-name">Wed</span></label>
+                    </div>
+                    <div class="day-toggle">
+                        <input type="checkbox" id="thursday" name="thursday">
+                        <label for="thursday"><span class="day-name">Thu</span></label>
+                    </div>
+                    <div class="day-toggle">
+                        <input type="checkbox" id="friday" name="friday">
+                        <label for="friday"><span class="day-name">Fri</span></label>
+                    </div>
+                    <div class="day-toggle">
+                        <input type="checkbox" id="saturday" name="saturday">
+                        <label for="saturday"><span class="day-name">Sat</span></label>
+                    </div>
+                    <div class="day-toggle">
+                        <input type="checkbox" id="sunday" name="sunday">
+                        <label for="sunday"><span class="day-name">Sun</span></label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Raid Preferences -->
+            <div class="section">
+                <div class="section-header">
+                    <span class="step-number">6</span>
+                    <span class="section-title">Raid Preferences</span>
+                </div>
+
+                <div class="checkbox-option" onclick="toggleCheckbox('autoSignup')">
+                    <input type="checkbox" id="autoSignup" name="autoSignup">
+                    <div class="checkbox-content">
+                        <div class="checkbox-title">Auto-signup to raids</div>
+                        <div class="checkbox-description">
+                            When a raid is posted for a day you're available, you'll be automatically signed up on your main character. 
+                            You can always change your status or swap characters after the event is posted.
+                            <br><br>
+                            <em>If unchecked, you'll be added as "Tentative" and need to confirm your attendance.</em>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="checkbox-option" onclick="toggleCheckbox('wantsReminders')">
+                    <input type="checkbox" id="wantsReminders" name="wantsReminders">
+                    <div class="checkbox-content">
+                        <div class="checkbox-title">Send me raid day reminders</div>
+                        <div class="checkbox-description">
+                            Get a DM reminder at 5pm EST on the day of the raid. This is a personal reminder just for you —
+                            the main announcement still goes out when the event is created.
+                            <br><br>
+                            <em>Only check this if you want the extra nudge!</em>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="section">
+                <div class="section-header">
+                    <span class="step-number">7</span>
+                    <span class="section-title">Notes (Optional)</span>
+                </div>
+                <div class="form-group">
+                    <label for="notes">Anything else we should know?</label>
+                    <textarea id="notes" name="notes" placeholder="e.g., 'Can't raid after 11pm EST' or 'Flexible on role'"></textarea>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn">Join the Roster</button>
+            
+            <div id="statusMessage" class="status"></div>
         </form>
-
-        <div class="status-message" id="statusMessage"></div>
-
-        <footer>
-            <div class="footer-links">
-                <a href="roster-view.html">📊 View Roster Dashboard</a>
-                <a href="https://shadowedvaca.com">← Back to Shadowedvaca LLC</a>
-            </div>
-        </footer>
     </div>
 
     <script>
-        // ===========================================
-        // CONFIGURATION - UPDATE THIS WITH YOUR APPS SCRIPT URL
-        // ===========================================
-        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyS-X2rTSq9T8LxWmY4f5FzX-jKnpZvZvybFrUNbjjvrn1_nFSYbL0oFXfBDVWjEFFX/exec';
-        // ===========================================
-
-        const classData = {
-            'Death Knight': {
-                color: 'class-death-knight',
-                specs: [
-                    { name: 'Blood', role: 'Tank' },
-                    { name: 'Frost', role: 'DPS' },
-                    { name: 'Unholy', role: 'DPS' }
-                ]
-            },
-            'Demon Hunter': {
-                color: 'class-demon-hunter',
-                specs: [
-                    { name: 'Havoc', role: 'DPS' },
-                    { name: 'Vengeance', role: 'Tank' },
-                    { name: 'Devourer', role: 'DPS' }
-                ]
-            },
-            'Druid': {
-                color: 'class-druid',
-                specs: [
-                    { name: 'Balance', role: 'DPS' },
-                    { name: 'Feral', role: 'DPS' },
-                    { name: 'Guardian', role: 'Tank' },
-                    { name: 'Restoration', role: 'Healer' }
-                ]
-            },
-            'Evoker': {
-                color: 'class-evoker',
-                specs: [
-                    { name: 'Devastation', role: 'DPS' },
-                    { name: 'Preservation', role: 'Healer' },
-                    { name: 'Augmentation', role: 'DPS' }
-                ]
-            },
-            'Hunter': {
-                color: 'class-hunter',
-                specs: [
-                    { name: 'Beast Mastery', role: 'DPS' },
-                    { name: 'Marksmanship', role: 'DPS' },
-                    { name: 'Survival', role: 'DPS' }
-                ]
-            },
-            'Mage': {
-                color: 'class-mage',
-                specs: [
-                    { name: 'Arcane', role: 'DPS' },
-                    { name: 'Fire', role: 'DPS' },
-                    { name: 'Frost', role: 'DPS' }
-                ]
-            },
-            'Monk': {
-                color: 'class-monk',
-                specs: [
-                    { name: 'Brewmaster', role: 'Tank' },
-                    { name: 'Mistweaver', role: 'Healer' },
-                    { name: 'Windwalker', role: 'DPS' }
-                ]
-            },
-            'Paladin': {
-                color: 'class-paladin',
-                specs: [
-                    { name: 'Holy', role: 'Healer' },
-                    { name: 'Protection', role: 'Tank' },
-                    { name: 'Retribution', role: 'DPS' }
-                ]
-            },
-            'Priest': {
-                color: 'class-priest',
-                specs: [
-                    { name: 'Discipline', role: 'Healer' },
-                    { name: 'Holy', role: 'Healer' },
-                    { name: 'Shadow', role: 'DPS' }
-                ]
-            },
-            'Rogue': {
-                color: 'class-rogue',
-                specs: [
-                    { name: 'Assassination', role: 'DPS' },
-                    { name: 'Outlaw', role: 'DPS' },
-                    { name: 'Subtlety', role: 'DPS' }
-                ]
-            },
-            'Shaman': {
-                color: 'class-shaman',
-                specs: [
-                    { name: 'Elemental', role: 'DPS' },
-                    { name: 'Enhancement', role: 'DPS' },
-                    { name: 'Restoration', role: 'Healer' }
-                ]
-            },
-            'Warlock': {
-                color: 'class-warlock',
-                specs: [
-                    { name: 'Affliction', role: 'DPS' },
-                    { name: 'Demonology', role: 'DPS' },
-                    { name: 'Destruction', role: 'DPS' }
-                ]
-            },
-            'Warrior': {
-                color: 'class-warrior',
-                specs: [
-                    { name: 'Arms', role: 'DPS' },
-                    { name: 'Fury', role: 'DPS' },
-                    { name: 'Protection', role: 'Tank' }
-                ]
-            }
+        // Spec options by class
+        const specsByClass = {
+            'Death Knight': ['Blood', 'Frost', 'Unholy'],
+            'Demon Hunter': ['Havoc', 'Vengeance'],
+            'Druid': ['Balance', 'Feral', 'Guardian', 'Restoration'],
+            'Evoker': ['Devastation', 'Preservation', 'Augmentation'],
+            'Hunter': ['Beast Mastery', 'Marksmanship', 'Survival'],
+            'Mage': ['Arcane', 'Fire', 'Frost'],
+            'Monk': ['Brewmaster', 'Mistweaver', 'Windwalker'],
+            'Paladin': ['Holy', 'Protection', 'Retribution'],
+            'Priest': ['Discipline', 'Holy', 'Shadow'],
+            'Rogue': ['Assassination', 'Outlaw', 'Subtlety'],
+            'Shaman': ['Elemental', 'Enhancement', 'Restoration'],
+            'Warlock': ['Affliction', 'Demonology', 'Destruction'],
+            'Warrior': ['Arms', 'Fury', 'Protection']
         };
 
-        let selectedClass = null;
-        let selectedSpec = null;
-        let selectedMainAlt = null;
-        let availability = {
-            Monday: false,
-            Tuesday: false,
-            Wednesday: false,
-            Thursday: false,
-            Friday: false,
-            Saturday: false,
-            Sunday: false
+        // Auto-select role based on spec
+        const specRoles = {
+            'Blood': 'Tank', 'Vengeance': 'Tank', 'Guardian': 'Tank', 'Brewmaster': 'Tank', 'Protection': 'Tank',
+            'Restoration': 'Healer', 'Preservation': 'Healer', 'Holy': 'Healer', 'Mistweaver': 'Healer', 'Discipline': 'Healer'
         };
 
-        // Initialize class buttons
-        const classGrid = document.getElementById('classGrid');
-        Object.keys(classData).forEach(className => {
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.className = `class-btn ${classData[className].color}`;
-            btn.textContent = className;
-            btn.dataset.class = className;
-            btn.addEventListener('click', () => selectClass(className));
-            classGrid.appendChild(btn);
-        });
-
-        // Availability day buttons
-        document.querySelectorAll('.day-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const day = btn.dataset.day;
-                availability[day] = !availability[day];
-                btn.classList.toggle('selected', availability[day]);
-                btn.querySelector('.check').textContent = availability[day] ? '✓' : '';
-                updateSubmitButton();
-            });
-        });
-
-        function selectClass(className) {
-            selectedClass = className;
-            selectedSpec = null;
+        // Update specs when class changes
+        document.getElementById('class').addEventListener('change', function() {
+            const specSelect = document.getElementById('spec');
+            specSelect.innerHTML = '<option value="">Select spec...</option>';
             
-            document.querySelectorAll('.class-btn').forEach(btn => {
-                btn.classList.toggle('selected', btn.dataset.class === className);
-            });
-
-            const specSection = document.getElementById('specSection');
-            const specGrid = document.getElementById('specGrid');
-            specSection.classList.remove('hidden');
-            specGrid.innerHTML = '';
-
-            const colorClass = classData[className].color;
-            classData[className].specs.forEach(spec => {
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.className = `spec-btn ${colorClass}`;
-                btn.dataset.spec = spec.name;
-                btn.dataset.role = spec.role;
-                btn.innerHTML = `
-                    <span>${spec.name}</span>
-                    <span class="role-badge role-${spec.role.toLowerCase()}">${spec.role}</span>
-                `;
-                btn.addEventListener('click', () => selectSpec(spec.name, spec.role));
-                specGrid.appendChild(btn);
-            });
-
-            document.getElementById('mainAltSection').classList.add('hidden');
-            updateSubmitButton();
-        }
-
-        function selectSpec(specName, role) {
-            selectedSpec = { name: specName, role: role };
-
-            document.querySelectorAll('.spec-btn').forEach(btn => {
-                btn.classList.toggle('selected', btn.dataset.spec === specName);
-            });
-
-            document.getElementById('mainAltSection').classList.remove('hidden');
-            updateSubmitButton();
-        }
-
-        // Main/Alt buttons
-        document.querySelectorAll('.main-alt-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                selectedMainAlt = btn.dataset.value;
-                document.querySelectorAll('.main-alt-btn').forEach(b => {
-                    b.classList.toggle('selected', b.dataset.value === selectedMainAlt);
-                });
-                updateSubmitButton();
+            const specs = specsByClass[this.value] || [];
+            specs.forEach(spec => {
+                const option = document.createElement('option');
+                option.value = spec;
+                option.textContent = spec;
+                specSelect.appendChild(option);
             });
         });
 
-        function updateSubmitButton() {
-            const discordName = document.getElementById('discordName').value.trim();
-            const characterName = document.getElementById('characterName').value.trim();
-            const isValid = discordName && characterName && selectedClass && selectedSpec && selectedMainAlt;
-            document.getElementById('submitBtn').disabled = !isValid;
+        // Auto-select role based on spec
+        document.getElementById('spec').addEventListener('change', function() {
+            const role = specRoles[this.value];
+            if (role) {
+                document.querySelector(`input[name="role"][value="${role}"]`).checked = true;
+            } else {
+                document.getElementById('roleDPS').checked = true;
+            }
+        });
+
+        // Toggle checkbox styling
+        function toggleCheckbox(id) {
+            const checkbox = document.getElementById(id);
+            const container = checkbox.closest('.checkbox-option');
+            
+            // Don't toggle if clicking on the checkbox itself (it handles its own state)
+            if (event.target.type !== 'checkbox') {
+                checkbox.checked = !checkbox.checked;
+            }
+            
+            container.classList.toggle('checked', checkbox.checked);
         }
 
-        document.getElementById('discordName').addEventListener('input', updateSubmitButton);
-        document.getElementById('characterName').addEventListener('input', updateSubmitButton);
+        // Handle checkbox change directly
+        document.querySelectorAll('.checkbox-option input[type="checkbox"]').forEach(cb => {
+            cb.addEventListener('change', function() {
+                this.closest('.checkbox-option').classList.toggle('checked', this.checked);
+            });
+        });
 
         // Form submission
-        document.getElementById('rosterForm').addEventListener('submit', async (e) => {
+        document.getElementById('rosterForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const submitBtn = document.getElementById('submitBtn');
-            const statusMessage = document.getElementById('statusMessage');
+            const btn = this.querySelector('.submit-btn');
+            const status = document.getElementById('statusMessage');
             
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Submitting...';
-            statusMessage.className = 'status-message';
-            statusMessage.style.display = 'none';
-
-            const data = {
+            btn.disabled = true;
+            btn.textContent = 'Submitting...';
+            status.className = 'status';
+            status.style.display = 'none';
+            
+            const formData = {
                 discordName: document.getElementById('discordName').value.trim(),
                 characterName: document.getElementById('characterName').value.trim(),
-                className: selectedClass,
-                spec: selectedSpec.name,
-                role: selectedSpec.role,
-                mainAlt: selectedMainAlt,
-                availability: availability,
-                availabilityNotes: document.getElementById('availabilityNotes').value.trim(),
-                timestamp: new Date().toISOString()
+                class: document.getElementById('class').value,
+                spec: document.getElementById('spec').value,
+                role: document.querySelector('input[name="role"]:checked')?.value,
+                mainAlt: document.querySelector('input[name="mainAlt"]:checked')?.value,
+                availability: {
+                    monday: document.getElementById('monday').checked,
+                    tuesday: document.getElementById('tuesday').checked,
+                    wednesday: document.getElementById('wednesday').checked,
+                    thursday: document.getElementById('thursday').checked,
+                    friday: document.getElementById('friday').checked,
+                    saturday: document.getElementById('saturday').checked,
+                    sunday: document.getElementById('sunday').checked
+                },
+                autoSignup: document.getElementById('autoSignup').checked,
+                wantsReminders: document.getElementById('wantsReminders').checked,
+                notes: document.getElementById('notes').value.trim()
             };
 
             try {
-                const response = await fetch(APPS_SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(data)
-                });
-
-                // Redirect to roster view after short delay
-                statusMessage.className = 'status-message success';
-                statusMessage.innerHTML = `
-                    <strong>✅ Submitted!</strong><br>
-                    ${data.characterName} (${data.className} - ${data.spec}) added as your ${data.mainAlt}.<br>
-                    Redirecting to roster...
-                `;
+                // Replace with your actual Google Apps Script URL
+                const SCRIPT_URL = localStorage.getItem('patt_script_url') || 'YOUR_GOOGLE_APPS_SCRIPT_URL';
                 
-                setTimeout(() => {
-                    window.location.href = 'roster-view.html?view=roster';
-                }, 1500);
+                if (SCRIPT_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL') {
+                    // Demo mode - just show success
+                    console.log('Form data:', formData);
+                    status.className = 'status success';
+                    status.textContent = '✓ Demo mode: Data logged to console. Configure SCRIPT_URL for live submission.';
+                    status.style.display = 'block';
+                } else {
+                    const response = await fetch(SCRIPT_URL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData)
+                    });
+                    
+                    status.className = 'status success';
+                    status.textContent = '✓ You\'ve been added to the roster! Submit again to add an alt.';
+                    status.style.display = 'block';
+                }
+                
+                // Reset form but keep discord name
+                const discordName = document.getElementById('discordName').value;
+                this.reset();
+                document.getElementById('discordName').value = discordName;
                 
             } catch (error) {
-                statusMessage.className = 'status-message error';
-                statusMessage.textContent = '❌ Something went wrong. Please try again.';
-                console.error('Submission error:', error);
+                status.className = 'status error';
+                status.textContent = '✗ Error: ' + error.message;
+                status.style.display = 'block';
             }
-
-            submitBtn.textContent = 'Submit to Roster';
-            updateSubmitButton();
+            
+            btn.disabled = false;
+            btn.textContent = 'Join the Roster';
         });
-
-        function resetCharacterFields() {
-            document.getElementById('characterName').value = '';
-            selectedClass = null;
-            selectedSpec = null;
-            selectedMainAlt = null;
-            document.querySelectorAll('.class-btn').forEach(btn => btn.classList.remove('selected'));
-            document.querySelectorAll('.spec-btn').forEach(btn => btn.classList.remove('selected'));
-            document.querySelectorAll('.main-alt-btn').forEach(btn => btn.classList.remove('selected'));
-            document.getElementById('specSection').classList.add('hidden');
-            document.getElementById('mainAltSection').classList.add('hidden');
-        }
-
-        function resetForAnotherCharacter() {
-            document.getElementById('statusMessage').style.display = 'none';
-            resetCharacterFields();
-            document.getElementById('characterName').focus();
-        }
     </script>
 </body>
 </html>

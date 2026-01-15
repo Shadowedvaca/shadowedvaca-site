@@ -98,7 +98,7 @@ function getOrCreateAvailabilitySheet() {
   
   if (!sheet) {
     sheet = ss.insertSheet(AVAILABILITY_SHEET);
-    const headers = ['Discord', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday', 'Notes', 'Updated'];
+    const headers = ['Discord', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday', 'Auto-Signup', 'Wants Reminders', 'Notes', 'Updated'];
     sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
     formatHeaderRow(sheet, headers.length);
   }
@@ -119,6 +119,8 @@ function updateAvailability(data) {
   const fridayCol = headers.indexOf('Friday');
   const saturdayCol = headers.indexOf('Saturday');
   const sundayCol = headers.indexOf('Sunday');
+  const autoSignupCol = headers.indexOf('Auto-Signup');
+  const wantsRemindersCol = headers.indexOf('Wants Reminders');
   const notesCol = headers.indexOf('Notes');
   const updatedCol = headers.indexOf('Updated');
   
@@ -140,6 +142,8 @@ function updateAvailability(data) {
   rowData[fridayCol] = data.availability?.friday || false;
   rowData[saturdayCol] = data.availability?.saturday || false;
   rowData[sundayCol] = data.availability?.sunday || false;
+  rowData[autoSignupCol] = data.autoSignup || false;
+  rowData[wantsRemindersCol] = data.wantsReminders || false;
   rowData[notesCol] = data.notes || '';
   rowData[updatedCol] = new Date();
   
@@ -164,7 +168,10 @@ function getAvailabilityData() {
   for (let i = 1; i < data.length; i++) {
     const row = {};
     headers.forEach((header, idx) => {
-      const key = header.toLowerCase();
+      // Normalize header names for consistent API
+      let key = header.toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (key === 'autosignup') key = 'autoSignup';
+      if (key === 'wantsreminders') key = 'wantsReminders';
       row[key] = data[i][idx];
     });
     result.push(row);

@@ -7,9 +7,30 @@ A complete raid management system that:
 1. **Reads your roster** from Google Sheets
 2. **Calculates best raid days** based on who's available
 3. **Shows top 3 days** ranked by availability with role breakdown (Tank/Healer/DPS)
-4. **Generates Discord commands** for one-click event creation
+4. **Generates Discord commands** for instant event creation
 5. **Flags invalid Discord names** so you can fix them
-6. **Supports Discord ID mapping** for future API integration
+6. **Respects member preferences** — auto-signup vs tentative, reminder opt-in
+7. **Multi-channel support** — announcement, pug, and notification channels
+
+---
+
+## New Features
+
+### Auto-Signup Preference
+Members can choose to be automatically signed up (confirmed) when a raid is posted, or be added as "Tentative" and confirm later. The admin dashboard shows which members will be auto-signed vs tentative.
+
+### Day-of Reminders (Opt-in)
+Members who want a reminder at 5pm EST on raid day can check a box. The admin dashboard shows who wants reminders with a 🔔 icon, so you can:
+- Set up Raid-Helper's reminder feature to DM only those members
+- Or manually ping them yourself
+
+### Multi-Channel Configuration
+Configure separate channels for:
+- **Signup Channel** — Where the main event embed gets posted
+- **Voice Channel** — Links the event to your raid voice room
+- **Announcement Channel** — Where @everyone ping goes (guild-general)
+- **Pug Channel** — Secondary visibility for signups  
+- **Notification Channel** — Where signup notifications go (spam spam spam)
 
 ---
 
@@ -17,8 +38,11 @@ A complete raid management system that:
 
 | File | Purpose |
 |------|---------|
-| `patt-raid-admin.html` | Main admin dashboard — put on your website |
-| `google-apps-script-v2.js` | Updated backend with Discord validation |
+| `patt-raid-admin.html` | Main admin dashboard |
+| `patt-roster-form.html` | Updated signup form with new preferences |
+| `patt-roster-backend.js` | Google Apps Script backend |
+| `DISCORD-DEVELOPER-MODE.md` | How to enable developer mode & get IDs |
+| `RAID-HELPER-API-KEY.md` | How to get your Raid-Helper API key |
 
 ---
 
@@ -29,16 +53,18 @@ A complete raid management system that:
 If you already have the roster sheet set up:
 
 1. Go to your Google Sheet → Extensions → Apps Script
-2. **Replace** the existing code with `google-apps-script-v2.js`
+2. **Replace** the existing code with `patt-roster-backend.js`
 3. Click Deploy → Manage deployments → Edit (pencil icon)
 4. Set version to "New version" and click Deploy
 5. Copy the web app URL
+
+**Note:** If your existing Availability sheet doesn't have "Auto-Signup" and "Wants Reminders" columns, you'll need to add them manually or delete the sheet and let the script recreate it.
 
 If starting fresh:
 
 1. Create a new Google Sheet
 2. Go to Extensions → Apps Script
-3. Paste the contents of `google-apps-script-v2.js`
+3. Paste the contents of `patt-roster-backend.js`
 4. Deploy as Web App (Execute as: Me, Access: Anyone)
 5. Copy the web app URL
 
@@ -49,181 +75,185 @@ If starting fresh:
 3. Go to **Settings** tab
 4. Enter your Google Apps Script URL
 5. Configure your raid defaults (title, time, duration)
-6. Click **Save Settings**
+6. **New:** Configure all channel IDs (see DISCORD-DEVELOPER-MODE.md for how to get them)
+7. Click **Save Settings**
 
-### Step 3: First Data Load
+### Step 3: Update the Roster Form
 
-1. Go back to **Schedule Raid** tab
-2. Click **Refresh** (or it auto-loads)
-3. The system will:
-   - Pull roster data from your sheet
-   - Calculate availability by day
-   - Rank the best 3 days
-   - Flag any Discord name issues
+1. Upload `patt-roster-form.html` to replace your old form
+2. Members will now see two new checkboxes:
+   - Auto-signup to raids
+   - Sign up for reminders
+
+### Step 4: Get Your Discord IDs
+
+See `DISCORD-DEVELOPER-MODE.md` for step-by-step instructions.
+
+You'll need:
+- Server ID
+- Signup Channel ID
+- Voice Channel ID  
+- Announcement Channel ID (guild-general)
+- Pug Channel ID
+- Notification Channel ID (spam spam spam)
 
 ---
 
 ## How It Works
 
-### Availability Calculation
+### Member Signup Flow
 
-The admin reads the Availability sheet where each member marked which days they can raid:
+1. Member fills out roster form
+2. They select their available days
+3. They choose:
+   - **Auto-signup** (checked) = They'll be signed up automatically
+   - **Auto-signup** (unchecked) = They'll be added as Tentative
+4. They choose:
+   - **Reminders** (checked) = They want a 5pm DM on raid day
+   - **Reminders** (unchecked) = No day-of reminder
 
-```
-Discord    | Mon | Tue | Wed | Thu | Fri | Sat | Sun | Notes
------------|-----|-----|-----|-----|-----|-----|-----|-------
-Trog       | ✓   | ✓   | ✓   | ✓   | ✓   | ✓   |     | Sundays are family time
-Shadowvaca | ✓   |     | ✓   |     | ✓   | ✓   |     | 
-```
+### Admin Workflow
 
-It then:
-1. Counts available members per day
-2. Looks up each member's Main character for role info
-3. Ranks days by total availability
-4. Shows role breakdown (Tanks/Healers/DPS) for each day
+1. Open admin dashboard
+2. System shows top 3 days ranked by availability
+3. Click a day to see:
+   - Who's available (with ✓ Auto or ⚠ Tentative badge)
+   - Who wants reminders (🔔 icon)
+   - Role breakdown
+4. Copy the create command → paste in Discord
+5. (Optional) Copy signup commands to pre-populate
 
-### Discord Name Validation
+### Generated Commands
 
-When someone enters a Discord name, the system checks:
-
-- Is it at least 2 characters?
-- If it has `#`, is the discriminator 4 digits?
-- Is it reasonably formatted?
-
-Invalid or missing names get flagged in the **Discord IDs** tab so you can:
-- See who has issues
-- Add the correct Discord User ID (needed for API signup pre-population)
-
-### Command Generation
-
-When you select a raid day, it generates:
+The system generates different commands based on preferences:
 
 ```
-/create title:PATT Prog Raid date:2025-01-24 time:21:00 duration:120 template:1
-```
+# Auto-signed up (5):
+/adduser [EVENT_ID] @player1 class:Warrior spec:DPS
+/adduser [EVENT_ID] @player2 class:Priest spec:Healer
+...
 
-Just copy and paste into Discord!
+# Tentative (3):
+/adduser [EVENT_ID] @player3 class:Mage spec:Tentative
+...
+
+# Marked absent (2):
+/adduser [EVENT_ID] @player4 status:Absence
+...
+
+# Wants 5pm reminder (4): player1, player2, player5, player6
+```
 
 ---
 
-## Daily Workflow
+## Raid-Helper Channel Configuration
 
-**During your current raid:**
+In Discord, configure these Raid-Helper settings:
 
-1. Open `patt-raid-admin.html`
-2. Look at the top 3 recommended days
-3. Pick one (check role breakdown looks good)
-4. Copy the command
-5. Paste in Discord
-6. Done!
+### Announcement Channel
+```
+/serversettings announcementchannel #guild-general
+```
 
-**If raid days are changing (e.g., Thu/Fri → Fri/Sat):**
+### Signup Notification Channel  
+```
+/serversettings signupnotificationchannel #spam-spam-spam
+```
 
-1. Have members update their availability in the roster form
-2. Refresh the admin dashboard
-3. The new best days will appear automatically
+### Reminders (for opt-in members)
+When creating an event, you can add reminders. For members who opted in:
+```
+/edit [EVENT_ID] reminder:4h
+```
+This sends a reminder 4 hours before (adjust timing as needed).
+
+**Note:** Raid-Helper sends reminders to all signed-up members. For selective reminders to only opt-in members, you may need to manually DM them or use a different approach.
 
 ---
 
-## Data Sheets Created
+## Data Sheets
 
-The Apps Script creates/manages three sheets:
+The Apps Script creates/manages these sheets:
 
-### 1. Availability
-One row per Discord user with their weekly availability.
-
+### Availability
 | Column | Description |
 |--------|-------------|
-| Discord | Their Discord username |
-| Monday-Sunday | TRUE/FALSE for each day |
-| Notes | Any scheduling notes |
-| Updated | Last update timestamp |
+| Discord | Username |
+| Monday-Sunday | TRUE/FALSE |
+| Auto-Signup | TRUE/FALSE |
+| Wants Reminders | TRUE/FALSE |
+| Notes | Scheduling notes |
+| Updated | Timestamp |
 
-### 2. Characters
-Multiple rows per user (mains and alts).
-
+### Characters
 | Column | Description |
 |--------|-------------|
-| Discord | Discord username |
-| Character | In-game character name |
+| Discord | Username |
+| Character | In-game name |
 | Class | WoW class |
 | Spec | Specialization |
 | Role | Tank/Healer/DPS |
-| Main/Alt | Which is their main |
-| Updated | Last update timestamp |
+| Main/Alt | Which is main |
+| Updated | Timestamp |
 
-### 3. DiscordIDs
-Maps Discord names to User IDs (for API integration).
-
+### DiscordIDs
 | Column | Description |
 |--------|-------------|
-| Discord Name | The name they entered |
-| Discord User ID | Their actual 18-digit ID |
-| Status | Verified/Pending ID/Invalid Format |
-| Updated | Last update timestamp |
-
----
-
-## Advanced: API Integration
-
-If you want to use the Raid-Helper API to automatically add signups:
-
-1. Get your Raid-Helper API key from https://raid-helper.dev/user
-2. Get your Server ID, Channel ID, Voice Channel ID from Discord (Developer Mode)
-3. Enter these in the Settings tab
-4. For each roster member, add their Discord User ID in the Discord IDs tab
-
-The system can then generate API calls to pre-populate signups. However, browser CORS restrictions may require you to run these via curl or a proxy.
+| Discord Name | What they entered |
+| Discord User ID | Actual 18-digit ID |
+| Status | Verified/Pending/Invalid |
+| Updated | Timestamp |
 
 ---
 
 ## Troubleshooting
 
+### New columns not showing
+If you updated from an older version, add these columns manually to the Availability sheet:
+- Column I: "Auto-Signup"
+- Column J: "Wants Reminders"
+
+Or delete the Availability sheet and let members re-register.
+
 ### "Not connected" status
-- Check that your Apps Script URL is correct
-- Make sure you deployed as a Web App with "Anyone" access
+- Check your Apps Script URL is correct
+- Make sure you deployed as Web App with "Anyone" access
 - Try redeploying with a new version
 
-### No availability data showing
-- Members need to fill out the roster form first
-- Check the Availability sheet in Google Sheets directly
-- Make sure the column names match exactly (case-sensitive)
+### Can't get Discord IDs
+- Enable Developer Mode first (see DISCORD-DEVELOPER-MODE.md)
+- Right-click the item → Copy ID
 
-### Discord name flagged incorrectly
-- Go to Discord IDs tab
-- Add the correct Discord User ID for that member
-- The system will mark them as "Verified"
-
-### Commands not working in Discord
-- Make sure Raid-Helper bot is in your server
-- Check you have the manager role for Raid-Helper
-- Try the command in the correct signup channel
-
----
-
-## Future Enhancements
-
-Things we can add later:
-
-- [ ] Actual API integration to create events programmatically
-- [ ] Auto-add signups as Tentative/Absent via API
-- [ ] Pull attendance history from Raid-Helper
-- [ ] Sync with WoW guild roster via Battle.net API
-- [ ] Calendar view of scheduled raids
+### Raid-Helper commands not working
+- Make sure you have the Manager role
+- Use commands in a channel the bot can see
+- Check the bot has proper permissions
 
 ---
 
 ## Quick Reference
 
-**Roster form URL:** `https://your-site.com/roster.html`
-
-**Admin dashboard URL:** `https://your-site.com/patt-raid-admin.html`
-
-**Manual command format:**
+**Create event:**
 ```
 /create title:PATT Prog Raid date:YYYY-MM-DD time:21:00 duration:120 template:1
 ```
 
-**To get Discord User ID:**
-1. Enable Developer Mode in Discord (Settings → App Settings → Advanced)
-2. Right-click user → Copy User ID
+**Add signup:**
+```
+/adduser [EVENT_ID] @username class:Warrior spec:DPS
+```
+
+**Add tentative:**
+```
+/adduser [EVENT_ID] @username class:Warrior spec:Tentative
+```
+
+**Add absent:**
+```
+/adduser [EVENT_ID] @username status:Absence
+```
+
+**Set reminder:**
+```
+/edit [EVENT_ID] reminder:4h
+```
