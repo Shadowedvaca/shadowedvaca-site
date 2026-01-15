@@ -1018,27 +1018,68 @@
         let discordIdMapping = {}; // discord_name -> discord_user_id
 
         // ==========================================
+        // LOAD CONFIG FROM FILE (then override with localStorage)
+        // ==========================================
+        async function loadConfigFromFile() {
+            try {
+                const response = await fetch('patt-config.json');
+                if (!response.ok) return null;
+                return await response.json();
+            } catch (error) {
+                console.warn('Could not load patt-config.json:', error.message);
+                return null;
+            }
+        }
+
+        // ==========================================
         // CONFIGURATION
         // ==========================================
-        function loadSettings() {
+        async function loadSettings() {
+            // First try to load from config file
+            const fileConfig = await loadConfigFromFile();
+            
+            // Then load from localStorage (overrides file config)
             const saved = localStorage.getItem(STORAGE_KEY);
-            if (saved) {
-                const config = JSON.parse(saved);
-                document.getElementById('rosterUrl').value = config.rosterUrl || '';
-                document.getElementById('defaultTitle').value = config.defaultTitle || 'PATT Prog Raid';
-                document.getElementById('defaultTime').value = config.defaultTime || '21:00';
-                document.getElementById('defaultDuration').value = config.defaultDuration || '120';
-                document.getElementById('defaultTemplate').value = config.defaultTemplate || '1';
-                document.getElementById('apiKey').value = config.apiKey || '';
-                document.getElementById('serverId').value = config.serverId || '';
-                document.getElementById('channelId').value = config.channelId || '';
-                document.getElementById('voiceChannelId').value = config.voiceChannelId || '';
-                document.getElementById('announcementChannelId').value = config.announcementChannelId || '';
-                document.getElementById('pugChannelId').value = config.pugChannelId || '';
-                document.getElementById('notificationChannelId').value = config.notificationChannelId || '';
-                discordIdMapping = config.discordIdMapping || {};
-            }
+            const localConfig = saved ? JSON.parse(saved) : {};
+            
+            // Merge: localStorage wins, but file provides defaults
+            const config = {
+                rosterUrl: localConfig.rosterUrl || fileConfig?.scriptUrl || '',
+                defaultTitle: localConfig.defaultTitle || fileConfig?.raidDefaults?.title || 'PATT Prog Raid',
+                defaultTime: localConfig.defaultTime || fileConfig?.raidDefaults?.time || '21:00',
+                defaultDuration: localConfig.defaultDuration || fileConfig?.raidDefaults?.duration || '120',
+                defaultTemplate: localConfig.defaultTemplate || fileConfig?.raidDefaults?.template || '1',
+                apiKey: localConfig.apiKey || '',
+                serverId: localConfig.serverId || fileConfig?.serverId || '',
+                channelId: localConfig.channelId || fileConfig?.channels?.signup || '',
+                voiceChannelId: localConfig.voiceChannelId || fileConfig?.channels?.voice || '',
+                announcementChannelId: localConfig.announcementChannelId || fileConfig?.channels?.announcement || '',
+                pugChannelId: localConfig.pugChannelId || fileConfig?.channels?.pug || '',
+                notificationChannelId: localConfig.notificationChannelId || fileConfig?.channels?.notification || '',
+                discordIdMapping: localConfig.discordIdMapping || {}
+            };
+            
+            // Apply to form
+            document.getElementById('rosterUrl').value = config.rosterUrl;
+            document.getElementById('defaultTitle').value = config.defaultTitle;
+            document.getElementById('defaultTime').value = config.defaultTime;
+            document.getElementById('defaultDuration').value = config.defaultDuration;
+            document.getElementById('defaultTemplate').value = config.defaultTemplate;
+            document.getElementById('apiKey').value = config.apiKey;
+            document.getElementById('serverId').value = config.serverId;
+            document.getElementById('channelId').value = config.channelId;
+            document.getElementById('voiceChannelId').value = config.voiceChannelId;
+            document.getElementById('announcementChannelId').value = config.announcementChannelId;
+            document.getElementById('pugChannelId').value = config.pugChannelId;
+            document.getElementById('notificationChannelId').value = config.notificationChannelId;
+            discordIdMapping = config.discordIdMapping;
+            
             updateConnectionStatus();
+            
+            // Auto-load data if we have a roster URL
+            if (config.rosterUrl && config.rosterUrl !== 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE') {
+                refreshData();
+            }
         }
 
         function saveSettings() {
@@ -1639,13 +1680,7 @@
         // INITIALIZATION
         // ==========================================
         document.addEventListener('DOMContentLoaded', () => {
-            loadSettings();
-            
-            // Auto-load data if roster URL is configured
-            const config = getConfig();
-            if (config.rosterUrl) {
-                refreshData();
-            }
+            loadSettings(); // Now async, handles its own data loading
         });
     </script>
 </body>
