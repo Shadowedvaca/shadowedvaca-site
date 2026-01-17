@@ -42,6 +42,14 @@ function doPost(e) {
       return handleDiscordValidation(data);
     }
     
+    if (data.action === 'createRaidEvent') {
+      return handleCreateRaidEvent(data);
+    }
+    
+    if (data.action === 'addRaidSignups') {
+      return handleAddRaidSignups(data);
+    }
+    
     // Default: roster submission
     updateAvailability(data);
     
@@ -54,6 +62,102 @@ function doPost(e) {
     
     return ContentService
       .createTextOutput(JSON.stringify({ success: true }))
+      .setMimeType(ContentService.MimeType.JSON);
+      
+  } catch (error) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ success: false, error: error.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+// ============================================
+// RAID-HELPER API PROXY FUNCTIONS
+// ============================================
+
+function handleCreateRaidEvent(data) {
+  try {
+    const url = `https://raid-helper.dev/api/v2/servers/${data.serverId}/events`;
+    
+    const options = {
+      method: 'POST',
+      headers: {
+        'Authorization': data.apiKey,
+        'Content-Type': 'application/json'
+      },
+      payload: JSON.stringify(data.eventPayload),
+      muteHttpExceptions: true
+    };
+    
+    const response = UrlFetchApp.fetch(url, options);
+    const responseCode = response.getResponseCode();
+    const responseText = response.getContentText();
+    
+    if (responseCode >= 200 && responseCode < 300) {
+      const result = JSON.parse(responseText);
+      return ContentService
+        .createTextOutput(JSON.stringify({ 
+          success: true, 
+          eventId: result.id || result.eventId,
+          response: result 
+        }))
+        .setMimeType(ContentService.MimeType.JSON);
+    } else {
+      return ContentService
+        .createTextOutput(JSON.stringify({ 
+          success: false, 
+          error: `API returned ${responseCode}: ${responseText}` 
+        }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+  } catch (error) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ success: false, error: error.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function handleAddRaidSignups(data) {
+  try {
+    const results = [];
+    
+    for (const signup of data.signups) {
+      const url = `https://raid-helper.dev/api/v2/servers/${data.serverId}/events/${data.eventId}/signups`;
+      
+      const signupPayload = {
+        odatatype: signup.type,
+        odataid: signup.odataid
+      };
+      
+      if (signup.className) signupPayload.className = signup.className;
+      if (signup.specName) signupPayload.specName = signup.specName;
+      
+      const options = {
+        method: 'POST',
+        headers: {
+          'Authorization': data.apiKey,
+          'Content-Type': 'application/json'
+        },
+        payload: JSON.stringify(signupPayload),
+        muteHttpExceptions: true
+      };
+      
+      try {
+        const response = UrlFetchApp.fetch(url, options);
+        results.push({ 
+          odataid: signup.odataid, 
+          success: response.getResponseCode() < 300 
+        });
+      } catch (e) {
+        results.push({ odataid: signup.odataid, success: false, error: e.toString() });
+      }
+      
+      // Small delay to avoid rate limiting
+      Utilities.sleep(100);
+    }
+    
+    return ContentService
+      .createTextOutput(JSON.stringify({ success: true, results: results }))
       .setMimeType(ContentService.MimeType.JSON);
       
   } catch (error) {

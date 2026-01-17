@@ -801,22 +801,36 @@
 
                 <div id="commandsSection" class="card" style="display: none;">
                     <div class="card-header">
-                        <span class="card-title">Generated Commands</span>
+                        <span class="card-title">Create Raid Event</span>
                     </div>
 
                     <div class="command-section">
-                        <div class="command-label">1. Create the event (paste in Discord)</div>
-                        <div class="command-box" id="createCommand" onclick="copyCommand(this)">
-                            <span class="copy-hint">Click to copy</span>
+                        <!-- API Create Button -->
+                        <div style="margin-bottom: 20px;">
+                            <button class="btn btn-primary" id="createEventBtn" onclick="createEventViaAPI()" style="width: 100%; padding: 15px; font-size: 1.1rem;">
+                                🚀 Create Event in Discord
+                            </button>
+                            <p id="createEventStatus" style="margin-top: 10px; text-align: center; display: none;"></p>
                         </div>
 
-                        <div class="command-label" style="margin-top: 15px;">2. After event is created, add tentative signups (optional)</div>
-                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 10px;">
-                            Use these commands to pre-populate signups. Replace [EVENT_ID] with the event ID from step 1.
-                        </p>
-                        <div class="command-box" id="signupCommands" onclick="copyCommand(this)" style="white-space: pre-wrap; max-height: 200px; overflow-y: auto;">
-                            <span class="copy-hint">Click to copy</span>
-                        </div>
+                        <div class="section-divider"></div>
+
+                        <details style="margin-top: 15px;">
+                            <summary style="cursor: pointer; color: var(--text-secondary); font-size: 0.9rem;">
+                                Manual fallback (if API doesn't work)
+                            </summary>
+                            <div style="margin-top: 15px;">
+                                <div class="command-label">1. Create the event (paste in Discord)</div>
+                                <div class="command-box" id="createCommand" onclick="copyCommand(this)">
+                                    <span class="copy-hint">Click to copy</span>
+                                </div>
+
+                                <div class="command-label" style="margin-top: 15px;">2. After event is created, add signups</div>
+                                <div class="command-box" id="signupCommands" onclick="copyCommand(this)" style="white-space: pre-wrap; max-height: 200px; overflow-y: auto;">
+                                    <span class="copy-hint">Click to copy</span>
+                                </div>
+                            </div>
+                        </details>
                     </div>
                 </div>
 
@@ -924,11 +938,18 @@
                         <div class="form-group">
                             <label>API Key</label>
                             <input type="password" id="apiKey" placeholder="Your Raid-Helper API key">
+                            <p class="help-text">Run /apikey create in Discord to get this</p>
                         </div>
                         <div class="form-group">
                             <label>Server ID</label>
                             <input type="text" id="serverId" placeholder="e.g., 123456789012345678">
+                            <p class="help-text">Right-click server icon → Copy ID</p>
                         </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Your Discord User ID (Event Creator)</label>
+                        <input type="text" id="leaderId" placeholder="e.g., 123456789012345678">
+                        <p class="help-text">Right-click yourself → Copy ID. Events will be created as you.</p>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
@@ -1051,6 +1072,7 @@
                 defaultTemplate: localConfig.defaultTemplate || fileConfig?.raidDefaults?.template || '1',
                 apiKey: localConfig.apiKey || '',
                 serverId: localConfig.serverId || fileConfig?.serverId || '',
+                leaderId: localConfig.leaderId || fileConfig?.leaderId || '',
                 channelId: localConfig.channelId || fileConfig?.channels?.signup || '',
                 voiceChannelId: localConfig.voiceChannelId || fileConfig?.channels?.voice || '',
                 announcementChannelId: localConfig.announcementChannelId || fileConfig?.channels?.announcement || '',
@@ -1067,6 +1089,7 @@
             document.getElementById('defaultTemplate').value = config.defaultTemplate;
             document.getElementById('apiKey').value = config.apiKey;
             document.getElementById('serverId').value = config.serverId;
+            document.getElementById('leaderId').value = config.leaderId;
             document.getElementById('channelId').value = config.channelId;
             document.getElementById('voiceChannelId').value = config.voiceChannelId;
             document.getElementById('announcementChannelId').value = config.announcementChannelId;
@@ -1091,6 +1114,7 @@
                 defaultTemplate: document.getElementById('defaultTemplate').value,
                 apiKey: document.getElementById('apiKey').value,
                 serverId: document.getElementById('serverId').value,
+                leaderId: document.getElementById('leaderId').value,
                 channelId: document.getElementById('channelId').value,
                 voiceChannelId: document.getElementById('voiceChannelId').value,
                 announcementChannelId: document.getElementById('announcementChannelId').value,
@@ -1529,6 +1553,16 @@
             const duration = config.defaultDuration || '120';
             const template = config.defaultTemplate || '1';
 
+            // Store for API use
+            window.selectedRaidData = {
+                title: title,
+                date: dayData.dateStr,
+                time: time,
+                duration: parseInt(duration),
+                templateId: parseInt(template),
+                dayData: dayData
+            };
+
             // Create command
             const createCmd = `/create title:${title} date:${dayData.dateStr} time:${time} duration:${duration} template:${template}`;
             document.getElementById('createCommand').innerHTML = createCmd + '<span class="copy-hint">Click to copy</span>';
@@ -1598,6 +1632,265 @@
                 '<span class="copy-hint">Click to copy</span>';
 
             document.getElementById('commandsSection').style.display = 'block';
+            
+            // Check if API is configured
+            updateCreateButtonState();
+        }
+
+        function updateCreateButtonState() {
+            const config = getConfig();
+            const btn = document.getElementById('createEventBtn');
+            const missingConfig = [];
+            
+            if (!config.apiKey) missingConfig.push('API Key');
+            if (!config.serverId) missingConfig.push('Server ID');
+            if (!config.channelId) missingConfig.push('Signup Channel ID');
+            
+            if (missingConfig.length > 0) {
+                btn.disabled = true;
+                btn.innerHTML = `⚠️ Configure: ${missingConfig.join(', ')}`;
+                btn.style.background = 'var(--bg-input)';
+                btn.style.color = 'var(--text-secondary)';
+            } else {
+                btn.disabled = false;
+                btn.innerHTML = '🚀 Create Event in Discord';
+                btn.style.background = '';
+                btn.style.color = '';
+            }
+        }
+
+        async function createEventViaAPI() {
+            const config = getConfig();
+            const raidData = window.selectedRaidData;
+            const btn = document.getElementById('createEventBtn');
+            const status = document.getElementById('createEventStatus');
+            
+            if (!raidData) {
+                showStatus('Select a raid day first', 'error');
+                return;
+            }
+            
+            // Validate config
+            if (!config.apiKey || !config.serverId || !config.channelId) {
+                showStatus('Missing API configuration. Go to Settings tab.', 'error');
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.innerHTML = '⏳ Creating event...';
+            showStatus('Connecting to Raid-Helper API...', 'pending');
+            
+            // Build the API request
+            const eventPayload = {
+                leaderId: config.leaderId || '', // Optional: your Discord user ID
+                templateId: raidData.templateId,
+                date: raidData.date,
+                time: raidData.time,
+                title: raidData.title,
+                description: `Roster auto-generated. ${raidData.dayData.available.length} available.`,
+                channelId: config.channelId,
+                advancedSettings: {}
+            };
+            
+            // Add voice channel if configured
+            if (config.voiceChannelId) {
+                eventPayload.advancedSettings.voice_channel = config.voiceChannelId;
+            }
+            
+            // Add duration
+            eventPayload.advancedSettings.duration = raidData.duration;
+            
+            // Try direct API call first
+            try {
+                const response = await fetch(`https://raid-helper.dev/api/v2/servers/${config.serverId}/events`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': config.apiKey,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(eventPayload)
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    showStatus(`✅ Event created! ID: ${result.id || result.eventId || 'success'}`, 'success');
+                    btn.innerHTML = '✅ Event Created!';
+                    
+                    // Now add signups if we have Discord IDs
+                    if (result.id || result.eventId) {
+                        await addSignupsViaAPI(result.id || result.eventId, raidData.dayData);
+                    }
+                    
+                    setTimeout(() => {
+                        btn.disabled = false;
+                        btn.innerHTML = '🚀 Create Another Event';
+                    }, 3000);
+                    return;
+                } else {
+                    const errorText = await response.text();
+                    throw new Error(`API returned ${response.status}: ${errorText}`);
+                }
+            } catch (directError) {
+                console.log('Direct API failed:', directError.message);
+                
+                // If CORS error, try proxy through Google Apps Script
+                if (directError.message.includes('CORS') || directError.message.includes('Failed to fetch') || directError.message.includes('NetworkError')) {
+                    showStatus('Direct API blocked (CORS). Trying proxy...', 'pending');
+                    
+                    try {
+                        const proxyResult = await createEventViaProxy(config, eventPayload);
+                        if (proxyResult.success) {
+                            showStatus(`✅ Event created via proxy! ID: ${proxyResult.eventId || 'success'}`, 'success');
+                            btn.innerHTML = '✅ Event Created!';
+                            
+                            if (proxyResult.eventId) {
+                                await addSignupsViaProxy(config, proxyResult.eventId, raidData.dayData);
+                            }
+                            
+                            setTimeout(() => {
+                                btn.disabled = false;
+                                btn.innerHTML = '🚀 Create Another Event';
+                            }, 3000);
+                            return;
+                        } else {
+                            throw new Error(proxyResult.error || 'Proxy failed');
+                        }
+                    } catch (proxyError) {
+                        showStatus(`❌ ${proxyError.message}`, 'error');
+                    }
+                } else {
+                    showStatus(`❌ ${directError.message}`, 'error');
+                }
+            }
+            
+            btn.disabled = false;
+            btn.innerHTML = '🚀 Create Event in Discord';
+        }
+
+        async function createEventViaProxy(config, eventPayload) {
+            const response = await fetch(config.rosterUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'createRaidEvent',
+                    apiKey: config.apiKey,
+                    serverId: config.serverId,
+                    eventPayload: eventPayload
+                })
+            });
+            return await response.json();
+        }
+
+        async function addSignupsViaAPI(eventId, dayData) {
+            const config = getConfig();
+            showStatus(`Adding signups to event ${eventId}...`, 'pending');
+            
+            let added = 0;
+            
+            // Add available members
+            for (const member of dayData.available) {
+                const discordUserId = discordIdMapping[member.discord];
+                if (!discordUserId) continue; // Skip if no Discord ID mapped
+                
+                try {
+                    const signupPayload = {
+                        odatatype: member.autoSignup ? 'primary' : 'tentative',
+                        odataid: discordUserId,
+                        className: member.class || 'DPS',
+                        specName: member.role || 'DPS'
+                    };
+                    
+                    await fetch(`https://raid-helper.dev/api/v2/servers/${config.serverId}/events/${eventId}/signups`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': config.apiKey,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(signupPayload)
+                    });
+                    added++;
+                } catch (e) {
+                    console.log(`Failed to add signup for ${member.discord}:`, e);
+                }
+            }
+            
+            // Add unavailable members as absent
+            for (const member of dayData.unavailable) {
+                const discordUserId = discordIdMapping[member.discord];
+                if (!discordUserId) continue;
+                
+                try {
+                    await fetch(`https://raid-helper.dev/api/v2/servers/${config.serverId}/events/${eventId}/signups`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': config.apiKey,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            odatatype: 'absence',
+                            odataid: discordUserId
+                        })
+                    });
+                    added++;
+                } catch (e) {
+                    console.log(`Failed to add absence for ${member.discord}:`, e);
+                }
+            }
+            
+            showStatus(`✅ Event created! Added ${added} signups.`, 'success');
+        }
+
+        async function addSignupsViaProxy(config, eventId, dayData) {
+            // Build signup list
+            const signups = [];
+            
+            for (const member of dayData.available) {
+                const discordUserId = discordIdMapping[member.discord];
+                if (!discordUserId) continue;
+                signups.push({
+                    type: member.autoSignup ? 'primary' : 'tentative',
+                    odataid: discordUserId,
+                    className: member.class || 'DPS',
+                    specName: member.role || 'DPS'
+                });
+            }
+            
+            for (const member of dayData.unavailable) {
+                const discordUserId = discordIdMapping[member.discord];
+                if (!discordUserId) continue;
+                signups.push({
+                    type: 'absence',
+                    odataid: discordUserId
+                });
+            }
+            
+            if (signups.length === 0) return;
+            
+            await fetch(config.rosterUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'addRaidSignups',
+                    apiKey: config.apiKey,
+                    serverId: config.serverId,
+                    eventId: eventId,
+                    signups: signups
+                })
+            });
+        }
+
+        function showStatus(message, type) {
+            const status = document.getElementById('createEventStatus');
+            status.style.display = 'block';
+            status.textContent = message;
+            
+            if (type === 'success') {
+                status.style.color = 'var(--success)';
+            } else if (type === 'error') {
+                status.style.color = 'var(--danger)';
+            } else {
+                status.style.color = 'var(--text-secondary)';
+            }
         }
 
         function generateQuickCommands(dayData) {
