@@ -114,10 +114,14 @@ function handleCreateRaidEvent(data) {
     
     if (responseCode >= 200 && responseCode < 300) {
       const result = JSON.parse(responseText);
+      // Event ID can be at different levels depending on API response
+      const eventId = result.id || result.eventId || result.event?.id;
+      Logger.log('Extracted event ID: ' + eventId);
+      
       return ContentService
         .createTextOutput(JSON.stringify({ 
           success: true, 
-          eventId: result.id || result.eventId,
+          eventId: eventId,
           response: result 
         }))
         .setMimeType(ContentService.MimeType.JSON);

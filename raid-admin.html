@@ -804,6 +804,21 @@
                         <span class="card-title">Create Raid Event</span>
                     </div>
 
+                    <!-- Event Preview -->
+                    <div id="eventPreview" class="command-section" style="background: var(--bg-input); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <div style="font-weight: bold; margin-bottom: 10px;">📋 Event Preview</div>
+                        <table style="width: 100%; font-size: 0.9rem;">
+                            <tr><td style="padding: 4px 10px 4px 0; color: var(--text-secondary);">Title:</td><td id="previewTitle"></td></tr>
+                            <tr><td style="padding: 4px 10px 4px 0; color: var(--text-secondary);">Date:</td><td id="previewDate"></td></tr>
+                            <tr><td style="padding: 4px 10px 4px 0; color: var(--text-secondary);">Time:</td><td id="previewTime"></td></tr>
+                            <tr><td style="padding: 4px 10px 4px 0; color: var(--text-secondary);">Template:</td><td id="previewTemplate"></td></tr>
+                            <tr><td style="padding: 4px 10px 4px 0; color: var(--text-secondary);">Channel:</td><td id="previewChannel"></td></tr>
+                            <tr><td style="padding: 4px 10px 4px 0; color: var(--text-secondary);">Voice:</td><td id="previewVoice"></td></tr>
+                            <tr><td style="padding: 4px 10px 4px 0; color: var(--text-secondary);">Available:</td><td id="previewAvailable"></td></tr>
+                            <tr><td style="padding: 4px 10px 4px 0; color: var(--text-secondary);">With Discord IDs:</td><td id="previewWithIds"></td></tr>
+                        </table>
+                    </div>
+
                     <div class="command-section">
                         <!-- API Create Button -->
                         <div style="margin-bottom: 20px;">
@@ -981,6 +996,7 @@
 
                 <div class="btn-group">
                     <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+                    <button class="btn btn-secondary" onclick="resetSettings()" style="margin-left: 10px;">Reset to Config File Defaults</button>
                     <button class="btn btn-secondary" onclick="loadSettings()">Reset</button>
                 </div>
             </div>
@@ -1122,6 +1138,30 @@
             localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
             updateConnectionStatus();
             alert('Settings saved!');
+        }
+
+        async function resetSettings() {
+            if (!confirm('This will reset all settings to the defaults from patt-config.json. Your API key will be cleared. Continue?')) {
+                return;
+            }
+            
+            // Keep only the Discord ID mappings
+            const currentConfig = getConfig();
+            const mappingsToKeep = currentConfig.discordIdMapping || {};
+            
+            // Clear localStorage
+            localStorage.removeItem(STORAGE_KEY);
+            
+            // Reload settings from config file
+            await loadSettings();
+            
+            // Restore Discord ID mappings
+            discordIdMapping = mappingsToKeep;
+            
+            // Update the mapping display if on that tab
+            renderDiscordIdTable();
+            
+            alert('Settings reset to config file defaults. Discord ID mappings preserved.');
         }
 
         function getConfig() {
@@ -1630,6 +1670,17 @@
 
             document.getElementById('commandsSection').style.display = 'block';
             
+            // Populate preview
+            const membersWithIds = dayData.available.filter(m => discordIdMapping[m.discord]).length;
+            document.getElementById('previewTitle').textContent = title;
+            document.getElementById('previewDate').textContent = dayData.dateStr;
+            document.getElementById('previewTime').textContent = time;
+            document.getElementById('previewTemplate').textContent = template;
+            document.getElementById('previewChannel').textContent = config.channelId || '⚠️ Not set';
+            document.getElementById('previewVoice').textContent = config.voiceChannelId || '(none)';
+            document.getElementById('previewAvailable').textContent = `${dayData.available.length} members`;
+            document.getElementById('previewWithIds').textContent = `${membersWithIds} of ${dayData.available.length} (will be auto-signed)`;
+            
             // Check if API is configured
             updateCreateButtonState();
         }
@@ -1724,13 +1775,20 @@
                 console.log('Proxy result:', proxyResult);
                 
                 if (proxyResult.success) {
-                    const eventId = proxyResult.eventId;
+                    // Event ID can be in different places depending on API response structure
+                    const eventId = proxyResult.eventId || 
+                                    proxyResult.response?.event?.id || 
+                                    proxyResult.response?.id;
+                    console.log('Extracted event ID:', eventId);
+                    
                     showStatus(`✅ Event created! ID: ${eventId || 'success'}`, 'success');
                     btn.innerHTML = '✅ Event Created!';
                     
                     // Now add signups if we have an event ID and Discord IDs mapped
                     if (eventId) {
                         await addSignupsViaProxy(config, eventId, raidData.dayData);
+                    } else {
+                        showStatus(`✅ Event created! (No event ID returned for auto-signups)`, 'success');
                     }
                     
                     setTimeout(() => {
