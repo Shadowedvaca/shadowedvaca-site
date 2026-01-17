@@ -1433,6 +1433,7 @@
                     discord: discord,
                     character: mainChar.character,
                     class: mainChar.class,
+                    spec: mainChar.spec,
                     role: mainChar.role,
                     notes: avail.notes,
                     autoSignup: autoSignup,
@@ -1809,6 +1810,105 @@
         async function addSignupsViaProxy(config, eventId, dayData) {
             showStatus(`Adding signups to event ${eventId}...`, 'pending');
             
+            // Map WoW Class + Spec to Raid-Helper className and specName
+            // Raid-Helper uses suffixes (Holy1, Frost1, etc.) to distinguish same-named specs
+            function mapToRaidHelper(wowClass, wowSpec, role) {
+                // Normalize inputs
+                const cls = (wowClass || '').toLowerCase().replace(/\s+/g, '');
+                const spec = (wowSpec || '').toLowerCase().replace(/\s+/g, '');
+                
+                // Determine className based on role
+                let className;
+                if (role === 'Tank') className = 'Tank';
+                else if (role === 'Healer') className = 'Healer';
+                else if (['mage', 'warlock', 'hunter', 'priest', 'evoker'].some(c => cls.includes(c))) {
+                    // Check if it's a ranged spec (not Survival hunter)
+                    if (cls.includes('hunter') && spec.includes('survival')) {
+                        className = 'Melee';
+                    } else {
+                        className = 'Ranged';
+                    }
+                } else {
+                    className = 'Melee';
+                }
+                
+                // Spec name mapping - handle duplicates with suffixes
+                const specMap = {
+                    // Death Knight
+                    'deathknight-blood': 'Blood',
+                    'deathknight-frost': 'Frost1',  // Frost1 for DK
+                    'deathknight-unholy': 'Unholy',
+                    
+                    // Demon Hunter
+                    'demonhunter-vengeance': 'Vengeance',
+                    'demonhunter-havoc': 'Havoc',
+                    'demonhunter-devourer': 'Devourer',
+                    
+                    // Druid
+                    'druid-balance': 'Balance',
+                    'druid-feral': 'Feral',
+                    'druid-guardian': 'Guardian',
+                    'druid-restoration': 'Restoration',  // Druid Resto is base
+                    
+                    // Evoker
+                    'evoker-devastation': 'Devastation',
+                    'evoker-preservation': 'Preservation',
+                    'evoker-augmentation': 'Augmentation',
+                    
+                    // Hunter
+                    'hunter-beastmastery': 'Beastmastery',
+                    'hunter-marksmanship': 'Marksmanship',
+                    'hunter-survival': 'Survival',
+                    
+                    // Mage
+                    'mage-arcane': 'Arcane',
+                    'mage-fire': 'Fire',
+                    'mage-frost': 'Frost',  // Frost for Mage
+                    
+                    // Monk
+                    'monk-brewmaster': 'Brewmaster',
+                    'monk-mistweaver': 'Mistweaver',
+                    'monk-windwalker': 'Windwalker',
+                    
+                    // Paladin
+                    'paladin-holy': 'Holy1',  // Holy1 for Paladin
+                    'paladin-protection': 'Protection1',  // Protection1 for Paladin
+                    'paladin-retribution': 'Retribution',
+                    
+                    // Priest
+                    'priest-discipline': 'Discipline',
+                    'priest-holy': 'Holy',  // Holy for Priest
+                    'priest-shadow': 'Shadow',
+                    
+                    // Rogue
+                    'rogue-assassination': 'Assassination',
+                    'rogue-outlaw': 'Outlaw',
+                    'rogue-subtlety': 'Subtlety',
+                    
+                    // Shaman
+                    'shaman-elemental': 'Elemental',
+                    'shaman-enhancement': 'Enhancement',
+                    'shaman-restoration': 'Restoration1',  // Restoration1 for Shaman
+                    
+                    // Warlock
+                    'warlock-affliction': 'Affliction',
+                    'warlock-demonology': 'Demonology',
+                    'warlock-destruction': 'Destruction',
+                    
+                    // Warrior
+                    'warrior-arms': 'Arms',
+                    'warrior-fury': 'Fury',
+                    'warrior-protection': 'Protection'  // Protection for Warrior
+                };
+                
+                const key = `${cls}-${spec}`;
+                const specName = specMap[key] || null;
+                
+                console.log(`Mapping: ${wowClass} ${wowSpec} (${role}) -> className: ${className}, specName: ${specName}`);
+                
+                return { className, specName };
+            }
+            
             // Build signup list
             const signups = [];
             
@@ -1818,20 +1918,29 @@
                     console.log(`Skipping ${member.discord} - no Discord ID mapped`);
                     continue;
                 }
-                signups.push({
-                    type: member.autoSignup ? 'primary' : 'tentative',
-                    userId: discordUserId,
-                    className: member.class || 'DPS',
-                    specName: member.role || 'DPS'
-                });
+                
+                if (member.autoSignup) {
+                    const { className, specName } = mapToRaidHelper(member.class, member.spec, member.role);
+                    signups.push({
+                        userId: discordUserId,
+                        className: className,
+                        specName: specName
+                    });
+                } else {
+                    // Tentative signup
+                    signups.push({
+                        userId: discordUserId,
+                        className: 'Tentative'
+                    });
+                }
             }
             
             for (const member of dayData.unavailable) {
                 const discordUserId = discordIdMapping[member.discord];
                 if (!discordUserId) continue;
                 signups.push({
-                    type: 'absence',
-                    userId: discordUserId
+                    userId: discordUserId,
+                    className: 'Absence'
                 });
             }
             
@@ -1839,6 +1948,8 @@
                 showStatus(`✅ Event created! (No Discord IDs mapped for signups)`, 'success');
                 return;
             }
+            
+            console.log('Signups to send:', signups);
             
             try {
                 // Use text/plain to avoid CORS preflight

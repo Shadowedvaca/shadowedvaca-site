@@ -145,16 +145,19 @@ function handleAddRaidSignups(data) {
     const results = [];
     
     for (const signup of data.signups) {
-      const url = `https://raid-helper.dev/api/v2/servers/${data.serverId}/events/${data.eventId}/signups`;
+      // Correct endpoint: /api/v2/events/EVENTID/signups (no server ID)
+      const url = `https://raid-helper.dev/api/v2/events/${data.eventId}/signups`;
       
       // Build signup payload for Raid-Helper API
       const signupPayload = {
-        odatatype: signup.type,
-        odataid: signup.userId || signup.odataid  // Accept either field name
+        userId: signup.userId || signup.odataid,  // API wants "userId"
+        className: signup.className
       };
       
-      if (signup.className) signupPayload.className = signup.className;
-      if (signup.specName) signupPayload.specName = signup.specName;
+      // Only add specName if provided
+      if (signup.specName) {
+        signupPayload.specName = signup.specName;
+      }
       
       const options = {
         method: 'POST',
@@ -166,14 +169,20 @@ function handleAddRaidSignups(data) {
         muteHttpExceptions: true
       };
       
+      Logger.log('Signup URL: ' + url);
+      Logger.log('Signup payload: ' + JSON.stringify(signupPayload));
+      
       try {
         const response = UrlFetchApp.fetch(url, options);
         const code = response.getResponseCode();
+        const responseText = response.getContentText();
+        Logger.log('Signup response ' + code + ': ' + responseText);
+        
         results.push({ 
-          odataid: signupPayload.odataid, 
+          odataid: signupPayload.userId, 
           success: code >= 200 && code < 300,
           code: code,
-          response: response.getContentText().substring(0, 200)
+          response: responseText.substring(0, 200)
         });
       } catch (e) {
         results.push({ odataid: signupPayload.odataid, success: false, error: e.toString() });
