@@ -1676,20 +1676,27 @@
                 return;
             }
             
+            if (!config.rosterUrl || config.rosterUrl === 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE') {
+                showStatus('Google Apps Script URL not configured. Needed for API proxy.', 'error');
+                return;
+            }
+            
             btn.disabled = true;
             btn.innerHTML = '⏳ Creating event...';
-            showStatus('Connecting to Raid-Helper API...', 'pending');
+            showStatus('Connecting to Raid-Helper API via proxy...', 'pending');
             
             // Build the API request
             const eventPayload = {
-                leaderId: config.leaderId || '', // Optional: your Discord user ID
+                leaderId: config.leaderId || '',
                 templateId: raidData.templateId,
                 date: raidData.date,
                 time: raidData.time,
                 title: raidData.title,
                 description: `Roster auto-generated. ${raidData.dayData.available.length} available.`,
                 channelId: config.channelId,
-                advancedSettings: {}
+                advancedSettings: {
+                    duration: raidData.duration
+                }
             };
             
             // Add voice channel if configured
@@ -1697,159 +1704,64 @@
                 eventPayload.advancedSettings.voice_channel = config.voiceChannelId;
             }
             
-            // Add duration
-            eventPayload.advancedSettings.duration = raidData.duration;
+            console.log('Event payload:', eventPayload);
             
-            // Try direct API call first
+            // Go straight to proxy (direct browser calls are blocked by CORS)
             try {
-                const response = await fetch(`https://raid-helper.dev/api/v2/servers/${config.serverId}/events`, {
+                const proxyResponse = await fetch(config.rosterUrl, {
                     method: 'POST',
-                    headers: {
-                        'Authorization': config.apiKey,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(eventPayload)
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'createRaidEvent',
+                        apiKey: config.apiKey,
+                        serverId: config.serverId,
+                        eventPayload: eventPayload
+                    })
                 });
                 
-                if (response.ok) {
-                    const result = await response.json();
-                    showStatus(`✅ Event created! ID: ${result.id || result.eventId || 'success'}`, 'success');
+                const proxyResult = await proxyResponse.json();
+                console.log('Proxy result:', proxyResult);
+                
+                if (proxyResult.success) {
+                    const eventId = proxyResult.eventId;
+                    showStatus(`✅ Event created! ID: ${eventId || 'success'}`, 'success');
                     btn.innerHTML = '✅ Event Created!';
                     
-                    // Now add signups if we have Discord IDs
-                    if (result.id || result.eventId) {
-                        await addSignupsViaAPI(result.id || result.eventId, raidData.dayData);
+                    // Now add signups if we have an event ID and Discord IDs mapped
+                    if (eventId) {
+                        await addSignupsViaProxy(config, eventId, raidData.dayData);
                     }
                     
                     setTimeout(() => {
                         btn.disabled = false;
                         btn.innerHTML = '🚀 Create Another Event';
                     }, 3000);
-                    return;
                 } else {
-                    const errorText = await response.text();
-                    throw new Error(`API returned ${response.status}: ${errorText}`);
+                    throw new Error(proxyResult.error || 'Unknown API error');
                 }
-            } catch (directError) {
-                console.log('Direct API failed:', directError.message);
-                
-                // If CORS error, try proxy through Google Apps Script
-                if (directError.message.includes('CORS') || directError.message.includes('Failed to fetch') || directError.message.includes('NetworkError')) {
-                    showStatus('Direct API blocked (CORS). Trying proxy...', 'pending');
-                    
-                    try {
-                        const proxyResult = await createEventViaProxy(config, eventPayload);
-                        if (proxyResult.success) {
-                            showStatus(`✅ Event created via proxy! ID: ${proxyResult.eventId || 'success'}`, 'success');
-                            btn.innerHTML = '✅ Event Created!';
-                            
-                            if (proxyResult.eventId) {
-                                await addSignupsViaProxy(config, proxyResult.eventId, raidData.dayData);
-                            }
-                            
-                            setTimeout(() => {
-                                btn.disabled = false;
-                                btn.innerHTML = '🚀 Create Another Event';
-                            }, 3000);
-                            return;
-                        } else {
-                            throw new Error(proxyResult.error || 'Proxy failed');
-                        }
-                    } catch (proxyError) {
-                        showStatus(`❌ ${proxyError.message}`, 'error');
-                    }
-                } else {
-                    showStatus(`❌ ${directError.message}`, 'error');
-                }
+            } catch (error) {
+                console.error('API Error:', error);
+                showStatus(`❌ ${error.message}`, 'error');
+                btn.disabled = false;
+                btn.innerHTML = '🚀 Create Event in Discord';
             }
-            
-            btn.disabled = false;
-            btn.innerHTML = '🚀 Create Event in Discord';
-        }
-
-        async function createEventViaProxy(config, eventPayload) {
-            const response = await fetch(config.rosterUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    action: 'createRaidEvent',
-                    apiKey: config.apiKey,
-                    serverId: config.serverId,
-                    eventPayload: eventPayload
-                })
-            });
-            return await response.json();
-        }
-
-        async function addSignupsViaAPI(eventId, dayData) {
-            const config = getConfig();
-            showStatus(`Adding signups to event ${eventId}...`, 'pending');
-            
-            let added = 0;
-            
-            // Add available members
-            for (const member of dayData.available) {
-                const discordUserId = discordIdMapping[member.discord];
-                if (!discordUserId) continue; // Skip if no Discord ID mapped
-                
-                try {
-                    const signupPayload = {
-                        odatatype: member.autoSignup ? 'primary' : 'tentative',
-                        odataid: discordUserId,
-                        className: member.class || 'DPS',
-                        specName: member.role || 'DPS'
-                    };
-                    
-                    await fetch(`https://raid-helper.dev/api/v2/servers/${config.serverId}/events/${eventId}/signups`, {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': config.apiKey,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(signupPayload)
-                    });
-                    added++;
-                } catch (e) {
-                    console.log(`Failed to add signup for ${member.discord}:`, e);
-                }
-            }
-            
-            // Add unavailable members as absent
-            for (const member of dayData.unavailable) {
-                const discordUserId = discordIdMapping[member.discord];
-                if (!discordUserId) continue;
-                
-                try {
-                    await fetch(`https://raid-helper.dev/api/v2/servers/${config.serverId}/events/${eventId}/signups`, {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': config.apiKey,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            odatatype: 'absence',
-                            odataid: discordUserId
-                        })
-                    });
-                    added++;
-                } catch (e) {
-                    console.log(`Failed to add absence for ${member.discord}:`, e);
-                }
-            }
-            
-            showStatus(`✅ Event created! Added ${added} signups.`, 'success');
         }
 
         async function addSignupsViaProxy(config, eventId, dayData) {
+            showStatus(`Adding signups to event ${eventId}...`, 'pending');
+            
             // Build signup list
             const signups = [];
             
             for (const member of dayData.available) {
                 const discordUserId = discordIdMapping[member.discord];
-                if (!discordUserId) continue;
+                if (!discordUserId) {
+                    console.log(`Skipping ${member.discord} - no Discord ID mapped`);
+                    continue;
+                }
                 signups.push({
                     type: member.autoSignup ? 'primary' : 'tentative',
-                    odataid: discordUserId,
+                    userId: discordUserId,
                     className: member.class || 'DPS',
                     specName: member.role || 'DPS'
                 });
@@ -1860,23 +1772,37 @@
                 if (!discordUserId) continue;
                 signups.push({
                     type: 'absence',
-                    odataid: discordUserId
+                    userId: discordUserId
                 });
             }
             
-            if (signups.length === 0) return;
+            if (signups.length === 0) {
+                showStatus(`✅ Event created! (No Discord IDs mapped for signups)`, 'success');
+                return;
+            }
             
-            await fetch(config.rosterUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    action: 'addRaidSignups',
-                    apiKey: config.apiKey,
-                    serverId: config.serverId,
-                    eventId: eventId,
-                    signups: signups
-                })
-            });
+            try {
+                const response = await fetch(config.rosterUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'addRaidSignups',
+                        apiKey: config.apiKey,
+                        serverId: config.serverId,
+                        eventId: eventId,
+                        signups: signups
+                    })
+                });
+                
+                const result = await response.json();
+                console.log('Signup result:', result);
+                
+                const successCount = result.results?.filter(r => r.success).length || 0;
+                showStatus(`✅ Event created! Added ${successCount}/${signups.length} signups.`, 'success');
+            } catch (error) {
+                console.error('Signup error:', error);
+                showStatus(`✅ Event created! (Signup error: ${error.message})`, 'success');
+            }
         }
 
         function showStatus(message, type) {

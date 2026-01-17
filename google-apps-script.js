@@ -124,9 +124,10 @@ function handleAddRaidSignups(data) {
     for (const signup of data.signups) {
       const url = `https://raid-helper.dev/api/v2/servers/${data.serverId}/events/${data.eventId}/signups`;
       
+      // Build signup payload for Raid-Helper API
       const signupPayload = {
         odatatype: signup.type,
-        odataid: signup.odataid
+        odataid: signup.userId || signup.odataid  // Accept either field name
       };
       
       if (signup.className) signupPayload.className = signup.className;
@@ -144,16 +145,19 @@ function handleAddRaidSignups(data) {
       
       try {
         const response = UrlFetchApp.fetch(url, options);
+        const code = response.getResponseCode();
         results.push({ 
-          odataid: signup.odataid, 
-          success: response.getResponseCode() < 300 
+          odataid: signupPayload.odataid, 
+          success: code >= 200 && code < 300,
+          code: code,
+          response: response.getContentText().substring(0, 200)
         });
       } catch (e) {
-        results.push({ odataid: signup.odataid, success: false, error: e.toString() });
+        results.push({ odataid: signupPayload.odataid, success: false, error: e.toString() });
       }
       
       // Small delay to avoid rate limiting
-      Utilities.sleep(100);
+      Utilities.sleep(200);
     }
     
     return ContentService
