@@ -88,7 +88,9 @@ function doPost(e) {
 
 function handleCreateRaidEvent(data) {
   try {
-    const url = `https://raid-helper.dev/api/v2/servers/${data.serverId}/events`;
+    // Correct endpoint includes channel ID in the path
+    const channelId = data.eventPayload.channelId;
+    const url = `https://raid-helper.dev/api/v2/servers/${data.serverId}/channels/${channelId}/event`;
     
     const options = {
       method: 'POST',
@@ -100,9 +102,15 @@ function handleCreateRaidEvent(data) {
       muteHttpExceptions: true
     };
     
+    Logger.log('Calling Raid-Helper API: ' + url);
+    Logger.log('Payload: ' + JSON.stringify(data.eventPayload));
+    
     const response = UrlFetchApp.fetch(url, options);
     const responseCode = response.getResponseCode();
     const responseText = response.getContentText();
+    
+    Logger.log('Response code: ' + responseCode);
+    Logger.log('Response: ' + responseText);
     
     if (responseCode >= 200 && responseCode < 300) {
       const result = JSON.parse(responseText);

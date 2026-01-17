@@ -919,12 +919,9 @@
                             <input type="number" id="defaultDuration" value="120" min="30" max="480">
                         </div>
                         <div class="form-group">
-                            <label>Template</label>
-                            <select id="defaultTemplate">
-                                <option value="1">WoW (Tank/Healer/DPS)</option>
-                                <option value="2">FFXIV</option>
-                                <option value="3">Basic (Yes/No/Maybe)</option>
-                            </select>
+                            <label>Template ID</label>
+                            <input type="text" id="defaultTemplate" placeholder="e.g., wowretail2">
+                            <p class="help-text">Common: wowretail2, ffxiv, basic, 1, 2, 3</p>
                         </div>
                     </div>
                 </div>
@@ -1069,7 +1066,7 @@
                 defaultTitle: localConfig.defaultTitle || fileConfig?.raidDefaults?.title || 'PATT Prog Raid',
                 defaultTime: localConfig.defaultTime || fileConfig?.raidDefaults?.time || '21:00',
                 defaultDuration: localConfig.defaultDuration || fileConfig?.raidDefaults?.duration || '120',
-                defaultTemplate: localConfig.defaultTemplate || fileConfig?.raidDefaults?.template || '1',
+                defaultTemplate: localConfig.defaultTemplate || fileConfig?.raidDefaults?.template || 'wowretail2',
                 apiKey: localConfig.apiKey || '',
                 serverId: localConfig.serverId || fileConfig?.serverId || '',
                 leaderId: localConfig.leaderId || fileConfig?.leaderId || '',
@@ -1550,16 +1547,16 @@
             const config = getConfig();
             const title = config.defaultTitle || 'PATT Prog Raid';
             const time = config.defaultTime || '21:00';
-            const duration = config.defaultDuration || '120';
-            const template = config.defaultTemplate || '1';
+            const duration = config.defaultDuration || '0';
+            const template = config.defaultTemplate || 'wowretail2';
 
             // Store for API use
             window.selectedRaidData = {
                 title: title,
                 date: dayData.dateStr,
                 time: time,
-                duration: parseInt(duration),
-                templateId: parseInt(template),
+                duration: parseInt(duration) || 0,
+                templateId: template,  // Can be string like "wowretail2" or number
                 dayData: dayData
             };
 
@@ -1695,7 +1692,10 @@
                 description: `Roster auto-generated. ${raidData.dayData.available.length} available.`,
                 channelId: config.channelId,
                 advancedSettings: {
-                    duration: raidData.duration
+                    duration: raidData.duration,
+                    create_discordevent: true,
+                    attendance: "true",
+                    use_nicknames: true
                 }
             };
             
@@ -1825,8 +1825,8 @@
             const config = getConfig();
             const title = config.defaultTitle || 'PATT Prog Raid';
             const time = config.defaultTime || '21:00';
-            const duration = config.defaultDuration || '120';
-            const template = config.defaultTemplate || '1';
+            const duration = config.defaultDuration || '0';
+            const template = config.defaultTemplate || 'wowretail2';
 
             // Sort and get top 3
             const sorted = Object.values(dayData).sort((a, b) => b.total - a.total).slice(0, 3);

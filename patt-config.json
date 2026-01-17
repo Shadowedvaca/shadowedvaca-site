@@ -4,7 +4,7 @@
     "title": "Heroric Raid",
     "time": "21:00",
     "duration": 120,
-    "template": 1
+    "template": "wowretail2"
   },
   "channels": {
     "signup": "1327719564842237993",
