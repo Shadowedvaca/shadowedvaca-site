@@ -1708,9 +1708,10 @@
             
             // Go straight to proxy (direct browser calls are blocked by CORS)
             try {
+                // Use text/plain to avoid CORS preflight (GAS doesn't handle OPTIONS)
                 const proxyResponse = await fetch(config.rosterUrl, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'text/plain' },
                     body: JSON.stringify({
                         action: 'createRaidEvent',
                         apiKey: config.apiKey,
@@ -1782,9 +1783,10 @@
             }
             
             try {
+                // Use text/plain to avoid CORS preflight
                 const response = await fetch(config.rosterUrl, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'text/plain' },
                     body: JSON.stringify({
                         action: 'addRaidSignups',
                         apiKey: config.apiKey,

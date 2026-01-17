@@ -31,7 +31,18 @@ const DISCORD_IDS_SHEET = 'DiscordIDs';
 // Handle form submissions (POST)
 function doPost(e) {
   try {
-    const data = JSON.parse(e.postData.contents);
+    // Parse JSON from body (works with both application/json and text/plain)
+    let data;
+    try {
+      data = JSON.parse(e.postData.contents);
+    } catch (parseError) {
+      // If direct parse fails, try getting from parameter
+      if (e.parameter && e.parameter.data) {
+        data = JSON.parse(e.parameter.data);
+      } else {
+        throw new Error('Could not parse request body: ' + parseError.toString());
+      }
+    }
     
     // Handle different action types
     if (data.action === 'updateDiscordId') {
