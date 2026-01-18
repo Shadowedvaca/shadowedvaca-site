@@ -26,6 +26,8 @@
             --tank: #60a5fa;
             --healer: #4ade80;
             --dps: #f87171;
+            --melee: #f97316;
+            --ranged: #a855f7;
             --border: #2a2a2e;
             --border-light: #3a3a3e;
         }
@@ -324,6 +326,8 @@
 
         .role-badge.tank { background: rgba(96, 165, 250, 0.2); color: var(--tank); }
         .role-badge.healer { background: rgba(74, 222, 128, 0.2); color: var(--healer); }
+        .role-badge.melee { background: rgba(249, 115, 22, 0.2); color: var(--melee); }
+        .role-badge.ranged { background: rgba(168, 85, 247, 0.2); color: var(--ranged); }
         .role-badge.dps { background: rgba(248, 113, 113, 0.2); color: var(--dps); }
 
         .status-badge {
@@ -640,7 +644,7 @@
         /* Roster summary */
         .roster-summary {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 15px;
             margin-bottom: 20px;
         }
@@ -666,7 +670,8 @@
 
         .summary-stat.tanks .value { color: var(--tank); }
         .summary-stat.healers .value { color: var(--healer); }
-        .summary-stat.dps .value { color: var(--dps); }
+        .summary-stat.melee .value { color: var(--melee); }
+        .summary-stat.ranged .value { color: var(--ranged); }
     </style>
 </head>
 <body>
@@ -752,15 +757,19 @@
                         <div class="roster-summary">
                             <div class="summary-stat tanks">
                                 <div class="value" id="tankCount">0</div>
-                                <div class="label">Tanks Available</div>
+                                <div class="label">Tanks</div>
                             </div>
                             <div class="summary-stat healers">
                                 <div class="value" id="healerCount">0</div>
-                                <div class="label">Healers Available</div>
+                                <div class="label">Healers</div>
                             </div>
-                            <div class="summary-stat dps">
-                                <div class="value" id="dpsCount">0</div>
-                                <div class="label">DPS Available</div>
+                            <div class="summary-stat melee">
+                                <div class="value" id="meleeCount">0</div>
+                                <div class="label">Melee</div>
+                            </div>
+                            <div class="summary-stat ranged">
+                                <div class="value" id="rangedCount">0</div>
+                                <div class="label">Ranged</div>
                             </div>
                         </div>
 
@@ -1545,11 +1554,13 @@
             // Count roles
             const tanks = dayData.available.filter(m => m.role === 'Tank').length;
             const healers = dayData.available.filter(m => m.role === 'Healer').length;
-            const dps = dayData.available.filter(m => m.role === 'DPS').length;
+            const melee = dayData.available.filter(m => m.role === 'Melee').length;
+            const ranged = dayData.available.filter(m => m.role === 'Ranged').length;
 
             document.getElementById('tankCount').textContent = tanks;
             document.getElementById('healerCount').textContent = healers;
-            document.getElementById('dpsCount').textContent = dps;
+            document.getElementById('meleeCount').textContent = melee;
+            document.getElementById('rangedCount').textContent = ranged;
             document.getElementById('availableCount').textContent = dayData.available.length;
             document.getElementById('unavailableCount').textContent = dayData.unavailable.length;
 
@@ -1625,12 +1636,12 @@
 
             // Auto-signup members get signed up directly
             autoSignupMembers.forEach(m => {
-                signupCmds.push(`/adduser [EVENT_ID] @${m.discord} class:${m.class || 'DPS'} spec:${m.role || 'DPS'}`);
+                signupCmds.push(`/adduser [EVENT_ID] @${m.discord} class:${m.class || 'Unknown'} spec:${m.role || 'Melee'}`);
             });
 
             // Tentative members get added as tentative
             tentativeMembers.forEach(m => {
-                signupCmds.push(`/adduser [EVENT_ID] @${m.discord} class:${m.class || 'DPS'} spec:Tentative`);
+                signupCmds.push(`/adduser [EVENT_ID] @${m.discord} class:${m.class || 'Unknown'} spec:Tentative`);
             });
 
             // Unavailable members as absent
@@ -1643,14 +1654,14 @@
             if (autoSignupMembers.length > 0) {
                 output += `# Auto-signed up (${autoSignupMembers.length}):\n`;
                 autoSignupMembers.forEach(m => {
-                    output += `/adduser [EVENT_ID] @${m.discord} class:${m.class || 'DPS'} spec:${m.role || 'DPS'}\n`;
+                    output += `/adduser [EVENT_ID] @${m.discord} class:${m.class || 'Unknown'} spec:${m.role || 'Melee'}\n`;
                 });
                 output += '\n';
             }
             if (tentativeMembers.length > 0) {
                 output += `# Tentative (${tentativeMembers.length}):\n`;
                 tentativeMembers.forEach(m => {
-                    output += `/adduser [EVENT_ID] @${m.discord} class:${m.class || 'DPS'} spec:Tentative\n`;
+                    output += `/adduser [EVENT_ID] @${m.discord} class:${m.class || 'Unknown'} spec:Tentative\n`;
                 });
                 output += '\n';
             }
@@ -2004,7 +2015,8 @@
                 const cmd = `/create title:${title} date:${day.dateStr} time:${time} duration:${duration} template:${template}`;
                 const tanks = day.available.filter(m => m.role === 'Tank').length;
                 const healers = day.available.filter(m => m.role === 'Healer').length;
-                const dps = day.available.filter(m => m.role === 'DPS').length;
+                const melee = day.available.filter(m => m.role === 'Melee').length;
+                const ranged = day.available.filter(m => m.role === 'Ranged').length;
 
                 return `
                     <div style="margin-bottom: 20px;">
@@ -2013,7 +2025,7 @@
                             <strong>${day.name}</strong>
                             <span style="color: var(--text-secondary);">${day.dateDisplay}</span>
                             <span style="color: var(--text-secondary); font-size: 0.85rem;">
-                                (${day.total} available: ${tanks}T/${healers}H/${dps}D)
+                                (${day.total}: ${tanks}T/${healers}H/${melee}M/${ranged}R)
                             </span>
                         </div>
                         <div class="command-box" onclick="copyCommand(this)">
