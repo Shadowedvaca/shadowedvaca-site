@@ -301,6 +301,8 @@
 
         .role-tank { background: #3b82f6; color: #fff; }
         .role-healer { background: #22c55e; color: #fff; }
+        .role-melee { background: #f97316; color: #fff; }
+        .role-ranged { background: #a855f7; color: #fff; }
         .role-dps { background: #ef4444; color: #fff; }
 
         .main-badge {
@@ -329,7 +331,7 @@
         /* Composition */
         .role-cards {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 15px;
             margin-bottom: 20px;
         }
@@ -355,6 +357,16 @@
             border: 1px solid rgba(239, 68, 68, 0.5);
         }
 
+        .role-card.melee {
+            background: rgba(249, 115, 22, 0.2);
+            border: 1px solid rgba(249, 115, 22, 0.5);
+        }
+
+        .role-card.ranged {
+            background: rgba(168, 85, 247, 0.2);
+            border: 1px solid rgba(168, 85, 247, 0.5);
+        }
+
         .role-card .count {
             font-size: 2.5rem;
             font-weight: bold;
@@ -362,6 +374,8 @@
 
         .role-card.tank .count { color: #60a5fa; }
         .role-card.healer .count { color: #4ade80; }
+        .role-card.melee .count { color: #fb923c; }
+        .role-card.ranged .count { color: #c084fc; }
         .role-card.dps .count { color: #f87171; }
 
         .role-card .label {
@@ -371,6 +385,8 @@
 
         .role-card.tank .label { color: #93c5fd; }
         .role-card.healer .label { color: #86efac; }
+        .role-card.melee .label { color: #fdba74; }
+        .role-card.ranged .label { color: #d8b4fe; }
         .role-card.dps .label { color: #fca5a5; }
 
         .role-card .target {
@@ -540,7 +556,7 @@
             }
 
             .role-cards {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(2, 1fr);
             }
         }
     </style>
@@ -631,10 +647,15 @@
                     <div class="label">Healers</div>
                     <div class="target">Need: 4-5</div>
                 </div>
-                <div class="role-card dps">
-                    <div class="count" id="dpsCount">0</div>
-                    <div class="label">DPS</div>
-                    <div class="target">Need: 13-14</div>
+                <div class="role-card melee">
+                    <div class="count" id="meleeCount">0</div>
+                    <div class="label">Melee</div>
+                    <div class="target">Need: 6-7</div>
+                </div>
+                <div class="role-card ranged">
+                    <div class="count" id="rangedCount">0</div>
+                    <div class="label">Ranged</div>
+                    <div class="target">Need: 6-7</div>
                 </div>
             </div>
 
@@ -862,11 +883,13 @@
             // Role counts
             const tankCount = mains.filter(c => c.role === 'Tank').length;
             const healerCount = mains.filter(c => c.role === 'Healer').length;
-            const dpsCount = mains.filter(c => c.role === 'DPS').length;
+            const meleeCount = mains.filter(c => c.role === 'Melee').length;
+            const rangedCount = mains.filter(c => c.role === 'Ranged').length;
 
             document.getElementById('tankCount').textContent = tankCount;
             document.getElementById('healerCount').textContent = healerCount;
-            document.getElementById('dpsCount').textContent = dpsCount;
+            document.getElementById('meleeCount').textContent = meleeCount;
+            document.getElementById('rangedCount').textContent = rangedCount;
 
             // Class distribution
             const classCounts = {};
@@ -900,8 +923,9 @@
             if (healerCount < 4) {
                 gaps.push(`Need more healers (${4 - healerCount} more)`);
             }
-            if (dpsCount < 13) {
-                gaps.push(`Could use more DPS (${13 - dpsCount} more for a full roster)`);
+            const totalDps = meleeCount + rangedCount;
+            if (totalDps < 13) {
+                gaps.push(`Could use more DPS (${13 - totalDps} more for a full roster)`);
             }
 
             const gapsAlert = document.getElementById('gapsAlert');
@@ -917,7 +941,7 @@
             // Update Wowhead export summary
             const mainsSummary = document.getElementById('mainsSummary');
             if (mains.length > 0) {
-                mainsSummary.textContent = `Ready to export ${mains.length} mains: ${tankCount} tanks, ${healerCount} healers, ${dpsCount} DPS`;
+                mainsSummary.textContent = `Ready to export ${mains.length} mains: ${tankCount}T / ${healerCount}H / ${meleeCount}M / ${rangedCount}R`;
             } else {
                 mainsSummary.textContent = 'No mains to export yet';
             }
