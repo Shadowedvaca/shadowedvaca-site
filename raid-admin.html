@@ -1810,27 +1810,12 @@
         async function addSignupsViaProxy(config, eventId, dayData) {
             showStatus(`Adding signups to event ${eventId}...`, 'pending');
             
-            // Map WoW Class + Spec to Raid-Helper className and specName
+            // Map WoW Class + Spec to Raid-Helper specName
             // Raid-Helper uses suffixes (Holy1, Frost1, etc.) to distinguish same-named specs
-            function mapToRaidHelper(wowClass, wowSpec, role) {
+            function getSpecName(wowClass, wowSpec) {
                 // Normalize inputs
                 const cls = (wowClass || '').toLowerCase().replace(/\s+/g, '');
                 const spec = (wowSpec || '').toLowerCase().replace(/\s+/g, '');
-                
-                // Determine className based on role
-                let className;
-                if (role === 'Tank') className = 'Tank';
-                else if (role === 'Healer') className = 'Healer';
-                else if (['mage', 'warlock', 'hunter', 'priest', 'evoker'].some(c => cls.includes(c))) {
-                    // Check if it's a ranged spec (not Survival hunter)
-                    if (cls.includes('hunter') && spec.includes('survival')) {
-                        className = 'Melee';
-                    } else {
-                        className = 'Ranged';
-                    }
-                } else {
-                    className = 'Melee';
-                }
                 
                 // Spec name mapping - handle duplicates with suffixes
                 const specMap = {
@@ -1848,7 +1833,7 @@
                     'druid-balance': 'Balance',
                     'druid-feral': 'Feral',
                     'druid-guardian': 'Guardian',
-                    'druid-restoration': 'Restoration',  // Druid Resto is base
+                    'druid-restoration': 'Restoration',
                     
                     // Evoker
                     'evoker-devastation': 'Devastation',
@@ -1857,13 +1842,14 @@
                     
                     // Hunter
                     'hunter-beastmastery': 'Beastmastery',
+                    'hunter-beast mastery': 'Beastmastery',
                     'hunter-marksmanship': 'Marksmanship',
                     'hunter-survival': 'Survival',
                     
                     // Mage
                     'mage-arcane': 'Arcane',
                     'mage-fire': 'Fire',
-                    'mage-frost': 'Frost',  // Frost for Mage
+                    'mage-frost': 'Frost',
                     
                     // Monk
                     'monk-brewmaster': 'Brewmaster',
@@ -1871,13 +1857,13 @@
                     'monk-windwalker': 'Windwalker',
                     
                     // Paladin
-                    'paladin-holy': 'Holy1',  // Holy1 for Paladin
-                    'paladin-protection': 'Protection1',  // Protection1 for Paladin
+                    'paladin-holy': 'Holy1',
+                    'paladin-protection': 'Protection1',
                     'paladin-retribution': 'Retribution',
                     
                     // Priest
                     'priest-discipline': 'Discipline',
-                    'priest-holy': 'Holy',  // Holy for Priest
+                    'priest-holy': 'Holy',
                     'priest-shadow': 'Shadow',
                     
                     // Rogue
@@ -1888,7 +1874,7 @@
                     // Shaman
                     'shaman-elemental': 'Elemental',
                     'shaman-enhancement': 'Enhancement',
-                    'shaman-restoration': 'Restoration1',  // Restoration1 for Shaman
+                    'shaman-restoration': 'Restoration1',
                     
                     // Warlock
                     'warlock-affliction': 'Affliction',
@@ -1898,15 +1884,24 @@
                     // Warrior
                     'warrior-arms': 'Arms',
                     'warrior-fury': 'Fury',
-                    'warrior-protection': 'Protection'  // Protection for Warrior
+                    'warrior-protection': 'Protection'
                 };
                 
                 const key = `${cls}-${spec}`;
-                const specName = specMap[key] || null;
-                
-                console.log(`Mapping: ${wowClass} ${wowSpec} (${role}) -> className: ${className}, specName: ${specName}`);
-                
-                return { className, specName };
+                return specMap[key] || null;
+            }
+            
+            // Map role from form to Raid-Helper className
+            // Form now has: Tank, Healer, Melee, Ranged
+            function getClassName(role) {
+                // Direct mapping - role values now match Raid-Helper class names
+                if (role === 'Tank') return 'Tank';
+                if (role === 'Healer') return 'Healer';
+                if (role === 'Melee') return 'Melee';
+                if (role === 'Ranged') return 'Ranged';
+                // Legacy support for old "DPS" value
+                if (role === 'DPS') return 'Melee';
+                return 'Melee'; // Default
             }
             
             // Build signup list
@@ -1920,7 +1915,11 @@
                 }
                 
                 if (member.autoSignup) {
-                    const { className, specName } = mapToRaidHelper(member.class, member.spec, member.role);
+                    const className = getClassName(member.role);
+                    const specName = getSpecName(member.class, member.spec);
+                    
+                    console.log(`Signup: ${member.discord} (${member.class} ${member.spec}) -> className: ${className}, specName: ${specName}`);
+                    
                     signups.push({
                         userId: discordUserId,
                         className: className,

@@ -224,7 +224,7 @@
         /* Role Selection */
         .role-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(2, 1fr);
             gap: 10px;
         }
 
@@ -263,10 +263,16 @@
             color: var(--healer);
         }
 
-        .role-option.dps input:checked + label {
-            border-color: var(--dps);
-            background: rgba(248, 113, 113, 0.15);
-            color: var(--dps);
+        .role-option.melee input:checked + label {
+            border-color: #f97316;
+            background: rgba(249, 115, 22, 0.15);
+            color: #f97316;
+        }
+
+        .role-option.ranged input:checked + label {
+            border-color: #a855f7;
+            background: rgba(168, 85, 247, 0.15);
+            color: #a855f7;
         }
 
         /* Checkbox Options */
@@ -493,9 +499,13 @@
                         <input type="radio" name="role" id="roleHealer" value="Healer">
                         <label for="roleHealer">💚 Healer</label>
                     </div>
-                    <div class="role-option dps">
-                        <input type="radio" name="role" id="roleDPS" value="DPS">
-                        <label for="roleDPS">⚔️ DPS</label>
+                    <div class="role-option melee">
+                        <input type="radio" name="role" id="roleMelee" value="Melee">
+                        <label for="roleMelee">⚔️ Melee DPS</label>
+                    </div>
+                    <div class="role-option ranged">
+                        <input type="radio" name="role" id="roleRanged" value="Ranged">
+                        <label for="roleRanged">🏹 Ranged DPS</label>
                     </div>
                 </div>
             </div>
@@ -631,8 +641,18 @@
 
         // Auto-select role based on spec
         const specRoles = {
+            // Tanks
             'Blood': 'Tank', 'Vengeance': 'Tank', 'Guardian': 'Tank', 'Brewmaster': 'Tank', 'Protection': 'Tank',
-            'Restoration': 'Healer', 'Preservation': 'Healer', 'Holy': 'Healer', 'Mistweaver': 'Healer', 'Discipline': 'Healer'
+            // Healers
+            'Restoration': 'Healer', 'Preservation': 'Healer', 'Holy': 'Healer', 'Mistweaver': 'Healer', 'Discipline': 'Healer',
+            // Melee DPS
+            'Havoc': 'Melee', 'Feral': 'Melee', 'Survival': 'Melee', 'Windwalker': 'Melee', 'Retribution': 'Melee',
+            'Assassination': 'Melee', 'Outlaw': 'Melee', 'Subtlety': 'Melee', 'Enhancement': 'Melee',
+            'Arms': 'Melee', 'Fury': 'Melee', 'Frost': 'Melee', 'Unholy': 'Melee',
+            // Ranged DPS
+            'Balance': 'Ranged', 'Devastation': 'Ranged', 'Augmentation': 'Ranged', 'Beast Mastery': 'Ranged', 'Marksmanship': 'Ranged',
+            'Arcane': 'Ranged', 'Fire': 'Ranged', 'Shadow': 'Ranged', 'Elemental': 'Ranged',
+            'Affliction': 'Ranged', 'Demonology': 'Ranged', 'Destruction': 'Ranged', 'Devourer': 'Ranged'
         };
 
         // Update specs when class changes
@@ -654,9 +674,8 @@
             const role = specRoles[this.value];
             if (role) {
                 document.querySelector(`input[name="role"][value="${role}"]`).checked = true;
-            } else {
-                document.getElementById('roleDPS').checked = true;
             }
+            // No fallback - let user manually select if spec not in map
         });
 
         // Toggle checkbox styling
