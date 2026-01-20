@@ -1,404 +1,523 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meandering Muck - Press Kit</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background-color: #f5e6d3;
-            color: #3d3d3d;
-            line-height: 1.6;
-        }
-        
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 2rem 1.5rem;
-        }
-        
-        header {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-        
-        .logo {
-            max-width: 300px;
-            margin-bottom: 1rem;
-        }
-        
-        .tagline {
-            font-size: 1.4rem;
-            color: #6b5b4f;
-            font-style: italic;
-        }
-        
-        h1 {
-            color: #e67e22;
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
-        }
-        
-        h2 {
-            color: #27ae60;
-            font-size: 1.5rem;
-            margin-top: 2.5rem;
-            margin-bottom: 1rem;
-            border-bottom: 2px solid #27ae60;
-            padding-bottom: 0.3rem;
-        }
-        
-        h3 {
-            color: #e67e22;
-            font-size: 1.2rem;
-            margin-top: 1.5rem;
-            margin-bottom: 0.5rem;
-        }
-        
-        p {
-            margin-bottom: 1rem;
-        }
-        
-        .quick-facts {
-            background: #fff;
-            border-radius: 8px;
-            padding: 1.5rem;
-            margin: 1.5rem 0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        .quick-facts table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        .quick-facts td {
-            padding: 0.5rem 0;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .quick-facts td:first-child {
-            font-weight: bold;
-            color: #6b5b4f;
-            width: 40%;
-        }
-        
-        .quick-facts tr:last-child td {
-            border-bottom: none;
-        }
-        
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1rem;
-            margin: 1.5rem 0;
-        }
-        
-        .feature-card {
-            background: #fff;
-            border-radius: 8px;
-            padding: 1.2rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        .feature-card h3 {
-            margin-top: 0;
-            font-size: 1.1rem;
-        }
-        
-        .feature-card p {
-            margin-bottom: 0;
-            font-size: 0.95rem;
-            color: #555;
-        }
-        
-        .placeholder {
-            background: #ddd;
-            border: 3px dashed #999;
-            border-radius: 8px;
-            padding: 3rem 2rem;
-            text-align: center;
-            color: #666;
-            margin: 1.5rem 0;
-        }
-        
-        .placeholder-small {
-            background: #e8e8e8;
-            border: 2px dashed #aaa;
-            border-radius: 6px;
-            padding: 1rem;
-            text-align: center;
-            color: #777;
-            font-size: 0.9rem;
-        }
-        
-        .screenshots-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin: 1.5rem 0;
-        }
-        
-        .downloads {
-            background: #fff;
-            border-radius: 8px;
-            padding: 1.5rem;
-            margin: 1.5rem 0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        .download-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.75rem 0;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .download-item:last-child {
-            border-bottom: none;
-        }
-        
-        .download-link {
-            background: #27ae60;
-            color: white;
-            padding: 0.4rem 1rem;
-            border-radius: 4px;
-            text-decoration: none;
-            font-size: 0.9rem;
-        }
-        
-        .download-link:hover {
-            background: #219a52;
-        }
-        
-        .download-link.disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-        
-        .contact-box {
-            background: #27ae60;
-            color: white;
-            border-radius: 8px;
-            padding: 2rem;
-            text-align: center;
-            margin-top: 2rem;
-        }
-        
-        .contact-box h2 {
-            color: white;
-            border-bottom: none;
-            margin-top: 0;
-        }
-        
-        .contact-box a {
-            color: #fff;
-            font-weight: bold;
-        }
-        
-        .story-section {
-            background: #fff;
-            border-radius: 8px;
-            padding: 1.5rem;
-            margin: 1.5rem 0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        .launch-banner {
-            background: linear-gradient(135deg, #e67e22, #f39c12);
-            color: white;
-            text-align: center;
-            padding: 1rem;
-            border-radius: 8px;
-            margin: 1.5rem 0;
-            font-size: 1.2rem;
-        }
-        
-        .spirit-games {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            margin-top: 0.5rem;
-        }
-        
-        .spirit-game {
-            background: #f0f0f0;
-            padding: 0.3rem 0.8rem;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            color: #555;
-        }
-        
-        footer {
-            text-align: center;
-            margin-top: 3rem;
-            padding-top: 1.5rem;
-            border-top: 1px solid #ddd;
-            color: #888;
-            font-size: 0.9rem;
-        }
-    </style>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Meandering Muck - Press Kit</title>
+	<style>
+		* {
+			box-sizing: border-box;
+			margin: 0;
+			padding: 0;
+		}
+
+		body {
+			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+			background-color: #f5e6d3;
+			color: #3d3d3d;
+			line-height: 1.6;
+		}
+
+		.container {
+			max-width: 900px;
+			margin: 0 auto;
+			padding: 2rem 1.5rem;
+		}
+
+		/* Header */
+		header {
+			text-align: center;
+			padding-bottom: 2rem;
+			border-bottom: 3px solid #d4a574;
+		}
+
+		.logo {
+			max-width: 280px;
+			margin-bottom: 0.5rem;
+		}
+
+		.tagline {
+			font-size: 1.3rem;
+			color: #6b5b4f;
+			font-style: italic;
+			margin-bottom: 1.5rem;
+		}
+
+		.launch-button {
+			display: inline-block;
+			background: #e67e22;
+			color: white;
+			padding: 0.75rem 2rem;
+			border-radius: 30px;
+			font-weight: bold;
+			font-size: 1rem;
+		}
+
+		/* Sections */
+		section {
+			padding: 2rem 0;
+			border-bottom: 2px solid #d4a574;
+		}
+
+		section:last-of-type {
+			border-bottom: none;
+		}
+
+		h2 {
+			color: #d4882a;
+			font-size: 1.6rem;
+			margin-bottom: 1.2rem;
+		}
+
+		p {
+			margin-bottom: 1rem;
+		}
+
+		/* Quick Facts Grid */
+		.quick-facts {
+			background: white;
+			border-radius: 8px;
+			padding: 1.5rem;
+			display: grid;
+			grid-template-columns: repeat(3, 1fr);
+			gap: 1.5rem;
+			box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+		}
+
+		@media (max-width: 600px) {
+			.quick-facts {
+				grid-template-columns: repeat(2, 1fr);
+			}
+		}
+
+		.fact-item label {
+			display: block;
+			font-size: 0.75rem;
+			font-weight: bold;
+			color: #27ae60;
+			text-transform: uppercase;
+			letter-spacing: 0.5px;
+			margin-bottom: 0.25rem;
+		}
+
+		.fact-item span {
+			font-size: 1rem;
+			color: #3d3d3d;
+		}
+
+		/* Ethical Banner */
+		.ethical-banner {
+			background: #3d3d3d;
+			color: white;
+			text-align: center;
+			padding: 1.25rem;
+			border-radius: 8px;
+			margin-top: 1.5rem;
+		}
+
+		.ethical-banner strong {
+			color: #f39c12;
+			display: block;
+			font-size: 1.1rem;
+			margin-bottom: 0.25rem;
+		}
+
+		.ethical-banner span {
+			font-size: 0.95rem;
+			opacity: 0.9;
+		}
+
+		/* Video Placeholder */
+		.video-placeholder {
+			background: #e0e0e0;
+			border-radius: 8px;
+			padding: 6rem 2rem;
+			text-align: center;
+			color: #888;
+			font-style: italic;
+		}
+
+		/* Two Modes */
+		.modes-grid {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 1.5rem;
+		}
+
+		@media (max-width: 600px) {
+			.modes-grid {
+				grid-template-columns: 1fr;
+			}
+		}
+
+		.mode-card {
+			background: white;
+			border-radius: 8px;
+			padding: 1.5rem;
+			box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+		}
+
+		.mode-card h3 {
+			color: #27ae60;
+			font-size: 1.15rem;
+			margin-bottom: 0.75rem;
+			display: flex;
+			align-items: center;
+			gap: 0.5rem;
+		}
+
+		.mode-card h3 .icon {
+			font-size: 1.3rem;
+		}
+
+		.mode-card p {
+			margin-bottom: 0;
+			color: #555;
+			font-size: 0.95rem;
+		}
+
+		/* Features List */
+		.features-list {
+			list-style: none;
+		}
+
+		.features-list li {
+			padding: 0.6rem 0;
+			padding-left: 1.75rem;
+			position: relative;
+			border-bottom: 1px solid #e8e0d5;
+		}
+
+		.features-list li:last-child {
+			border-bottom: none;
+		}
+
+		.features-list li::before {
+			content: "+";
+			color: #27ae60;
+			position: absolute;
+			left: 0;
+			font-size: 1.1rem;
+			font-weight: bold;
+		}
+
+		/* Screenshots Grid */
+		.screenshots-grid {
+			display: grid;
+			grid-template-columns: repeat(4, 1fr);
+			gap: 1rem;
+		}
+
+		@media (max-width: 700px) {
+			.screenshots-grid {
+				grid-template-columns: repeat(2, 1fr);
+			}
+		}
+
+		.screenshot-item {
+			text-align: center;
+		}
+
+		.screenshot-placeholder {
+			background: #e0e0e0;
+			border-radius: 8px;
+			aspect-ratio: 9 / 16;
+			margin-bottom: 0.5rem;
+		}
+
+		.screenshot-item span {
+			font-size: 0.85rem;
+			color: #888;
+		}
+
+		.screenshot-item small {
+			display: block;
+			font-size: 0.75rem;
+			color: #aaa;
+		}
+
+		/* Story Placeholder */
+		.story-placeholder {
+			background: white;
+			border-radius: 8px;
+			padding: 2rem;
+			box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+			font-style: italic;
+			color: #777;
+		}
+
+		.story-placeholder p {
+			margin-bottom: 1rem;
+		}
+
+		.story-placeholder p:last-child {
+			margin-bottom: 0;
+		}
+
+		/* Team Grid */
+		.team-grid {
+			display: grid;
+			grid-template-columns: repeat(3, 1fr);
+			gap: 1rem;
+		}
+
+		@media (max-width: 500px) {
+			.team-grid {
+				grid-template-columns: 1fr;
+			}
+		}
+
+		.team-member {
+			background: white;
+			border-radius: 8px;
+			padding: 1.5rem;
+			text-align: center;
+			box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+		}
+
+		.team-member h4 {
+			color: #d4882a;
+			font-size: 1.1rem;
+			margin-bottom: 0.25rem;
+		}
+
+		.team-member span {
+			color: #888;
+			font-size: 0.9rem;
+		}
+
+		/* Press Assets Box */
+		.press-assets {
+			background: #27ae60;
+			color: white;
+			border-radius: 8px;
+			padding: 2.5rem;
+			text-align: center;
+		}
+
+		.press-assets h2 {
+			color: white;
+			margin-bottom: 0.5rem;
+		}
+
+		.press-assets p {
+			margin-bottom: 1.5rem;
+			opacity: 0.95;
+		}
+
+		.download-button {
+			display: inline-block;
+			background: #e67e22;
+			color: white;
+			padding: 0.9rem 2rem;
+			border-radius: 30px;
+			text-decoration: none;
+			font-weight: bold;
+			font-size: 1rem;
+			transition: background 0.2s;
+		}
+
+		.download-button:hover {
+			background: #d4711a;
+		}
+
+		.download-button.disabled {
+			background: #888;
+			cursor: not-allowed;
+		}
+
+		/* Contact */
+		.contact-section {
+			text-align: center;
+			padding: 2rem 0;
+		}
+
+		.contact-section h2 {
+			margin-bottom: 1rem;
+		}
+
+		.contact-section a {
+			color: #27ae60;
+			text-decoration: none;
+		}
+
+		.contact-section a:hover {
+			text-decoration: underline;
+		}
+
+		/* Footer */
+		footer {
+			text-align: center;
+			padding: 1.5rem 0;
+			border-top: 2px solid #d4a574;
+			color: #999;
+			font-size: 0.85rem;
+		}
+	</style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <img src="assets/Title_512_512.png" alt="Meandering Muck" class="logo">
-            <p class="tagline">A puzzle game. Just a puzzle game.</p>
-        </header>
+	<div class="container">
+		<!-- Header -->
+		<header>
+			<img src="assets/Title_512_512.png" alt="Meandering Muck" class="logo">
+			<p class="tagline">A puzzle game. Just a puzzle game.</p>
+			<div class="launch-button">Coming Late February / Early March 2026</div>
+		</header>
 
-        <div class="launch-banner">
-            🚀 Launching Late February / Early March 2026
-        </div>
+		<!-- Quick Facts -->
+		<section>
+			<h2>Quick Facts</h2>
+			<div class="quick-facts">
+				<div class="fact-item">
+					<label>Developer</label>
+					<span>Shadowedvaca LLC</span>
+				</div>
+				<div class="fact-item">
+					<label>Platforms</label>
+					<span>iOS, Android</span>
+				</div>
+				<div class="fact-item">
+					<label>Price</label>
+					<span>$2.99 (Premium)</span>
+				</div>
+				<div class="fact-item">
+					<label>Genre</label>
+					<span>Puzzle / Maze</span>
+				</div>
+				<div class="fact-item">
+					<label>Controls</label>
+					<span>Tilt / Motion</span>
+				</div>
+				<div class="fact-item">
+					<label>Engine</label>
+					<span>Godot 4</span>
+				</div>
+			</div>
+			<div class="ethical-banner">
+				<strong>No ads. No data harvesting. No tricks.</strong>
+				<span>You pay once. You own the game.</span>
+			</div>
+		</section>
 
-        <div class="quick-facts">
-            <table>
-                <tr>
-                    <td>Developer</td>
-                    <td>Mike (Shadowedvaca LLC)</td>
-                </tr>
-                <tr>
-                    <td>Art</td>
-                    <td>Oreo</td>
-                </tr>
-                <tr>
-                    <td>Sound</td>
-                    <td>Skate</td>
-                </tr>
-                <tr>
-                    <td>Platforms</td>
-                    <td>iOS, Android, Windows</td>
-                </tr>
-                <tr>
-                    <td>Price</td>
-                    <td>$2.99 (premium, no ads)</td>
-                </tr>
-                <tr>
-                    <td>Engine</td>
-                    <td>Godot 4.4+</td>
-                </tr>
-            </table>
-        </div>
+		<!-- Gameplay Video -->
+		<section>
+			<h2>Gameplay Video</h2>
+			<div class="video-placeholder">
+				[ Gameplay video coming soon ]
+			</div>
+		</section>
 
-        <h2>Gameplay Video</h2>
-        <div class="placeholder">
-            📹 Gameplay video coming soon<br>
-            <small>30-60 seconds of tilt-controlled maze navigation</small>
-        </div>
+		<!-- What Is It -->
+		<section>
+			<h2>What Is Meandering Muck?</h2>
+			<p>Meandering Muck is a tilt-controlled maze game. You navigate a slime through procedurally generated mazes using your phone's motion controls. Think Cut the Rope or Threes: a simple puzzle premise, done well.</p>
+			<p>The maze generation algorithm has been refined over ten years. Every maze is unique. Every maze is solvable. The challenge is the maze itself—the reward is solving it.</p>
+			<p>There are no enemies. No combat. No death. The slimes are pacifists. This is a puzzle game in the tradition of Monument Valley, Threes, and Cut the Rope—games you pick up, play, put down, and come back to.</p>
+		</section>
 
-        <h2>What Is Meandering Muck?</h2>
-        <p>Meandering Muck is a tilt-controlled maze game. You navigate a slime through procedurally generated mazes using your phone's motion controls. Think Cut the Rope or Threes: a simple puzzle premise, done well.</p>
-        
-        <p>There are no enemies to fight. No health bars. No death. The slimes are pacifists—NPCs are absorbed, not killed. The only opponent is the maze itself, and optionally, your own best time.</p>
+		<!-- Two Modes -->
+		<section>
+			<h2>Two Ways to Play</h2>
+			<div class="modes-grid">
+				<div class="mode-card">
+					<h3><span class="icon">⏱</span> Competitive Mode</h3>
+					<p>Race against the clock. Climb leaderboards. Earn trophies for beating target times. Unlock powers as you progress. For players who love chasing high scores and optimizing runs.</p>
+				</div>
+				<div class="mode-card">
+					<h3><span class="icon">🌿</span> Cozy Mode</h3>
+					<p>One toggle removes all timers, leaderboards, and pressure. Just you and the maze. At lower difficulties, the patterns become almost meditative. For players who want calm, not competition.</p>
+				</div>
+			</div>
+		</section>
 
-        <div class="features-grid">
-            <div class="feature-card">
-                <h3>🎮 Tilt Controls</h3>
-                <p>Navigate mazes by tilting your phone. Calibrate to however you naturally hold it.</p>
-            </div>
-            <div class="feature-card">
-                <h3>🧩 Procedural Mazes</h3>
-                <p>Ten years of algorithm refinement. Every maze is unique, challenging but fair.</p>
-            </div>
-            <div class="feature-card">
-                <h3>🏆 Challenge Mode</h3>
-                <p>Race the clock. Climb leaderboards. Earn trophies. Chase high scores.</p>
-            </div>
-            <div class="feature-card">
-                <h3>☕ Cozy Mode</h3>
-                <p>One toggle removes all timers and pressure. Just you and the maze.</p>
-            </div>
-            <div class="feature-card">
-                <h3>⚡ Powers &amp; Progression</h3>
-                <p>Unlock powers as you progress. 2 at launch, more coming in updates.</p>
-            </div>
-            <div class="feature-card">
-                <h3>📴 Works Offline</h3>
-                <p>Play anywhere. No internet required.</p>
-            </div>
-        </div>
+		<!-- Features -->
+		<section>
+			<h2>Features</h2>
+			<ul class="features-list">
+				<li>Tilt your phone to navigate—calibrate to however you naturally hold it</li>
+				<li>Procedurally generated mazes—no two runs are identical</li>
+				<li>Progressive difficulty from Beginner to Expert</li>
+				<li>Unlock powers as you advance (2 at launch, more coming)</li>
+				<li>Leaderboards and achievements via Game Center / Google Play Games</li>
+				<li>Works offline—play anywhere, no internet required</li>
+				<li>Retro-pixel art style with cute NPC slimes</li>
+			</ul>
+		</section>
 
-        <h2>Screenshots</h2>
-        <div class="screenshots-grid">
-            <div class="placeholder-small">Screenshot 1<br><small>Gameplay</small></div>
-            <div class="placeholder-small">Screenshot 2<br><small>Cozy Mode</small></div>
-            <div class="placeholder-small">Screenshot 3<br><small>Leaderboards</small></div>
-            <div class="placeholder-small">Screenshot 4<br><small>Settings</small></div>
-        </div>
+		<!-- Screenshots -->
+		<section>
+			<h2>Screenshots</h2>
+			<div class="screenshots-grid">
+				<div class="screenshot-item">
+					<div class="screenshot-placeholder"></div>
+					<span>Screenshot 1</span>
+					<small>(Gameplay)</small>
+				</div>
+				<div class="screenshot-item">
+					<div class="screenshot-placeholder"></div>
+					<span>Screenshot 2</span>
+					<small>(Cozy Mode)</small>
+				</div>
+				<div class="screenshot-item">
+					<div class="screenshot-placeholder"></div>
+					<span>Screenshot 3</span>
+					<small>(Menu/UI)</small>
+				</div>
+				<div class="screenshot-item">
+					<div class="screenshot-placeholder"></div>
+					<span>Screenshot 4</span>
+					<small>(Maze Generation)</small>
+				</div>
+			</div>
+		</section>
 
-        <h2>The Story</h2>
-        <div class="story-section">
-            <p>The game began at a game jam ten years ago. The theme was "loops," and I built a recursive maze generation algorithm with my son and then-wife using Python and a game engine from a programming book. The algorithm worked. The game didn't ship. But the idea stuck.</p>
-            
-            <p>Over the next decade, I refined the maze generation system—tweaking the recursion, balancing difficulty, perfecting the feel of a maze that's challenging but fair. It became a side project I kept returning to, always knowing there was something there but never finding the right form for it.</p>
-            
-            <p>In September 2024, I was laid off from my job. A few months later, while working on a PC version of the game, the idea finally clicked: what if the mazes used phone tilt controls? The combination of procedurally generated mazes and motion-based navigation turned a puzzle game into something physical and immediate. Meandering Muck found its form.</p>
-            
-            <p>I'm not an artist or sound designer, so I looked to people around me. Oreo, a friend of my daughter, created the game's visual identity. Skate, a friend from my World of Warcraft guild, designed the audio. The game became a collaboration between people who wanted to make something together.</p>
-        </div>
+		<!-- The Story -->
+		<section>
+			<h2>The Story</h2>
+			<div class="story-placeholder">
+				<p>[This section is where your story goes—the game jam ten years ago, the decade of refinement, the layoff, the moment tilt controls clicked. The personal journey that makes this game meaningful to you.]</p>
+				<p>[You can pull from press_kit_about_section.md and rewrite it in your own voice.]</p>
+			</div>
+		</section>
 
-        <h2>The Ethical Stance</h2>
-        <p>Meandering Muck is a premium mobile game with no ads, no data harvesting, and no predatory monetization. Players pay once and own the game. Future content will follow the same model—honest value for honest payment.</p>
-        
-        <p>"I believe in being the change you wish to see in the world. Games can be art delivered with integrity. This is my attempt to prove that."</p>
+		<!-- The Team -->
+		<section>
+			<h2>The Team</h2>
+			<div class="team-grid">
+				<div class="team-member">
+					<h4>Mike</h4>
+					<span>Developer</span>
+				</div>
+				<div class="team-member">
+					<h4>Oreo</h4>
+					<span>Art</span>
+				</div>
+				<div class="team-member">
+					<h4>Skate</h4>
+					<span>Sound</span>
+				</div>
+			</div>
+		</section>
 
-        <h2>Games in the Same Spirit</h2>
-        <div class="spirit-games">
-            <span class="spirit-game">Monument Valley</span>
-            <span class="spirit-game">Cut the Rope</span>
-            <span class="spirit-game">Threes</span>
-            <span class="spirit-game">Mini Metro</span>
-            <span class="spirit-game">Alto's Odyssey</span>
-        </div>
+		<!-- Press Assets -->
+		<section>
+			<div class="press-assets">
+				<h2>Press Assets</h2>
+				<p>Download logos, screenshots, and icons for coverage.</p>
+				<a href="#" class="download-button disabled">Download Press Kit (ZIP)</a>
+			</div>
+		</section>
 
-        <h2>Downloads</h2>
-        <div class="downloads">
-            <div class="download-item">
-                <span>Logo (1024×1024 PNG)</span>
-                <a href="assets/Title_1024_1024.png" class="download-link" download>Download</a>
-            </div>
-            <div class="download-item">
-                <span>Logo (512×512 PNG)</span>
-                <a href="assets/Title_512_512.png" class="download-link" download>Download</a>
-            </div>
-            <div class="download-item">
-                <span>Slime Character (transparent)</span>
-                <a href="assets/Title_Fg_432_432.png" class="download-link" download>Download</a>
-            </div>
-            <div class="download-item">
-                <span>Maze Background</span>
-                <a href="assets/Title_Bg_432_432.png" class="download-link" download>Download</a>
-            </div>
-            <div class="download-item">
-                <span>Screenshots (ZIP)</span>
-                <span class="download-link disabled">Coming Soon</span>
-            </div>
-            <div class="download-item">
-                <span>Full Press Kit (ZIP)</span>
-                <span class="download-link disabled">Coming Soon</span>
-            </div>
-        </div>
+		<!-- Contact -->
+		<section class="contact-section">
+			<h2>Contact</h2>
+			<p><strong>Email:</strong> <a href="mailto:shadowedvaca@gmail.com">shadowedvaca@gmail.com</a></p>
+			<p><strong>Website:</strong> <a href="https://shadowedvaca.com">shadowedvaca.com</a></p>
+		</section>
 
-        <div class="contact-box">
-            <h2>Contact</h2>
-            <p>
-                <strong>Email:</strong> <a href="mailto:shadowedvaca@gmail.com">shadowedvaca@gmail.com</a>
-            </p>
-            <p>
-                For early access (TestFlight / Google Play), press inquiries, or just to say hi.
-            </p>
-        </div>
-
-        <footer>
-            <p>© 2026 Shadowedvaca LLC. All rights reserved.</p>
-        </footer>
-    </div>
+		<footer>
+			© 2026 Shadowedvaca LLC
+		</footer>
+	</div>
 </body>
 </html>
