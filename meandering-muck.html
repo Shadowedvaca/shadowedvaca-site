@@ -132,14 +132,22 @@
 			margin-bottom: 0;
 		}
 
-		/* Video Placeholder */
-		.video-placeholder {
-			background: #e0e0e0;
+		/* Video Container */
+		.video-container {
+			position: relative;
+			width: 100%;
+			max-width: 400px;
+			margin: 0 auto;
+			aspect-ratio: 9 / 16;
+		}
+
+		.video-container iframe {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
 			border-radius: 8px;
-			padding: 6rem 2rem;
-			text-align: center;
-			color: #888;
-			font-style: italic;
 		}
 
 		/* Two Modes */
@@ -398,9 +406,9 @@
 
 		<!-- Gameplay Video -->
 		<section>
-			<h2>Gameplay Video</h2>
-			<div class="video-placeholder">
-				[ Gameplay video coming soon ]
+			<h2>Gameplay Video (iOS)</h2>
+			<div class="video-container">
+				<iframe src="https://www.youtube.com/embed/U35kuoxncfI" title="Meandering Muck Gameplay" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 			</div>
 		</section>
 
