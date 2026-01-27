@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Support - Meandering Muck</title>
+	<style>
+		* {
+			box-sizing: border-box;
+			margin: 0;
+			padding: 0;
+		}
+
+		body {
+			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+			background-color: #f5e6d3;
+			color: #3d3d3d;
+			line-height: 1.6;
+		}
+
+		.container {
+			max-width: 700px;
+			margin: 0 auto;
+			padding: 2rem 1.5rem;
+		}
+
+		header {
+			text-align: center;
+			padding-bottom: 2rem;
+			border-bottom: 3px solid #d4a574;
+		}
+
+		.logo {
+			max-width: 200px;
+			margin-bottom: 0.5rem;
+		}
+
+		h1 {
+			color: #d4882a;
+			font-size: 1.8rem;
+			margin-bottom: 0.5rem;
+		}
+
+		.subtitle {
+			color: #6b5b4f;
+			font-size: 1rem;
+		}
+
+		section {
+			padding: 1.5rem 0;
+		}
+
+		h2 {
+			color: #27ae60;
+			font-size: 1.3rem;
+			margin-bottom: 0.75rem;
+		}
+
+		p {
+			margin-bottom: 1rem;
+		}
+
+		/* Form Styles */
+		.support-form {
+			background: white;
+			border-radius: 8px;
+			padding: 2rem;
+			box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+		}
+
+		.form-group {
+			margin-bottom: 1.25rem;
+		}
+
+		.form-group:last-of-type {
+			margin-bottom: 1.5rem;
+		}
+
+		label {
+			display: block;
+			font-weight: bold;
+			margin-bottom: 0.4rem;
+			color: #3d3d3d;
+		}
+
+		label .required {
+			color: #e74c3c;
+		}
+
+		label .optional {
+			color: #888;
+			font-weight: normal;
+			font-size: 0.85rem;
+		}
+
+		input[type="text"],
+		input[type="email"],
+		select,
+		textarea {
+			width: 100%;
+			padding: 0.75rem;
+			border: 2px solid #d4a574;
+			border-radius: 6px;
+			font-size: 1rem;
+			font-family: inherit;
+			background: #fefefe;
+			transition: border-color 0.2s;
+		}
+
+		input:focus,
+		select:focus,
+		textarea:focus {
+			outline: none;
+			border-color: #27ae60;
+		}
+
+		textarea {
+			min-height: 150px;
+			resize: vertical;
+		}
+
+		.form-row {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 1rem;
+		}
+
+		@media (max-width: 500px) {
+			.form-row {
+				grid-template-columns: 1fr;
+			}
+		}
+
+		.submit-button {
+			display: block;
+			width: 100%;
+			background: #27ae60;
+			color: white;
+			padding: 1rem;
+			border: none;
+			border-radius: 30px;
+			font-size: 1.1rem;
+			font-weight: bold;
+			cursor: pointer;
+			transition: background 0.2s;
+		}
+
+		.submit-button:hover {
+			background: #219a52;
+		}
+
+		.submit-button:disabled {
+			background: #888;
+			cursor: not-allowed;
+		}
+
+		/* Status Messages */
+		.form-status {
+			text-align: center;
+			padding: 1rem;
+			border-radius: 8px;
+			margin-top: 1rem;
+			display: none;
+		}
+
+		.form-status.success {
+			display: block;
+			background: #d4edda;
+			color: #155724;
+			border: 1px solid #c3e6cb;
+		}
+
+		.form-status.error {
+			display: block;
+			background: #f8d7da;
+			color: #721c24;
+			border: 1px solid #f5c6cb;
+		}
+
+		.form-status.loading {
+			display: block;
+			background: #fff3cd;
+			color: #856404;
+			border: 1px solid #ffeeba;
+		}
+
+		/* FAQ Section */
+		.faq-section {
+			margin-top: 2rem;
+			padding-top: 2rem;
+			border-top: 2px solid #d4a574;
+		}
+
+		.faq-item {
+			background: white;
+			border-radius: 8px;
+			padding: 1.25rem;
+			margin-bottom: 1rem;
+			box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+		}
+
+		.faq-item h3 {
+			color: #d4882a;
+			font-size: 1rem;
+			margin-bottom: 0.5rem;
+		}
+
+		.faq-item p {
+			margin-bottom: 0;
+			font-size: 0.95rem;
+			color: #555;
+		}
+
+		a {
+			color: #27ae60;
+			text-decoration: none;
+		}
+
+		a:hover {
+			text-decoration: underline;
+		}
+
+		footer {
+			text-align: center;
+			padding: 1.5rem 0;
+			border-top: 2px solid #d4a574;
+			color: #999;
+			font-size: 0.85rem;
+			margin-top: 2rem;
+		}
+
+		.back-link {
+			display: inline-block;
+			margin-top: 1rem;
+			color: #d4882a;
+			font-weight: bold;
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<header>
+			<img src="assets/Title_512_512.png" alt="Meandering Muck" class="logo">
+			<h1>Support</h1>
+			<p class="subtitle">We're here to help!</p>
+		</header>
+
+		<section>
+			<p>Having trouble with Meandering Muck? Fill out the form below and we'll get back to you as soon as possible. The more details you provide, the faster we can help!</p>
+
+			<form id="supportForm" class="support-form">
+				<div class="form-row">
+					<div class="form-group">
+						<label for="name">Name <span class="optional">(optional)</span></label>
+						<input type="text" id="name" name="name" placeholder="Your name">
+					</div>
+					<div class="form-group">
+						<label for="email">Email <span class="required">*</span></label>
+						<input type="email" id="email" name="email" required placeholder="your@email.com">
+					</div>
+				</div>
+
+				<div class="form-row">
+					<div class="form-group">
+						<label for="device">Device <span class="required">*</span></label>
+						<select id="device" name="device" required>
+							<option value="">Select your device...</option>
+							<optgroup label="Apple">
+								<option value="iPhone 16 Pro Max">iPhone 16 Pro Max</option>
+								<option value="iPhone 16 Pro">iPhone 16 Pro</option>
+								<option value="iPhone 16 Plus">iPhone 16 Plus</option>
+								<option value="iPhone 16">iPhone 16</option>
+								<option value="iPhone 15 Pro Max">iPhone 15 Pro Max</option>
+								<option value="iPhone 15 Pro">iPhone 15 Pro</option>
+								<option value="iPhone 15 Plus">iPhone 15 Plus</option>
+								<option value="iPhone 15">iPhone 15</option>
+								<option value="iPhone 14 (any model)">iPhone 14 (any model)</option>
+								<option value="iPhone 13 (any model)">iPhone 13 (any model)</option>
+								<option value="iPhone (older)">iPhone (older model)</option>
+								<option value="iPad">iPad</option>
+							</optgroup>
+							<optgroup label="Android">
+								<option value="Samsung Galaxy S24">Samsung Galaxy S24 series</option>
+								<option value="Samsung Galaxy S23">Samsung Galaxy S23 series</option>
+								<option value="Samsung Galaxy (other)">Samsung Galaxy (other)</option>
+								<option value="Google Pixel 9">Google Pixel 9 series</option>
+								<option value="Google Pixel 8">Google Pixel 8 series</option>
+								<option value="Google Pixel (other)">Google Pixel (other)</option>
+								<option value="OnePlus">OnePlus</option>
+								<option value="Android (other)">Other Android device</option>
+							</optgroup>
+						</select>
+					</div>
+					<div class="form-group">
+						<label for="osVersion">OS Version <span class="optional">(optional)</span></label>
+						<input type="text" id="osVersion" name="osVersion" placeholder="e.g., iOS 18.2 or Android 15">
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label for="issueType">Issue Type <span class="required">*</span></label>
+					<select id="issueType" name="issueType" required>
+						<option value="">Select issue type...</option>
+						<option value="Crash">Game crashes</option>
+						<option value="Controls">Tilt controls not working correctly</option>
+						<option value="Performance">Slow performance or lag</option>
+						<option value="Progress">Lost progress or save issue</option>
+						<option value="Leaderboards">Leaderboard or achievement issue</option>
+						<option value="Purchase">Purchase or payment issue</option>
+						<option value="Feature Request">Feature request or suggestion</option>
+						<option value="Other">Other</option>
+					</select>
+				</div>
+
+				<div class="form-group">
+					<label for="description">Description <span class="required">*</span></label>
+					<textarea id="description" name="description" required placeholder="Please describe the issue in as much detail as possible. What were you doing when it happened? Does it happen every time?"></textarea>
+				</div>
+
+				<button type="submit" class="submit-button" id="submitBtn">Send Support Request</button>
+
+				<div id="formStatus" class="form-status"></div>
+			</form>
+		</section>
+
+		<section class="faq-section">
+			<h2>Common Questions</h2>
+
+			<div class="faq-item">
+				<h3>The tilt controls feel off. How do I fix them?</h3>
+				<p>Go to Settings → Controls → Calibrate. Hold your phone in your natural playing position and tap "Set." You can also adjust the sensitivity sliders to match your preference.</p>
+			</div>
+
+			<div class="faq-item">
+				<h3>I lost my progress after reinstalling. Can you restore it?</h3>
+				<p>Unfortunately, game progress is stored locally on your device and we don't have access to it. If you signed into Game Center (iOS) or Google Play Games (Android), your leaderboard scores and achievements are preserved, but level progress is local only.</p>
+			</div>
+
+			<div class="faq-item">
+				<h3>Does the game work offline?</h3>
+				<p>Yes! Meandering Muck works 100% offline. Leaderboards and achievements will sync the next time you're connected, but gameplay works anywhere.</p>
+			</div>
+
+			<div class="faq-item">
+				<h3>How do I turn off the timer?</h3>
+				<p>Go to Settings → Gameplay and change "Play Your Way" from Competitive to Cozy. This removes timers, trophies, and leaderboards.</p>
+			</div>
+
+			<p style="margin-top: 1.5rem;"><a href="meandering-muck.html" class="back-link">← Back to Press Kit</a></p>
+		</section>
+
+		<footer>
+			© 2026 Shadowedvaca LLC
+		</footer>
+	</div>
+
+	<script>
+		// IMPORTANT: Replace this URL with your Google Apps Script Web App URL after deploying
+		const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxvpBM4k4V0CGiijhbKb4dzVgaWTQ57x-e1L9ULvdlBk49a7qPSSA5kRDYcsUKMXzDScQ/exec';
+
+		document.getElementById('supportForm').addEventListener('submit', async function(e) {
+			e.preventDefault();
+
+			const submitBtn = document.getElementById('submitBtn');
+			const formStatus = document.getElementById('formStatus');
+
+			// Validate
+			if (!this.checkValidity()) {
+				return;
+			}
+
+			// Show loading state
+			submitBtn.disabled = true;
+			submitBtn.textContent = 'Sending...';
+			formStatus.className = 'form-status loading';
+			formStatus.textContent = 'Submitting your request...';
+
+			// Gather form data
+			const formData = {
+				timestamp: new Date().toISOString(),
+				name: document.getElementById('name').value || '(not provided)',
+				email: document.getElementById('email').value,
+				device: document.getElementById('device').value,
+				osVersion: document.getElementById('osVersion').value || '(not provided)',
+				issueType: document.getElementById('issueType').value,
+				description: document.getElementById('description').value
+			};
+
+			try {
+				const response = await fetch(GOOGLE_SCRIPT_URL, {
+					method: 'POST',
+					mode: 'no-cors', // Required for Google Apps Script
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify(formData)
+				});
+
+				// With no-cors, we can't read the response, but if we get here it likely worked
+				formStatus.className = 'form-status success';
+				formStatus.textContent = '✓ Thank you! Your support request has been submitted. We\'ll get back to you at ' + formData.email + ' as soon as possible.';
+
+				// Reset form
+				this.reset();
+
+			} catch (error) {
+				console.error('Error:', error);
+				formStatus.className = 'form-status error';
+				formStatus.textContent = 'Something went wrong. Please try again or email us directly at contact@shadowedvaca.com';
+			}
+
+			submitBtn.disabled = false;
+			submitBtn.textContent = 'Send Support Request';
+		});
+	</script>
+</body>
+</html>

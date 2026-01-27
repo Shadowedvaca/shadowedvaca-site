@@ -208,7 +208,7 @@
 		/* Screenshots Grid */
 		.screenshots-grid {
 			display: grid;
-			grid-template-columns: repeat(4, 1fr);
+			grid-template-columns: repeat(3, 1fr);
 			gap: 1rem;
 		}
 
@@ -225,19 +225,13 @@
 		.screenshot-placeholder {
 			background: #e0e0e0;
 			border-radius: 8px;
-			aspect-ratio: 9 / 16;
+			aspect-ratio: 16 / 9;
 			margin-bottom: 0.5rem;
 		}
 
 		.screenshot-item span {
 			font-size: 0.85rem;
 			color: #888;
-		}
-
-		.screenshot-item small {
-			display: block;
-			font-size: 0.75rem;
-			color: #aaa;
 		}
 
 		/* Story Section */
@@ -413,7 +407,7 @@
 		<!-- What Is It -->
 		<section>
 			<h2>What Is Meandering Muck?</h2>
-			<p>Meandering Muck is a tilt-controlled maze game. You navigate a slime through procedurally generated mazes using your phone as the controller. The game has 2 modes; Competitive which has timers, trophies, and leaderboards and Cozy where all of those things are turned off so you can just solve mazes at your own pace. As you unlock difficulty levels, you will unlock powers (2 at launch, more coming in updates). There is no conflict, death or game over (the slimes are pacifists). Just solving mazes with unique retro-pixel look and some cute npcs.</p>
+			<p>Meandering Muck is a tilt-controlled maze game. You navigate a slime through procedurally generated mazes using your phone as the controller. The game has 2 modes; Competitive which has timers, trophies, and leaderboards and Cozy where all of those things are turned off so you can just solve mazes at your own pace. As you unlock difficulty levels, you will unlock powers (2 at launch, more coming in updates). There is no conflict, death or game over (the slimes are pacifists). Just solving mazes with unique retro-pixel look and some cute NPCs.</p>
 			<p>Inspired by games like the NES game Marble Madness and Monkey Ball along with simpler puzzle games like Cut the Rope and Everyday Genius: SquareLogic. I find sometimes it's just nice to settle in and solve some puzzles (or mazes here) to relax.</p>
 		</section>
 
@@ -437,23 +431,27 @@
 			<div class="screenshots-grid">
 				<div class="screenshot-item">
 					<div class="screenshot-placeholder"></div>
-					<span>Screenshot 1</span>
-					<small>(Gameplay)</small>
+					<span>Start Menu</span>
 				</div>
 				<div class="screenshot-item">
 					<div class="screenshot-placeholder"></div>
-					<span>Screenshot 2</span>
-					<small>(Cozy Mode)</small>
+					<span>Settings</span>
 				</div>
 				<div class="screenshot-item">
 					<div class="screenshot-placeholder"></div>
-					<span>Screenshot 3</span>
-					<small>(Menu/UI)</small>
+					<span>Beginner 1</span>
 				</div>
 				<div class="screenshot-item">
 					<div class="screenshot-placeholder"></div>
-					<span>Screenshot 4</span>
-					<small>(Maze Generation)</small>
+					<span>Normal 60</span>
+				</div>
+				<div class="screenshot-item">
+					<div class="screenshot-placeholder"></div>
+					<span>Minimap Expanded</span>
+				</div>
+				<div class="screenshot-item">
+					<div class="screenshot-placeholder"></div>
+					<span>End Screen</span>
 				</div>
 			</div>
 		</section>
@@ -462,10 +460,10 @@
 		<section>
 			<h2>The Story</h2>
 			<div class="story-section">
-				<p>This game started life as an idea I had about maze generation. It first took form as a Python game built for a game jam about loops with my family. It didn't go anywhere at the time, but it became an occasional hobby project. I was always tweaking the engine to make it smarter, more modular, etc. Finally, I decided to move the game into Godot. That's when the game as it is today started to take shape. I was laid off from my job in September 2025 and decided I was going to take some time off of Corporate America and build something for myself.</p>
+				<p>This game started life as an idea I had about maze generation. It first took form as a Python game built for a game jam about loops with my family. It didn't go anywhere at the time, but it became an occasional hobby project. I was always tweaking the engine to make it smarter, more modular, etc. Finally, I decided to move the game into Godot. That's when the game as it is today started to take shape.</p>
 				<p>Then I got the idea that took this from a hobby to something real. What if you navigated the maze with some simple tilt controls. When I got the first version of that, it felt like I had something interesting and fun. I have lost hours playing the mazes in the game.</p>
 				<p>I am a software engineer, not an artist or sound guy, so I found some people close to me to help with these things. All of the art in the game was made by Oreo, one of my daughter's friends, who wants to get into doing art for video games as a career. All of the sound was done by Skate, one of my guildies in WoW, who also wants to move into making sounds and music for video games. So we became a first-time indie game team! These two awesome artists took my game idea and made it come to life! All of the art and sound is original for the game. None of it is AI generated.</p>
-				<p>I also want to note my stance on how I will engage with players. I dislike that ads take up a predominant amount of our eyeball time. I also dislike that so many mobile games are designed to harvest data from you to sell. My philosophy is that games can be better than that. My games will never have ads or collect your data to sell it. And all the future features of the game will be free. All I ask is for a one time purchase of my game and then, if you want to provide more support, slime and level skin DLCs for 99 cents.</p>
+				<p>I also want to make a promise to all the folks that play my game. I dislike that ads take up a predominant amount of our eyeball time. I also dislike that so many mobile games are designed to harvest data from you to sell. My philosophy is that games can be better than that. My games will never have ads or collect your data to sell it. And all the future features of the game will be free. All I ask is for a one time purchase of my game and then, if you want to provide more support, slime and level skin DLCs for 99 cents.</p>
 			</div>
 		</section>
 
@@ -500,11 +498,16 @@
 		<!-- Contact -->
 		<section class="contact-section">
 			<h2>Contact</h2>
+			<p><strong>Support:</strong> <a href="meandering-muck-support.html">Submit a support request</a></p>
 			<p><strong>Email:</strong> <a href="mailto:contact@shadowedvaca.com">contact@shadowedvaca.com</a></p>
 			<p><strong>Website:</strong> <a href="https://shadowedvaca.com">shadowedvaca.com</a></p>
 		</section>
 
 		<footer>
+			<p style="margin-bottom: 0.5rem;">
+				<a href="meandering-muck-support.html">Support</a> · 
+				<a href="meandering-muck-privacy.html">Privacy Policy</a>
+			</p>
 			© 2026 Shadowedvaca LLC
 		</footer>
 	</div>
