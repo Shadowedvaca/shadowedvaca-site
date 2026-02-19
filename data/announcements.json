@@ -1,0 +1,23 @@
+[
+  {
+    "id": "mm-launch",
+    "text": "Meandering Muck launches late February on iOS and Android!",
+    "date": "2026-02-18",
+    "active": true,
+    "priority": 1
+  },
+  {
+    "id": "satt-launch",
+    "text": "Salt All The Things podcast premieres March 3rd",
+    "date": "2026-02-18",
+    "active": true,
+    "priority": 2
+  },
+  {
+    "id": "site-launch",
+    "text": "Welcome to the new shadowedvaca.com",
+    "date": "2026-02-18",
+    "active": true,
+    "priority": 3
+  }
+]

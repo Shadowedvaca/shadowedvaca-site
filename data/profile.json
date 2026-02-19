@@ -1,0 +1,17 @@
+{
+  "name": "Mike",
+  "title": "Independent Developer & Consultant",
+  "company": "Shadowedvaca LLC",
+  "location": "Arizona",
+  "bio": "Lifelong hobbyist programmer with 20+ years of professional data experience. Building games, podcasts, tools, and communities.",
+  "skills": ["Python", "SQL", "Godot 4", "Data Engineering", "AI/ML", "Web Development"],
+  "roles": [
+    {
+      "title": "Founder",
+      "org": "Shadowedvaca LLC"
+    }
+  ],
+  "contact": {
+    "email": "contact@shadowedvaca.com"
+  }
+}

@@ -1,0 +1,101 @@
+[
+  {
+    "id": "meandering-muck",
+    "name": "Meandering Muck",
+    "tagline": "A maze game with infinite replayability. Just a little sticky.",
+    "description": "Tilt-controlled maze puzzle game with procedurally generated mazes, multiple difficulty levels, and a retro-pixel art style. Built in Godot 4.",
+    "status": "launching",
+    "category": "game",
+    "featured": true,
+    "visibility": "public",
+    "links": {
+      "press_kit": "/meandering-muck.html",
+      "youtube": "https://www.youtube.com/embed/U35kuoxncfI",
+      "itch_io": "https://shadowedvaca.itch.io/meandering-muck",
+      "app_store": null,
+      "google_play": null
+    },
+    "launch_date": "2026-02-24",
+    "image": "assets/meandering-muck/Title_512_512.png",
+    "sort_order": 1
+  },
+  {
+    "id": "salt-all-the-things",
+    "name": "Salt All The Things",
+    "tagline": "A World of Warcraft podcast.",
+    "description": "WoW-focused podcast covering raids, guild life, and community.",
+    "status": "launching",
+    "category": "podcast",
+    "featured": false,
+    "visibility": "public",
+    "links": {
+      "website": "https://saltallthethings.com"
+    },
+    "launch_date": "2026-03-03",
+    "image": null,
+    "sort_order": 2
+  },
+  {
+    "id": "pull-all-the-things",
+    "name": "Pull All The Things",
+    "tagline": "WoW guild site with raid roster management.",
+    "description": "Guild website for organizing raids, managing rosters, and coordinating a WoW community.",
+    "status": "live",
+    "category": "wow",
+    "featured": false,
+    "visibility": "public",
+    "links": {
+      "website": "https://pullallthethings.com",
+      "discord": "https://discord.gg/jgSSRBvjHM"
+    },
+    "launch_date": null,
+    "image": null,
+    "sort_order": 3
+  },
+  {
+    "id": "sv-tools",
+    "name": "sv-tools",
+    "tagline": "Developer tools and automation.",
+    "description": "Internal tooling suite. Open source release planned.",
+    "status": "in-progress",
+    "category": "tool",
+    "featured": false,
+    "visibility": "public",
+    "links": {},
+    "launch_date": null,
+    "image": null,
+    "sort_order": 4
+  },
+  {
+    "id": "show-planner",
+    "name": "Podcast Show Planner",
+    "tagline": "Custom show planning system built for SATT.",
+    "description": "Web-based show planning and scheduling tool built for the Salt All The Things podcast.",
+    "status": "live",
+    "category": "tool",
+    "featured": false,
+    "visibility": "public",
+    "links": {
+      "website": "https://saltallthethings.com"
+    },
+    "launch_date": null,
+    "image": null,
+    "sort_order": 5
+  },
+  {
+    "id": "raid-team-manager",
+    "name": "Raid Team Manager",
+    "tagline": "Roster and raid management built for PATT.",
+    "description": "Web-based raid roster and team management tool built for Pull All The Things.",
+    "status": "live",
+    "category": "tool",
+    "featured": false,
+    "visibility": "public",
+    "links": {
+      "website": "https://pullallthethings.com"
+    },
+    "launch_date": null,
+    "image": null,
+    "sort_order": 6
+  }
+]
