@@ -3,8 +3,28 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Shadowedvaca LLC — games, podcasts, tools, and consulting.">
-  <title>{% block title %}Shadowedvaca LLC{% endblock %}</title>
+  <meta name="description" content="{{ site.description }}">
+  <link rel="canonical" href="{{ site.url }}">
+
+  <!-- Open Graph -->
+  <meta property="og:type"        content="website">
+  <meta property="og:site_name"   content="{{ site.name }}">
+  <meta property="og:title"       content="{{ site.title }}">
+  <meta property="og:description" content="{{ site.description }}">
+  <meta property="og:url"         content="{{ site.url }}">
+  <meta property="og:image"       content="{{ site.og_image }}">
+
+  <!-- Twitter / X Card -->
+  <meta name="twitter:card"        content="summary">
+  <meta name="twitter:title"       content="{{ site.title }}">
+  <meta name="twitter:description" content="{{ site.description }}">
+  <meta name="twitter:image"       content="{{ site.og_image }}">
+
+  <title>{% block title %}{{ site.title }}{% endblock %}</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
   <link rel="stylesheet" href="/css/command-center.css">
 </head>
 <body class="command-center">

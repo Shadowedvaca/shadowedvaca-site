@@ -128,6 +128,18 @@ def build() -> None:
         DIST_DIR.mkdir()
     print(f"  Cleared dist/ at {DIST_DIR}")
 
+    # --- Site-wide config (used in base.html for meta/OG tags) ---
+    site = {
+        "url": "https://shadowedvaca.com",
+        "name": "Shadowedvaca LLC",
+        "title": "Shadowedvaca LLC — Command Center",
+        "description": (
+            "Games, podcasts, tools, and consulting. "
+            "Home of Meandering Muck, launching February 2026."
+        ),
+        "og_image": "https://shadowedvaca.com/assets/meandering-muck/Title_512_512.png",
+    }
+
     # --- Render index.html ---
     template = env.get_template("index.html")
     html = template.render(
@@ -137,16 +149,22 @@ def build() -> None:
         announcements=active_announcements,
         profile=profile,
         links=links,
+        site=site,
     )
     (DIST_DIR / "index.html").write_text(html, encoding="utf-8")
     print("  Rendered dist/index.html")
 
-    # --- Copy static assets (css/, js/) ---
+    # --- Copy static assets (css/, js/, and root-level files like favicon) ---
     for asset_dir in ("css", "js"):
         src = STATIC_DIR / asset_dir
         if src.exists():
             shutil.copytree(src, DIST_DIR / asset_dir)
             print(f"  Copied static/{asset_dir}/ -> dist/{asset_dir}/")
+
+    for static_file in STATIC_DIR.iterdir():
+        if static_file.is_file():
+            shutil.copy2(static_file, DIST_DIR / static_file.name)
+            print(f"  Copied {static_file.name} -> dist/{static_file.name}")
 
     # --- Copy Meandering Muck HTML files (root -> dist/) ---
     mm_files = [
