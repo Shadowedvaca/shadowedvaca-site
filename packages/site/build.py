@@ -117,11 +117,16 @@ def build() -> None:
     env.filters["category_label"] = filter_category_label
     env.filters["format_date"] = filter_format_date
 
-    # --- Clear and recreate dist/ ---
+    # --- Clear dist/ contents (keep the dir itself — Windows holds it open) ---
     if DIST_DIR.exists():
-        shutil.rmtree(DIST_DIR)
-    DIST_DIR.mkdir()
-    print(f"  Cleared and created {DIST_DIR}")
+        for item in DIST_DIR.iterdir():
+            if item.is_dir():
+                shutil.rmtree(item)
+            else:
+                item.unlink()
+    else:
+        DIST_DIR.mkdir()
+    print(f"  Cleared dist/ at {DIST_DIR}")
 
     # --- Render index.html ---
     template = env.get_template("index.html")
