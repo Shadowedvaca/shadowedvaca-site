@@ -3,16 +3,13 @@
 {% block title %}{{ site.title }}{% endblock %}
 
 {% block body %}
-{% include "components/ticker.html" %}
-
-{# Phase 1 placeholder — command center templates built in Phase 2 #}
-<div style="padding: 2rem; font-family: monospace; color: #33ff33; background: #030806; min-height: calc(100vh - 36px);">
-  <p style="color: #00d4ff; font-size: 1.1rem; margin-bottom: 1rem;">shadowedvaca@cmd:~$ site --status</p>
-  <p style="color: #6b7280;">Phase 1 complete. Data layer validated. Command center templates in Phase 2.</p>
-  <br>
-  <p style="color: #1a9e1a;">Projects loaded: {{ all_projects | length }}</p>
-  <p style="color: #1a9e1a;">Featured: {{ featured.name if featured else "none" }}</p>
-  <p style="color: #1a9e1a;">Sections: active={{ projects_by_section.active | length }}, upcoming={{ projects_by_section.upcoming | length }}, systems={{ projects_by_section.systems | length }}, archive={{ projects_by_section.archive | length }}</p>
-  <p style="color: #1a9e1a;">Announcements: {{ announcements | length }} active</p>
+<div class="layout">
+  {% include "components/ticker.html" %}
+  <div class="content-split">
+    {% include "components/main_stage.html" %}
+    <div class="split-divider"></div>
+    {% include "components/terminal.html" %}
+  </div>
+  {% include "components/bottom_bar.html" %}
 </div>
 {% endblock %}

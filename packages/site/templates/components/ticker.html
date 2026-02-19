@@ -1,8 +1,7 @@
-<div class="cc-ticker" id="cc-ticker">
-  <div class="cc-ticker-track" id="cc-ticker-track" aria-label="Announcements">
-    {% for announcement in announcements %}
-    <span class="cc-ticker-item">{{ announcement.text }}</span>
-    <span class="cc-ticker-sep" aria-hidden="true">&#9670;</span>
+<div class="ticker-bar" id="cc-ticker">
+  <div class="ticker-track" id="cc-ticker-track" aria-label="Announcements">
+    {% for a in announcements %}
+    <span class="ticker-item"><span class="dot dot-{{ a.dot_style }}" aria-hidden="true"></span>{{ a.text }}</span>
     {% endfor %}
   </div>
 </div>

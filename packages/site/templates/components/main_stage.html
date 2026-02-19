@@ -1,0 +1,66 @@
+<div class="main-stage">
+  <div class="main-stage-scroll">
+
+    {% for project in all_projects %}
+    <div class="stage-view{% if project.featured %} active{% endif %}" id="view-{{ project.id }}">
+
+      <span class="featured-label">&#x25b8; {{ project.category }}</span>
+      <h1 class="featured-title">{{ project.name }}</h1>
+      <p class="featured-tagline">{{ project.tagline }}</p>
+
+      <div class="featured-meta">
+        {% for tag in project.meta_tags %}
+        <span class="meta-tag{% if tag.style %} status-{{ tag.style }}{% endif %}">{{ tag.label }}</span>
+        {% endfor %}
+      </div>
+
+      {% if project.media %}
+        {% if project.media.type == "video" and project.media.embed_url %}
+        <div class="video-wrapper">
+          <iframe
+            src="{{ project.media.embed_url }}"
+            title="{{ project.name }} &#x2014; trailer"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen
+            loading="lazy">
+          </iframe>
+        </div>
+        {% elif project.media.type == "placeholder" %}
+        <div class="screenshot-placeholder">
+          {% if project.media.icon %}<span class="placeholder-icon" aria-hidden="true">{{ project.media.icon }}</span>{% endif %}
+          {{ project.media.alt or "Coming soon" }}
+        </div>
+        {% endif %}
+      {% endif %}
+
+      {% if project.links %}
+      <div class="action-row">
+        {% for link in project.links %}
+        <a href="{{ link.url }}"
+           class="action-btn {{ link.style }}"
+           {% if link.url.startswith('http') %}target="_blank" rel="noopener noreferrer"{% endif %}>{{ link.label }}</a>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <div class="featured-description">
+        {% for para in project.description %}
+        <p>{{ para }}</p>
+        {% endfor %}
+      </div>
+
+      {% if project.features %}
+      <ul class="feature-list">
+        {% for feature in project.features %}
+        <li>{{ feature }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+
+    </div>
+    {% endfor %}
+
+  </div>
+
+  {% include "components/sticky_note.html" %}
+</div>

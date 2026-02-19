@@ -14,6 +14,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
+from markupsafe import Markup, escape
 from jinja2 import Environment, FileSystemLoader
 
 from packages.core import (
@@ -41,6 +42,23 @@ def filter_status_label(status: str) -> str:
     return labels.get(status, status.replace("-", " ").title())
 
 
+def filter_status_char_class(status: str) -> str:
+    """Maps a project status to the CSS class used on the terminal sidebar ▸ char."""
+    mapping = {
+        "live": "live",
+        "launching": "progress",
+        "in-progress": "concept",
+        "concept": "concept",
+        "archived": "archived",
+    }
+    return mapping.get(status, "live")
+
+
+def filter_nl2br(text: str) -> Markup:
+    """Escape HTML in text, then convert literal \\n newlines to <br> tags."""
+    return Markup(escape(text).replace("\n", Markup("<br>")))
+
+
 def filter_format_date(date_str: str | None) -> str:
     """Format a YYYY-MM-DD date string for display (cross-platform)."""
     if not date_str:
@@ -62,7 +80,7 @@ def build() -> None:
     all_announcements = load_announcements()
     profile = load_profile()
 
-    # Featured project (shown by default)
+    # Featured project (shown by default on load)
     featured = next((p for p in all_projects if p.featured), None)
 
     # Projects grouped by section for the terminal sidebar
@@ -74,7 +92,7 @@ def build() -> None:
         for section in ("active", "upcoming", "systems", "archive")
     }
 
-    # All projects ordered (for main stage views)
+    # All projects ordered by sort_order (for main stage view rendering)
     all_projects_ordered = sorted(all_projects, key=lambda p: p.sort_order)
 
     # Active announcements ordered for the ticker
@@ -91,6 +109,8 @@ def build() -> None:
         lstrip_blocks=True,
     )
     env.filters["status_label"] = filter_status_label
+    env.filters["status_char_class"] = filter_status_char_class
+    env.filters["nl2br"] = filter_nl2br
     env.filters["format_date"] = filter_format_date
 
     # --- Clear dist/ contents (keep the dir itself — Windows holds it open) ---

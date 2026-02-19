@@ -25,10 +25,17 @@
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 
+  <!-- Google Fonts: IBM Plex Sans (body), Share Tech Mono (terminal/UI), Caveat (sticky note) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;600&family=Share+Tech+Mono&family=Caveat:wght@400;600&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="/css/command-center.css">
 </head>
-<body class="command-center">
+<body>
   {% block body %}{% endblock %}
   <script src="/js/ticker.js"></script>
+  <script src="/js/navigation.js"></script>
+  <script src="/js/sticky.js"></script>
 </body>
 </html>

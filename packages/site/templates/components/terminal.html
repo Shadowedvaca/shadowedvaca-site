@@ -1,0 +1,36 @@
+<div class="terminal-sidebar">
+  <div class="terminal-content">
+
+    <div class="terminal-header">
+      <span class="terminal-prompt">shadowedvaca@cmd:~$</span> ls --projects<span class="terminal-cursor" aria-hidden="true"></span>
+    </div>
+
+    {% set sections = [
+      ("active",   "── active ──"),
+      ("upcoming", "── upcoming ──"),
+      ("systems",  "── systems ──"),
+      ("archive",  "── archive ──")
+    ] %}
+
+    {% for section_key, section_label in sections %}
+    {% set section_projects = projects_by_section[section_key] %}
+    {% if section_projects %}
+    <div class="terminal-section">
+      <div class="terminal-section-label">{{ section_label }}</div>
+
+      {% for project in section_projects %}
+      <div class="terminal-project{% if project.featured %} selected{% endif %}" data-target="view-{{ project.id }}">
+        <div class="project-name">
+          <span class="status-char {{ project.status | status_char_class }}" aria-hidden="true">&#x25b8;</span>
+          {{ project.name }}
+        </div>
+        <div class="project-desc">{{ project.terminal_desc }}</div>
+      </div>
+      {% endfor %}
+
+    </div>
+    {% endif %}
+    {% endfor %}
+
+  </div>
+</div>
