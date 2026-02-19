@@ -18,7 +18,6 @@ from jinja2 import Environment, FileSystemLoader
 
 from packages.core import (
     load_announcements,
-    load_links,
     load_profile,
     load_projects,
 )
@@ -31,42 +30,15 @@ DIST_DIR = REPO_ROOT / "dist"
 
 # --- Jinja2 filters ---
 
-def filter_link_label(key: str) -> str:
-    labels = {
-        "website": "Website",
-        "discord": "Discord",
-        "press_kit": "Press Kit",
-        "itch_io": "itch.io",
-        "app_store": "App Store",
-        "google_play": "Google Play",
-        "youtube": "YouTube",
-        "github": "GitHub",
-        "twitch": "Twitch",
-        "twitter": "Twitter",
-        "patreon": "Patreon",
-    }
-    return labels.get(key, key.replace("_", " ").title())
-
-
 def filter_status_label(status: str) -> str:
     labels = {
-        "shipped": "Shipped",
         "live": "Live",
         "launching": "Launching",
         "in-progress": "In Progress",
         "concept": "Concept",
+        "archived": "Archived",
     }
     return labels.get(status, status.replace("-", " ").title())
-
-
-def filter_category_label(category: str) -> str:
-    labels = {
-        "game": "Game",
-        "podcast": "Podcast",
-        "wow": "WoW",
-        "tool": "Tool",
-    }
-    return labels.get(category, category.title())
 
 
 def filter_format_date(date_str: str | None) -> str:
@@ -85,24 +57,30 @@ def filter_format_date(date_str: str | None) -> str:
 def build() -> None:
     print("Building shadowedvaca.com...")
 
-    # --- Load and categorize data ---
+    # --- Load and validate data ---
     all_projects = load_projects()
     all_announcements = load_announcements()
     profile = load_profile()
-    links = load_links()
 
+    # Featured project (shown by default)
     featured = next((p for p in all_projects if p.featured), None)
-    public_projects = sorted(
-        [p for p in all_projects if p.visibility == "public" and not p.featured],
-        key=lambda p: p.sort_order,
-    )
-    workbench_projects = sorted(
-        [p for p in all_projects if p.visibility == "teaser"],
-        key=lambda p: p.sort_order,
-    )
+
+    # Projects grouped by section for the terminal sidebar
+    projects_by_section = {
+        section: sorted(
+            [p for p in all_projects if p.section == section],
+            key=lambda p: p.sort_order,
+        )
+        for section in ("active", "upcoming", "systems", "archive")
+    }
+
+    # All projects ordered (for main stage views)
+    all_projects_ordered = sorted(all_projects, key=lambda p: p.sort_order)
+
+    # Active announcements ordered for the ticker
     active_announcements = sorted(
         [a for a in all_announcements if a.active],
-        key=lambda a: a.priority,
+        key=lambda a: a.sort_order,
     )
 
     # --- Set up Jinja2 ---
@@ -112,9 +90,7 @@ def build() -> None:
         trim_blocks=True,
         lstrip_blocks=True,
     )
-    env.filters["link_label"] = filter_link_label
     env.filters["status_label"] = filter_status_label
-    env.filters["category_label"] = filter_category_label
     env.filters["format_date"] = filter_format_date
 
     # --- Clear dist/ contents (keep the dir itself — Windows holds it open) ---
@@ -144,11 +120,10 @@ def build() -> None:
     template = env.get_template("index.html")
     html = template.render(
         featured=featured,
-        projects=public_projects,
-        workbench_projects=workbench_projects,
+        projects_by_section=projects_by_section,
+        all_projects=all_projects_ordered,
         announcements=active_announcements,
         profile=profile,
-        links=links,
         site=site,
     )
     (DIST_DIR / "index.html").write_text(html, encoding="utf-8")

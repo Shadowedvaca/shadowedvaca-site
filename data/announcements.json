@@ -1,23 +1,23 @@
 [
   {
     "id": "mm-launch",
-    "text": "Meandering Muck launches late February on iOS and Android!",
-    "date": "2026-02-18",
+    "text": "MEANDERING MUCK \u2014 iOS & Android launch coming late February",
+    "dot_style": "soon",
     "active": true,
-    "priority": 1
+    "sort_order": 1
   },
   {
     "id": "satt-launch",
-    "text": "Salt All The Things podcast premieres March 3rd",
-    "date": "2026-02-18",
+    "text": "SALT ALL THE THINGS \u2014 WoW podcast premieres March 3, 2026",
+    "dot_style": "soon",
     "active": true,
-    "priority": 2
+    "sort_order": 2
   },
   {
-    "id": "site-launch",
-    "text": "Welcome to the new shadowedvaca.com",
-    "date": "2026-02-18",
+    "id": "patt-live",
+    "text": "PULL ALL THE THINGS \u2014 Guild site live at pullallthethings.com",
+    "dot_style": "live",
     "active": true,
-    "priority": 3
+    "sort_order": 3
   }
 ]

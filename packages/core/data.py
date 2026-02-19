@@ -4,7 +4,6 @@ from pathlib import Path
 from .schemas.project import Project
 from .schemas.announcement import Announcement
 from .schemas.profile import Profile
-from .schemas.link import Link
 
 # data/ directory is always relative to the repo root
 _REPO_ROOT = Path(__file__).parent.parent.parent
@@ -30,10 +29,3 @@ def load_profile() -> Profile:
     with open(DATA_DIR / "profile.json", encoding="utf-8") as f:
         raw = json.load(f)
     return Profile(**raw)
-
-
-def load_links() -> list[Link]:
-    """Load and validate all links from data/links.json."""
-    with open(DATA_DIR / "links.json", encoding="utf-8") as f:
-        raw = json.load(f)
-    return [Link(**item) for item in raw]

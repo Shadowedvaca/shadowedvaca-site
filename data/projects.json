@@ -3,127 +3,186 @@
     "id": "meandering-muck",
     "name": "Meandering Muck",
     "tagline": "A maze game with infinite replayability. Just a little sticky.",
-    "description": "Tilt-controlled maze puzzle game with procedurally generated mazes, multiple difficulty levels, and a retro-pixel art style. Built in Godot 4.",
+    "description": [
+      "Tilt your phone to navigate a slime through procedurally generated mazes. Two modes: Competitive (timers, trophies, leaderboards) or Cozy (just solve at your own pace).",
+      "No ads. No data harvesting. No tricks. You pay once, you own the game."
+    ],
     "status": "launching",
-    "category": "game",
-    "featured": true,
-    "visibility": "public",
-    "links": {
-      "press_kit": "/meandering-muck.html",
-      "youtube": "https://www.youtube.com/embed/U35kuoxncfI",
-      "itch_io": "https://shadowedvaca.itch.io/meandering-muck",
-      "app_store": null,
-      "google_play": null
-    },
-    "launch_date": "2026-02-24",
-    "image": "assets/meandering-muck/Title_512_512.png",
-    "sort_order": 1
+    "category": "Featured Project",
+    "section": "active",
+    "terminal_desc": "Tilt-controlled maze game. iOS & Android.",
+    "meta_tags": [
+      {"label": "\u25ce Launching Late Feb 2026", "style": "soon"},
+      {"label": "iOS + Android"},
+      {"label": "$2.99 Premium"},
+      {"label": "Godot 4"}
+    ],
+    "links": [
+      {"label": "App Store \u2014 Coming Soon", "url": "#", "style": "primary"},
+      {"label": "Google Play \u2014 Coming Soon", "url": "#", "style": "primary"},
+      {"label": "Press Kit", "url": "meandering-muck.html", "style": "secondary"},
+      {"label": "Support", "url": "meandering-muck-support.html", "style": "secondary"}
+    ],
+    "features": null,
+    "media": {"type": "video", "embed_url": "https://www.youtube.com/embed/U35kuoxncfI"},
+    "sort_order": 1,
+    "featured": true
   },
   {
-    "id": "salt-all-the-things",
-    "name": "Salt All The Things",
-    "tagline": "A World of Warcraft podcast.",
-    "description": "WoW-focused podcast covering raids, guild life, and community.",
-    "status": "launching",
-    "category": "podcast",
-    "featured": false,
-    "visibility": "public",
-    "links": {
-      "website": "https://saltallthethings.com"
-    },
-    "launch_date": "2026-03-03",
-    "image": null,
-    "sort_order": 2
-  },
-  {
-    "id": "pull-all-the-things",
+    "id": "pull-all",
     "name": "Pull All The Things",
-    "tagline": "WoW guild site with raid roster management.",
-    "description": "Guild website for organizing raids, managing rosters, and coordinating a WoW community.",
+    "tagline": "WoW guild community with custom raid roster management.",
+    "description": [
+      "Guild website and community hub for Pull All The Things, a World of Warcraft raiding guild. Features a custom-built raid roster and composition management system."
+    ],
     "status": "live",
-    "category": "wow",
-    "featured": false,
-    "visibility": "public",
-    "links": {
-      "website": "https://pullallthethings.com",
-      "discord": "https://discord.gg/jgSSRBvjHM"
-    },
-    "launch_date": null,
-    "image": null,
-    "sort_order": 3
+    "category": "Guild Site",
+    "section": "active",
+    "terminal_desc": "WoW guild site + raid roster management",
+    "meta_tags": [
+      {"label": "\u25ce Live", "style": "live"},
+      {"label": "World of Warcraft"},
+      {"label": "Community"}
+    ],
+    "links": [
+      {"label": "Visit Site", "url": "https://pullallthethings.com", "style": "primary"},
+      {"label": "Discord", "url": "https://discord.gg/jgSSRBvjHM", "style": "secondary"}
+    ],
+    "features": null,
+    "media": {"type": "placeholder", "icon": "\u2694", "alt": "Screenshot / demo preview goes here"},
+    "sort_order": 2,
+    "featured": false
+  },
+  {
+    "id": "salt-all",
+    "name": "Salt All The Things",
+    "tagline": "A WoW podcast. Premiering March 3, 2026.",
+    "description": [
+      "A World of Warcraft podcast launching March 2026. Built with a custom show planning system for episode organization, topic tracking, and guest coordination."
+    ],
+    "status": "launching",
+    "category": "Upcoming \u2014 Podcast",
+    "section": "upcoming",
+    "terminal_desc": "WoW podcast. Premieres 3/3/2026.",
+    "meta_tags": [
+      {"label": "\u25ce Launching 3/3/2026", "style": "soon"},
+      {"label": "World of Warcraft"},
+      {"label": "Podcast"}
+    ],
+    "links": [
+      {"label": "Visit Site", "url": "https://saltallthethings.com", "style": "primary"}
+    ],
+    "features": null,
+    "media": {"type": "placeholder", "icon": "\ud83c\udfa4", "alt": "Podcast branding / episode preview goes here"},
+    "sort_order": 3,
+    "featured": false
   },
   {
     "id": "sv-tools",
     "name": "sv-tools",
-    "tagline": "Developer tools and automation.",
-    "description": "Internal tooling suite. Open source release planned.",
+    "tagline": "Developer tools and automation suite.",
+    "description": [
+      "A collection of developer tools and automation utilities built to support Shadowedvaca projects. Designed as a loosely coupled ecosystem with shared data schemas."
+    ],
     "status": "in-progress",
-    "category": "tool",
-    "featured": false,
-    "visibility": "public",
-    "links": {},
-    "launch_date": null,
-    "image": null,
-    "sort_order": 4
+    "category": "In Development",
+    "section": "upcoming",
+    "terminal_desc": "Dev tools & automation suite",
+    "meta_tags": [
+      {"label": "\u25ce In Progress", "style": "concept"},
+      {"label": "Python"},
+      {"label": "Internal Tools"}
+    ],
+    "links": [],
+    "features": null,
+    "media": null,
+    "sort_order": 4,
+    "featured": false
   },
   {
     "id": "show-planner",
     "name": "Podcast Show Planner",
-    "tagline": "Custom show planning system built for SATT.",
-    "description": "Web-based show planning and scheduling tool built for the Salt All The Things podcast.",
+    "tagline": "Custom planning tool for podcast production.",
+    "description": [
+      "A custom-built podcast production planning system. Handles episode scheduling, topic management, segment planning, guest coordination, and show rundowns.",
+      "Built to support Salt All The Things and designed to be reusable for any podcast workflow."
+    ],
     "status": "live",
-    "category": "tool",
-    "featured": false,
-    "visibility": "public",
-    "links": {
-      "website": "https://saltallthethings.com"
-    },
-    "launch_date": null,
-    "image": null,
-    "sort_order": 5
+    "category": "System \u2014 Custom Built",
+    "section": "systems",
+    "terminal_desc": "Custom podcast planning tool",
+    "meta_tags": [
+      {"label": "\u25ce In Use", "style": "live"},
+      {"label": "Python"},
+      {"label": "Production Tool"}
+    ],
+    "links": [
+      {"label": "Live Demo \u2014 Coming Soon", "url": "#", "style": "secondary"}
+    ],
+    "features": [
+      "Episode timeline with segment breakdown",
+      "Topic queue with priority ranking",
+      "Guest scheduling and coordination tracking",
+      "Rundown templates with timing estimates",
+      "Notes and research linking per topic"
+    ],
+    "media": {"type": "placeholder", "icon": "\ud83d\udccb", "alt": "Demo / screenshot of the show planner goes here"},
+    "sort_order": 5,
+    "featured": false
   },
   {
-    "id": "raid-team-manager",
+    "id": "raid-manager",
     "name": "Raid Team Manager",
-    "tagline": "Roster and raid management built for PATT.",
-    "description": "Web-based raid roster and team management tool built for Pull All The Things.",
+    "tagline": "Guild roster and composition management.",
+    "description": [
+      "A roster and raid composition management tool built for Pull All The Things. Tracks players, roles, specs, availability, and generates optimal raid compositions."
+    ],
     "status": "live",
-    "category": "tool",
-    "featured": false,
-    "visibility": "public",
-    "links": {
-      "website": "https://pullallthethings.com"
-    },
-    "launch_date": null,
-    "image": null,
-    "sort_order": 6
+    "category": "System \u2014 Custom Built",
+    "section": "systems",
+    "terminal_desc": "Guild roster & comp management",
+    "meta_tags": [
+      {"label": "\u25ce In Use", "style": "live"},
+      {"label": "Python"},
+      {"label": "Guild Operations"}
+    ],
+    "links": [
+      {"label": "Live Demo \u2014 Coming Soon", "url": "#", "style": "secondary"}
+    ],
+    "features": [
+      "Roster management with role and spec tracking",
+      "Raid composition builder with balance indicators",
+      "Attendance and availability tracking",
+      "Bench rotation and substitution planning",
+      "Integration with guild Discord"
+    ],
+    "media": {"type": "placeholder", "icon": "\u2694", "alt": "Demo / screenshot of the raid manager goes here"},
+    "sort_order": 6,
+    "featured": false
   },
   {
-    "id": "project-ember",
-    "name": "Project Ember",
-    "tagline": "Early concept. Details forthcoming.",
-    "description": "",
-    "status": "concept",
-    "category": "tool",
-    "featured": false,
-    "visibility": "teaser",
-    "links": {},
-    "launch_date": null,
-    "image": null,
-    "sort_order": 10
-  },
-  {
-    "id": "untitled-01",
-    "name": "Untitled-01",
-    "tagline": "Something is brewing.",
-    "description": "",
-    "status": "concept",
-    "category": "tool",
-    "featured": false,
-    "visibility": "teaser",
-    "links": {},
-    "launch_date": null,
-    "image": null,
-    "sort_order": 11
+    "id": "itch-archive",
+    "name": "Meandering Muck (itch.io)",
+    "tagline": "The original game jam release, 2024.",
+    "description": [
+      "The original version of Meandering Muck, built in Python for a game jam about loops. This was the prototype that eventually evolved into the full mobile release built in Godot 4.",
+      "Kept here for historical purposes. The mobile version is the definitive experience."
+    ],
+    "status": "archived",
+    "category": "Archive",
+    "section": "archive",
+    "terminal_desc": "Original game jam release, 2024",
+    "meta_tags": [
+      {"label": "\u25ce Archived", "style": "archived"},
+      {"label": "Python"},
+      {"label": "Game Jam"}
+    ],
+    "links": [
+      {"label": "View on itch.io", "url": "https://shadowedvaca.itch.io/meandering-muck", "style": "secondary"}
+    ],
+    "features": null,
+    "media": null,
+    "sort_order": 7,
+    "featured": false
   }
 ]

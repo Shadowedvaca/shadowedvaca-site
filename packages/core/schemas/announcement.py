@@ -1,9 +1,11 @@
+from typing import Literal
+
 from pydantic import BaseModel
 
 
 class Announcement(BaseModel):
     id: str
     text: str
-    date: str
+    dot_style: Literal["live", "soon"]  # "live" = green dot, "soon" = amber dot
     active: bool
-    priority: int
+    sort_order: int
