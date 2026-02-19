@@ -4,7 +4,16 @@
       "Bash(pip install:*)",
       "Bash(python scripts/validate_data.py:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(python packages/site/build.py:*)",
+      "Bash(python:*)",
+      "Bash(ssh -i \"C:/Users/mike/.ssh/va_hetzner_openssh\" root@5.78.114.224 \":*)",
+      "Bash(ssh -i \"C:/Users/mike/.ssh/va_hetzner_openssh\" mike@5.78.114.224 \"sudo bash -c \"\":*)",
+      "Bash(ssh:*)",
+      "Bash(rsync:*)",
+      "Bash(scp:*)",
+      "Bash(git tag:*)",
+      "Bash(git push:*)"
     ]
   }
 }
