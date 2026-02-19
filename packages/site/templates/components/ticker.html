@@ -1,0 +1,8 @@
+<div class="cc-ticker" id="cc-ticker">
+  <div class="cc-ticker-track" id="cc-ticker-track" aria-label="Announcements">
+    {% for announcement in announcements %}
+    <span class="cc-ticker-item">{{ announcement.text }}</span>
+    <span class="cc-ticker-sep" aria-hidden="true">&#9670;</span>
+    {% endfor %}
+  </div>
+</div>

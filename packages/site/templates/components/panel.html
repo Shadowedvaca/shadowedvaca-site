@@ -1,0 +1,25 @@
+<article class="cc-panel cc-panel--{{ project.status }}">
+  <div class="cc-panel-header">
+    <span class="status-dot status-{{ project.status }}" aria-hidden="true"></span>
+    <span class="cc-panel-status">{{ project.status | status_label }}</span>
+    <span class="category-badge category-{{ project.category }}">{{ project.category | category_label }}</span>
+  </div>
+
+  <h3 class="cc-panel-name">{{ project.name }}</h3>
+  <p class="cc-panel-tagline">{{ project.tagline }}</p>
+
+  {% if project.launch_date %}
+  <div class="cc-panel-launch">Launching {{ project.launch_date | format_date }}</div>
+  {% endif %}
+
+  {% set visible_links = project.links.items() | selectattr('1') | list %}
+  {% if visible_links %}
+  <div class="cc-panel-links">
+    {% for key, url in visible_links %}
+    <a href="{{ url }}"
+       class="cc-link"
+       {% if url.startswith('http') %}target="_blank" rel="noopener noreferrer"{% endif %}>{{ key | link_label }}</a>
+    {% endfor %}
+  </div>
+  {% endif %}
+</article>

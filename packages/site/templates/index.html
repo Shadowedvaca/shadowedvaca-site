@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Shadowedvaca LLC — Command Center{% endblock %}
+
+{% block body %}
+{% include "components/ticker.html" %}
+
+<div class="cc-main">
+
+  {% include "components/hero.html" %}
+
+  <section class="cc-panels-section">
+    <h2 class="cc-section-label">PROJECTS</h2>
+    <div class="cc-panels-grid">
+      {% for project in projects %}
+      {% include "components/panel.html" %}
+      {% endfor %}
+    </div>
+  </section>
+
+  {% include "components/profile.html" %}
+
+  {% include "components/workbench.html" %}
+
+  <footer class="cc-footer">
+    <p>&copy; 2026 Shadowedvaca LLC</p>
+  </footer>
+
+</div>
+{% endblock %}

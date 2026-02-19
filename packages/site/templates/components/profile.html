@@ -1,0 +1,33 @@
+<section class="cc-profile" aria-label="Profile">
+  <div class="cc-profile-inner">
+
+    <div class="cc-profile-identity">
+      <span class="cc-profile-name">{{ profile.name }}</span>
+      <span class="cc-profile-sep">/</span>
+      <span class="cc-profile-title">{{ profile.title }}</span>
+      <span class="cc-profile-sep">/</span>
+      <span class="cc-profile-company">{{ profile.company }}</span>
+      <span class="cc-profile-sep">/</span>
+      <span class="cc-profile-location">{{ profile.location }}</span>
+    </div>
+
+    <div class="cc-profile-skills" aria-label="Skills">
+      {% for skill in profile.skills %}
+      <span class="cc-skill-tag">{{ skill }}</span>
+      {% endfor %}
+    </div>
+
+    <div class="cc-profile-roles">
+      {% for role in profile.roles %}
+      <span class="cc-role">{{ role.title }}, {{ role.org }}</span>
+      {% endfor %}
+    </div>
+
+    <div class="cc-profile-contact">
+      {% if profile.contact.email %}
+      <a href="mailto:{{ profile.contact.email }}" class="cc-contact-link">{{ profile.contact.email }}</a>
+      {% endif %}
+    </div>
+
+  </div>
+</section>

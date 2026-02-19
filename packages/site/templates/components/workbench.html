@@ -1,0 +1,13 @@
+<section class="cc-workbench" aria-label="Workbench">
+  <h2 class="cc-section-label">THE WORKBENCH</h2>
+  <p class="cc-workbench-intro">Things in motion. No details yet.</p>
+  <div class="cc-workbench-grid">
+    {% for project in workbench_projects %}
+    <div class="cc-workbench-item">
+      <span class="status-dot status-concept" aria-hidden="true"></span>
+      <span class="cc-workbench-name">{{ project.name }}</span>
+      <span class="cc-workbench-tagline">{{ project.tagline }}</span>
+    </div>
+    {% endfor %}
+  </div>
+</section>
