@@ -70,21 +70,16 @@ def filter_category_label(category: str) -> str:
 
 
 def filter_format_date(date_str: str | None) -> str:
-    """Format a YYYY-MM-DD date string for display."""
+    """Format a YYYY-MM-DD date string for display (cross-platform)."""
     if not date_str:
         return ""
     try:
         from datetime import date
         d = date.fromisoformat(date_str)
-        return d.strftime("%B %-d, %Y")
-    except (ValueError, AttributeError):
-        # strftime %-d is Unix-only; fall back on Windows
-        try:
-            from datetime import date
-            d = date.fromisoformat(date_str)
-            return d.strftime("%B %d, %Y").replace(" 0", " ")
-        except ValueError:
-            return date_str
+        # %d zero-pads; strip leading zero via replace (works on all platforms)
+        return d.strftime("%B %d, %Y").replace(" 0", " ")
+    except ValueError:
+        return date_str
 
 
 def build() -> None:

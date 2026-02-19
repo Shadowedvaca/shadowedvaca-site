@@ -12,13 +12,16 @@
   <div class="cc-panel-launch">Launching {{ project.launch_date | format_date }}</div>
   {% endif %}
 
-  {% set visible_links = project.links.items() | selectattr('1') | list %}
-  {% if visible_links %}
+  {% set ns = namespace(has_links=false) %}
+  {% for key, url in project.links.items() %}{% if url %}{% set ns.has_links = true %}{% endif %}{% endfor %}
+  {% if ns.has_links %}
   <div class="cc-panel-links">
-    {% for key, url in visible_links %}
+    {% for key, url in project.links.items() %}
+    {% if url %}
     <a href="{{ url }}"
        class="cc-link"
        {% if url.startswith('http') %}target="_blank" rel="noopener noreferrer"{% endif %}>{{ key | link_label }}</a>
+    {% endif %}
     {% endfor %}
   </div>
   {% endif %}
