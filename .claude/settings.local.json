@@ -13,7 +13,11 @@
       "Bash(rsync:*)",
       "Bash(scp:*)",
       "Bash(git tag:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(git rm:*)",
+      "Bash(bash deploy.sh)",
+      "Bash(curl:*)",
+      "Bash(echo:*)"
     ]
   }
 }

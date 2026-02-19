@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shadowedvaca LLC — Command Center</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=IBM+Plex+Sans:wght@300;400;600&family=Caveat:wght@400;600&display=swap');
+
+  :root {
+    --bg-deep: #0a0c10;
+    --bg-main: #0d1117;
+    --bg-terminal: #030806;
+    --cyan: #00d4ff;
+    --amber: #f0a030;
+    --green-bright: #33ff33;
+    --green-dim: #1a9e1a;
+    --green-faint: #0d4f0d;
+    --text-primary: #c8cdd3;
+    --text-secondary: #6b7280;
+    --status-live: #2ecc71;
+    --status-progress: #f0a030;
+    --status-concept: rgba(0,212,255,0.4);
+    --divider: #1e2533;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    background: var(--bg-deep);
+    color: var(--text-primary);
+    font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  /* ── TICKER BAR ── */
+  .ticker-bar {
+    height: 36px;
+    background: linear-gradient(90deg, #111620 0%, #1a1520 50%, #111620 100%);
+    border-bottom: 1px solid var(--divider);
+    overflow: hidden;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .ticker-track {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    animation: ticker-scroll 30s linear infinite;
+    width: max-content;
+  }
+
+  .ticker-track:hover { animation-play-state: paused; }
+
+  .ticker-item {
+    white-space: nowrap;
+    padding: 0 3rem;
+    font-size: 0.95rem;
+    letter-spacing: 0.03em;
+    color: var(--amber);
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  .ticker-item .dot {
+    display: inline-block;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+
+  .dot-live { background: var(--status-live); box-shadow: 0 0 6px var(--status-live); }
+  .dot-soon { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
+
+  @keyframes ticker-scroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  /* ── MAIN LAYOUT ── */
+  .layout {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+
+  .content-split {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* ── LEFT: MAIN STAGE (2/3) ── */
+  .main-stage {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .main-stage-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.5rem 2rem;
+    padding-bottom: 10rem; /* room for sticky note */
+    scrollbar-width: thin;
+    scrollbar-color: #1e2533 transparent;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .stage-view { display: none; }
+  .stage-view.active { display: block; animation: fadeIn 0.3s ease; }
+
+  .featured-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.85rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--cyan);
+    margin-bottom: 0.5rem;
+    opacity: 0.7;
+  }
+
+  .featured-title {
+    font-size: 2.6rem;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 0.25rem;
+    letter-spacing: -0.01em;
+  }
+
+  .featured-tagline {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    font-weight: 300;
+  }
+
+  .featured-meta {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+  }
+
+  .meta-tag {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.9rem;
+    padding: 0.35rem 0.85rem;
+    border: 1px solid var(--divider);
+    border-radius: 3px;
+    color: var(--text-secondary);
+    background: rgba(255,255,255,0.02);
+  }
+
+  .meta-tag.status-live { border-color: var(--status-live); color: var(--status-live); }
+  .meta-tag.status-soon { border-color: var(--amber); color: var(--amber); }
+  .meta-tag.status-concept { border-color: var(--cyan); color: var(--cyan); opacity: 0.6; }
+
+  .video-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16/9;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid var(--divider);
+    margin-bottom: 1.25rem;
+    flex-shrink: 0;
+  }
+
+  .video-wrapper iframe { width: 100%; height: 100%; border: none; }
+
+  .action-row {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+  }
+
+  .action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.55rem 1.1rem;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.95rem;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+
+  .action-btn.primary {
+    background: var(--cyan);
+    color: #000;
+    border: 1px solid var(--cyan);
+    font-weight: 600;
+  }
+
+  .action-btn.primary:hover {
+    background: transparent;
+    color: var(--cyan);
+    box-shadow: 0 0 12px rgba(0,212,255,0.3);
+  }
+
+  .action-btn.secondary {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--divider);
+  }
+
+  .action-btn.secondary:hover {
+    border-color: var(--text-secondary);
+    color: var(--text-primary);
+  }
+
+  .featured-description {
+    font-size: 1.05rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    max-width: 660px;
+  }
+
+  .featured-description p { margin-bottom: 0.75rem; }
+  .featured-description p:last-child { margin-bottom: 0; }
+
+  .feature-list {
+    margin: 1rem 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .feature-list li {
+    padding: 0.55rem 0 0.55rem 1.5rem;
+    position: relative;
+    color: var(--text-secondary);
+    font-size: 1.05rem;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+  }
+
+  .feature-list li:last-child { border-bottom: none; }
+
+  .feature-list li::before {
+    content: '▹';
+    position: absolute;
+    left: 0;
+    color: var(--cyan);
+  }
+
+  .screenshot-placeholder {
+    background: var(--bg-main);
+    border: 1px dashed var(--divider);
+    border-radius: 6px;
+    padding: 3rem 2rem;
+    text-align: center;
+    color: var(--text-secondary);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.95rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .screenshot-placeholder span {
+    display: block;
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    opacity: 0.3;
+  }
+
+  /* ── STICKY NOTE (on main stage) ── */
+  .sticky-note {
+    position: absolute;
+    bottom: 2.5rem;
+    /* left is set by JS for randomness */
+    left: 50%;
+    transform: translateX(-50%) rotate(-1.8deg);
+    z-index: 10;
+    width: 180px;
+    height: 180px;
+    padding: 1rem 1rem 0.8rem;
+    background: linear-gradient(145deg, #f7e67a 0%, #f0d94e 55%, #e8cc3a 100%);
+    border-radius: 2px;
+    box-shadow:
+      3px 4px 12px rgba(0,0,0,0.5),
+      inset 0 -2px 6px rgba(0,0,0,0.06);
+    font-family: 'Caveat', cursive;
+    color: #3a3520;
+    line-height: 1.35;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    pointer-events: auto;
+  }
+
+  .sticky-note::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 52px;
+    height: 12px;
+    background: rgba(200,200,180,0.45);
+    border-radius: 1px;
+  }
+
+  .sticky-note .sticky-name {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #2a2510;
+    margin-bottom: 0.15rem;
+  }
+
+  .sticky-note .sticky-company {
+    font-size: 1.05rem;
+    color: #5a5030;
+    margin-bottom: 0.35rem;
+  }
+
+  .sticky-note .sticky-detail {
+    font-size: 0.95rem;
+    color: #5a5030;
+  }
+
+  .sticky-note .sticky-tagline {
+    font-size: 0.8rem;
+    color: #7a7050;
+    margin-top: 0.4rem;
+    border-top: 1px solid rgba(0,0,0,0.08);
+    padding-top: 0.35rem;
+  }
+
+  .sticky-note a {
+    color: #3a6b8c;
+    text-decoration: none;
+  }
+
+  .sticky-note a:hover { text-decoration: underline; }
+
+  /* ── DIVIDER ── */
+  .split-divider {
+    width: 1px;
+    background: var(--divider);
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .split-divider::after {
+    content: '';
+    position: absolute;
+    top: 20%; bottom: 20%;
+    left: 0; width: 1px;
+    background: linear-gradient(to bottom, transparent, var(--cyan), transparent);
+    opacity: 0.3;
+  }
+
+  /* ── RIGHT: TERMINAL SIDEBAR (1/3) ── */
+  .terminal-sidebar {
+    flex: 1;
+    background: var(--bg-terminal);
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .terminal-sidebar::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.15) 2px,
+      rgba(0,0,0,0.15) 4px
+    );
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .terminal-sidebar::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    box-shadow: inset 0 0 60px rgba(51,255,51,0.03);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .terminal-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem 1.25rem;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--green-bright);
+    position: relative;
+    z-index: 3;
+    scrollbar-width: thin;
+    scrollbar-color: var(--green-faint) transparent;
+  }
+
+  .terminal-header {
+    color: var(--green-dim);
+    border-bottom: 1px solid var(--green-faint);
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+  }
+
+  .terminal-prompt { color: var(--green-dim); margin-right: 0.5rem; }
+
+  .terminal-section { margin-bottom: 1.25rem; }
+
+  .terminal-section-label {
+    color: var(--green-dim);
+    font-size: 0.8rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+    border-bottom: 1px dashed var(--green-faint);
+    padding-bottom: 0.25rem;
+  }
+
+  .terminal-project {
+    padding: 0.45rem 0 0.45rem 0.35rem;
+    border-bottom: 1px solid rgba(51,255,51,0.06);
+    cursor: pointer;
+    transition: all 0.15s;
+    border-left: 2px solid transparent;
+  }
+
+  .terminal-project:last-child { border-bottom: none; }
+
+  .terminal-project:hover {
+    background: rgba(51,255,51,0.04);
+    border-left-color: var(--green-bright);
+  }
+
+  .terminal-project.selected {
+    background: rgba(51,255,51,0.07);
+    border-left-color: var(--green-bright);
+  }
+
+  .project-name {
+    color: var(--green-bright);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+  }
+
+  .project-name .status-char { font-size: 0.85rem; }
+  .status-char.live { color: var(--green-bright); }
+  .status-char.progress { color: var(--amber); }
+  .status-char.concept { color: var(--cyan); opacity: 0.5; }
+  .status-char.archived { color: var(--green-faint); }
+
+  .project-desc {
+    color: var(--green-dim);
+    font-size: 0.85rem;
+    padding-left: 1.25rem;
+    margin-top: 0.15rem;
+  }
+
+  .terminal-cursor {
+    display: inline-block;
+    width: 9px;
+    height: 15px;
+    background: var(--green-bright);
+    animation: blink 1s step-end infinite;
+    vertical-align: text-bottom;
+    margin-left: 2px;
+  }
+
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* ── BOTTOM BAR ── */
+  .bottom-bar {
+    height: 30px;
+    background: #111620;
+    border-top: 1px solid var(--divider);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.5rem;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .content-split { flex-direction: column; }
+
+    .main-stage {
+      flex: none;
+      overflow: visible;
+    }
+
+    .main-stage-scroll {
+      overflow-y: auto;
+      padding: 1rem;
+      padding-bottom: 14rem;
+    }
+
+    .split-divider { width: 100%; height: 1px; }
+
+    .split-divider::after {
+      top: 0; bottom: 0;
+      left: 20%; right: 20%;
+      width: auto; height: 1px;
+      background: linear-gradient(to right, transparent, var(--cyan), transparent);
+    }
+
+    .terminal-sidebar { flex: none; max-height: 40vh; }
+
+    html, body { overflow: auto; height: auto; }
+    .layout { height: auto; min-height: 100vh; }
+    .featured-title { font-size: 2rem; }
+
+    .sticky-note {
+      width: 160px;
+      height: 160px;
+      bottom: 1.5rem;
+    }
+  }
+
+  @media (max-width: 500px) {
+    .main-stage-scroll { padding: 0.75rem; padding-bottom: 13rem; }
+    .featured-title { font-size: 1.6rem; }
+    .meta-tag { font-size: 0.85rem; padding: 0.25rem 0.6rem; }
+    .action-btn { font-size: 0.9rem; padding: 0.45rem 0.85rem; }
+
+    .sticky-note {
+      width: 150px;
+      height: 150px;
+      bottom: 1rem;
+    }
+
+    .sticky-note .sticky-name { font-size: 1.2rem; }
+    .sticky-note .sticky-company { font-size: 0.95rem; }
+    .sticky-note .sticky-detail { font-size: 0.85rem; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- TICKER -->
+  <div class="ticker-bar">
+    <div class="ticker-track">
+      <span class="ticker-item"><span class="dot dot-soon"></span>MEANDERING MUCK — iOS & Android launch coming late February</span>
+      <span class="ticker-item"><span class="dot dot-soon"></span>SALT ALL THE THINGS — WoW podcast premieres March 3, 2026</span>
+      <span class="ticker-item"><span class="dot dot-live"></span>PULL ALL THE THINGS — Guild site live at pullallthethings.com</span>
+      <span class="ticker-item"><span class="dot dot-soon"></span>MEANDERING MUCK — iOS & Android launch coming late February</span>
+      <span class="ticker-item"><span class="dot dot-soon"></span>SALT ALL THE THINGS — WoW podcast premieres March 3, 2026</span>
+      <span class="ticker-item"><span class="dot dot-live"></span>PULL ALL THE THINGS — Guild site live at pullallthethings.com</span>
+    </div>
+  </div>
+
+  <!-- SPLIT CONTENT -->
+  <div class="content-split">
+
+    <!-- LEFT: MAIN STAGE -->
+    <div class="main-stage">
+      <div class="main-stage-scroll">
+
+        <!-- === MEANDERING MUCK === -->
+        <div class="stage-view active" id="view-meandering-muck">
+          <span class="featured-label">▸ Featured Project</span>
+          <h1 class="featured-title">Meandering Muck</h1>
+          <p class="featured-tagline">A maze game with infinite replayability. Just a little sticky.</p>
+
+          <div class="featured-meta">
+            <span class="meta-tag status-soon">◉ Launching Late Feb 2026</span>
+            <span class="meta-tag">iOS + Android</span>
+            <span class="meta-tag">$2.99 Premium</span>
+            <span class="meta-tag">Godot 4</span>
+          </div>
+
+          <div class="video-wrapper">
+            <iframe src="https://www.youtube.com/embed/U35kuoxncfI" title="Meandering Muck Gameplay" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>
+
+          <div class="action-row">
+            <a href="#" class="action-btn primary">App Store — Coming Soon</a>
+            <a href="#" class="action-btn primary">Google Play — Coming Soon</a>
+            <a href="meandering-muck.html" class="action-btn secondary">Press Kit</a>
+            <a href="meandering-muck-support.html" class="action-btn secondary">Support</a>
+          </div>
+
+          <div class="featured-description">
+            <p>Tilt your phone to navigate a slime through procedurally generated mazes. Two modes: Competitive (timers, trophies, leaderboards) or Cozy (just solve at your own pace).</p>
+            <p>No ads. No data harvesting. No tricks. You pay once, you own the game.</p>
+          </div>
+        </div>
+
+        <!-- === PULL ALL THE THINGS === -->
+        <div class="stage-view" id="view-pull-all">
+          <span class="featured-label">▸ Guild Site</span>
+          <h1 class="featured-title">Pull All The Things</h1>
+          <p class="featured-tagline">WoW guild community with custom raid roster management.</p>
+
+          <div class="featured-meta">
+            <span class="meta-tag status-live">◉ Live</span>
+            <span class="meta-tag">World of Warcraft</span>
+            <span class="meta-tag">Community</span>
+          </div>
+
+          <div class="screenshot-placeholder">
+            <span>⚔</span>
+            Screenshot / demo preview goes here
+          </div>
+
+          <div class="action-row">
+            <a href="https://pullallthethings.com" class="action-btn primary" target="_blank">Visit Site</a>
+            <a href="https://discord.gg/jgSSRBvjHM" class="action-btn secondary" target="_blank">Discord</a>
+          </div>
+
+          <div class="featured-description">
+            <p>Guild website and community hub for Pull All The Things, a World of Warcraft raiding guild. Features a custom-built raid roster and composition management system.</p>
+          </div>
+        </div>
+
+        <!-- === SALT ALL THE THINGS === -->
+        <div class="stage-view" id="view-salt-all">
+          <span class="featured-label">▸ Upcoming — Podcast</span>
+          <h1 class="featured-title">Salt All The Things</h1>
+          <p class="featured-tagline">A WoW podcast. Premiering March 3, 2026.</p>
+
+          <div class="featured-meta">
+            <span class="meta-tag status-soon">◉ Launching 3/3/2026</span>
+            <span class="meta-tag">World of Warcraft</span>
+            <span class="meta-tag">Podcast</span>
+          </div>
+
+          <div class="screenshot-placeholder">
+            <span>🎙</span>
+            Podcast branding / episode preview goes here
+          </div>
+
+          <div class="action-row">
+            <a href="https://saltallthethings.com" class="action-btn primary" target="_blank">Visit Site</a>
+          </div>
+
+          <div class="featured-description">
+            <p>A World of Warcraft podcast launching March 2026. Built with a custom show planning system for episode organization, topic tracking, and guest coordination.</p>
+          </div>
+        </div>
+
+        <!-- === SV-TOOLS === -->
+        <div class="stage-view" id="view-sv-tools">
+          <span class="featured-label">▸ In Development</span>
+          <h1 class="featured-title">sv-tools</h1>
+          <p class="featured-tagline">Developer tools and automation suite.</p>
+
+          <div class="featured-meta">
+            <span class="meta-tag status-concept">◉ In Progress</span>
+            <span class="meta-tag">Python</span>
+            <span class="meta-tag">Internal Tools</span>
+          </div>
+
+          <div class="featured-description">
+            <p>A collection of developer tools and automation utilities built to support Shadowedvaca projects. Designed as a loosely coupled ecosystem with shared data schemas.</p>
+          </div>
+        </div>
+
+        <!-- === SHOW PLANNER === -->
+        <div class="stage-view" id="view-show-planner">
+          <span class="featured-label">▸ System — Custom Built</span>
+          <h1 class="featured-title">Podcast Show Planner</h1>
+          <p class="featured-tagline">Custom planning tool for podcast production.</p>
+
+          <div class="featured-meta">
+            <span class="meta-tag status-live">◉ In Use</span>
+            <span class="meta-tag">Python</span>
+            <span class="meta-tag">Production Tool</span>
+          </div>
+
+          <div class="screenshot-placeholder">
+            <span>📋</span>
+            Demo / screenshot of the show planner goes here
+          </div>
+
+          <div class="action-row">
+            <a href="#" class="action-btn secondary">Live Demo — Coming Soon</a>
+          </div>
+
+          <div class="featured-description">
+            <p>A custom-built podcast production planning system. Handles episode scheduling, topic management, segment planning, guest coordination, and show rundowns.</p>
+            <p>Built to support Salt All The Things and designed to be reusable for any podcast workflow.</p>
+          </div>
+
+          <ul class="feature-list">
+            <li>Episode timeline with segment breakdown</li>
+            <li>Topic queue with priority ranking</li>
+            <li>Guest scheduling and coordination tracking</li>
+            <li>Rundown templates with timing estimates</li>
+            <li>Notes and research linking per topic</li>
+          </ul>
+        </div>
+
+        <!-- === RAID TEAM MANAGER === -->
+        <div class="stage-view" id="view-raid-manager">
+          <span class="featured-label">▸ System — Custom Built</span>
+          <h1 class="featured-title">Raid Team Manager</h1>
+          <p class="featured-tagline">Guild roster and composition management.</p>
+
+          <div class="featured-meta">
+            <span class="meta-tag status-live">◉ In Use</span>
+            <span class="meta-tag">Python</span>
+            <span class="meta-tag">Guild Operations</span>
+          </div>
+
+          <div class="screenshot-placeholder">
+            <span>⚔</span>
+            Demo / screenshot of the raid manager goes here
+          </div>
+
+          <div class="action-row">
+            <a href="#" class="action-btn secondary">Live Demo — Coming Soon</a>
+          </div>
+
+          <div class="featured-description">
+            <p>A roster and raid composition management tool built for Pull All The Things. Tracks players, roles, specs, availability, and generates optimal raid compositions.</p>
+          </div>
+
+          <ul class="feature-list">
+            <li>Roster management with role and spec tracking</li>
+            <li>Raid composition builder with balance indicators</li>
+            <li>Attendance and availability tracking</li>
+            <li>Bench rotation and substitution planning</li>
+            <li>Integration with guild Discord</li>
+          </ul>
+        </div>
+
+        <!-- === ITCH.IO ARCHIVE === -->
+        <div class="stage-view" id="view-itch-archive">
+          <span class="featured-label">▸ Archive</span>
+          <h1 class="featured-title">Meandering Muck (itch.io)</h1>
+          <p class="featured-tagline">The original game jam release, 2024.</p>
+
+          <div class="featured-meta">
+            <span class="meta-tag" style="border-color: var(--green-faint); color: var(--text-secondary);">◉ Archived</span>
+            <span class="meta-tag">Python</span>
+            <span class="meta-tag">Game Jam</span>
+          </div>
+
+          <div class="action-row">
+            <a href="https://shadowedvaca.itch.io/meandering-muck" class="action-btn secondary" target="_blank">View on itch.io</a>
+          </div>
+
+          <div class="featured-description">
+            <p>The original version of Meandering Muck, built in Python for a game jam about loops. This was the prototype that eventually evolved into the full mobile release built in Godot 4.</p>
+            <p>Kept here for historical purposes. The mobile version is the definitive experience.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- STICKY NOTE — positioned absolutely at bottom of main stage -->
+      <div class="sticky-note" id="stickyNote">
+        <div class="sticky-name">Mike</div>
+        <div class="sticky-company">Shadowedvaca LLC</div>
+        <div class="sticky-detail">Arizona</div>
+        <div class="sticky-detail"><a href="mailto:contact@shadowedvaca.com">contact@shadowedvaca.com</a></div>
+        <div class="sticky-tagline">20+ yrs data · self-taught dev<br>AI tinkerer</div>
+      </div>
+    </div>
+
+    <!-- DIVIDER -->
+    <div class="split-divider"></div>
+
+    <!-- RIGHT: TERMINAL SIDEBAR -->
+    <div class="terminal-sidebar">
+      <div class="terminal-content">
+        <div class="terminal-header">
+          <span class="terminal-prompt">shadowedvaca@cmd:~$</span> ls --projects<span class="terminal-cursor"></span>
+        </div>
+
+        <!-- ACTIVE -->
+        <div class="terminal-section">
+          <div class="terminal-section-label">── active ──</div>
+
+          <div class="terminal-project selected" data-target="view-meandering-muck">
+            <div class="project-name"><span class="status-char progress">▸</span> Meandering Muck</div>
+            <div class="project-desc">Tilt-controlled maze game. iOS & Android.</div>
+          </div>
+
+          <div class="terminal-project" data-target="view-pull-all">
+            <div class="project-name"><span class="status-char live">▸</span> Pull All The Things</div>
+            <div class="project-desc">WoW guild site + raid roster management</div>
+          </div>
+        </div>
+
+        <!-- UPCOMING -->
+        <div class="terminal-section">
+          <div class="terminal-section-label">── upcoming ──</div>
+
+          <div class="terminal-project" data-target="view-salt-all">
+            <div class="project-name"><span class="status-char progress">▸</span> Salt All The Things</div>
+            <div class="project-desc">WoW podcast. Premieres 3/3/2026.</div>
+          </div>
+
+          <div class="terminal-project" data-target="view-sv-tools">
+            <div class="project-name"><span class="status-char concept">▸</span> sv-tools</div>
+            <div class="project-desc">Dev tools & automation suite</div>
+          </div>
+        </div>
+
+        <!-- SYSTEMS -->
+        <div class="terminal-section">
+          <div class="terminal-section-label">── systems ──</div>
+
+          <div class="terminal-project" data-target="view-show-planner">
+            <div class="project-name"><span class="status-char live">▸</span> Show Planner</div>
+            <div class="project-desc">Custom podcast planning tool</div>
+          </div>
+
+          <div class="terminal-project" data-target="view-raid-manager">
+            <div class="project-name"><span class="status-char live">▸</span> Raid Team Manager</div>
+            <div class="project-desc">Guild roster & comp management</div>
+          </div>
+        </div>
+
+        <!-- ARCHIVE -->
+        <div class="terminal-section">
+          <div class="terminal-section-label">── archive ──</div>
+
+          <div class="terminal-project" data-target="view-itch-archive">
+            <div class="project-name"><span class="status-char archived">▸</span> Meandering Muck (itch.io)</div>
+            <div class="project-desc">Original game jam release, 2024</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM BAR -->
+  <div class="bottom-bar">
+    <span>© 2026 Shadowedvaca LLC</span>
+    <span>Independent Developer & Consultant</span>
+  </div>
+
+</div>
+
+<script>
+  // ── Terminal navigation ──
+  const projects = document.querySelectorAll('.terminal-project[data-target]');
+  const views = document.querySelectorAll('.stage-view');
+
+  projects.forEach(proj => {
+    proj.addEventListener('click', () => {
+      const targetId = proj.getAttribute('data-target');
+      projects.forEach(p => p.classList.remove('selected'));
+      proj.classList.add('selected');
+      views.forEach(v => v.classList.remove('active'));
+      const target = document.getElementById(targetId);
+      if (target) target.classList.add('active');
+      document.querySelector('.main-stage-scroll').scrollTop = 0;
+    });
+  });
+
+  // ── Sticky note random position ──
+  // Places the sticky note roughly centered ± up to 120px horizontally,
+  // with a slight random rotation. Recalculates on resize to stay in bounds.
+  function positionSticky() {
+    const sticky = document.getElementById('stickyNote');
+    const stage = sticky.parentElement;
+    const stageWidth = stage.offsetWidth;
+    const stickyWidth = sticky.offsetWidth;
+
+    // Safe range: keep fully within the main stage
+    const margin = 24;
+    const center = stageWidth / 2;
+    const maxOffset = Math.min(120, (stageWidth - stickyWidth) / 2 - margin);
+
+    // Random offset from center
+    const offset = (Math.random() * 2 - 1) * maxOffset;
+    const leftPos = center - (stickyWidth / 2) + offset;
+
+    // Random slight rotation between -3 and 1 degrees
+    const rotation = -3 + Math.random() * 4;
+
+    sticky.style.left = leftPos + 'px';
+    sticky.style.transform = `rotate(${rotation}deg)`;
+  }
+
+  positionSticky();
+  window.addEventListener('resize', positionSticky);
+</script>
+</body>
+</html>

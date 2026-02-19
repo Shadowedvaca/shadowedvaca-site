@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This is the existing shadowedvaca-site repo, being restructured from a simple GitHub Pages site into a dark-themed "command center" dashboard hosted on Hetzner. The site serves as a living portfolio and launchpad for all of Mike's projects — games, podcasts, tools, and consulting work.
+This is the existing shadowedvaca-site repo, being rebuilt from a simple GitHub Pages site into a dark-themed split-screen "command center" hosted on Hetzner. The site serves as a living portfolio and launchpad for all of Mike's projects — games, podcasts, tools, and consulting work.
 
 The site is **data-driven**: JSON data files → Python build script → static HTML/CSS/JS → served by Nginx on Hetzner.
 
@@ -10,76 +10,81 @@ The site is **data-driven**: JSON data files → Python build script → static 
 
 This repo already contains files from the current GitHub Pages site. **These files stay where they are.** Do not move or rename them. The build script copies them into `dist/` during build, preserving their current paths.
 
-**Meandering Muck pages (DO NOT MODIFY content or styling):**
-- `meandering-muck.html` — Press kit
+**Existing files at root (do not move, do not modify content/styling):**
+- `meandering-muck.html` — Press kit page
 - `meandering-muck-support.html` — Support form
 - `meandering-muck-privacy.html` — Privacy policy
 - `support-form-google-web-app.js` — Google Apps Script reference (not served directly)
 - `assets/meandering-muck/` — Images, press kit zip
 
-**Old files (superseded by the new build, but left in repo — git history preserves everything):**
-- `index.html` — Old homepage (new command center replaces it in `dist/`)
-- `style.css` — Old styles (new CSS replaces it in `dist/`)
-- `CNAME` — GitHub Pages config (irrelevant once DNS moves to Hetzner)
+**Existing files that will be superseded (kept in repo but not served):**
+- `index.html` — Old homepage (replaced by generated command center)
+- `style.css` — Old styles (replaced by new CSS)
+- `CNAME` — GitHub Pages config (not used on Hetzner)
 
-The build script generates the new `dist/index.html` and copies the MM files alongside it. Nginx serves from `dist/`. The old root-level `index.html` and `style.css` are never served.
-
-## Target Architecture
+## Architecture
 
 ```
 shadowedvaca-site/
 ├── packages/
-│   ├── core/                         ← Shared data layer (Pydantic schemas + data access)
-│   │   ├── schemas/                  ← Pydantic models for Project, Announcement, Profile, Link
-│   │   ├── data.py                   ← Data access functions (load/validate JSON)
+│   ├── core/                             ← Shared data layer (Pydantic schemas + data access)
+│   │   ├── schemas/
+│   │   │   ├── project.py                ← Project model (name, status, description, links, features, etc.)
+│   │   │   ├── announcement.py           ← Ticker announcement model
+│   │   │   ├── profile.py                ← Owner profile model
+│   │   │   └── link.py                   ← Link model
+│   │   ├── data.py                       ← Data access functions (load/validate JSON)
 │   │   └── __init__.py
-│   └── site/                         ← Command center renderer
-│       ├── templates/                ← Jinja2 templates
-│       │   ├── base.html
-│       │   ├── index.html
-│       │   └── components/           ← ticker.html, hero.html, panel.html, profile.html, workbench.html
+│   └── site/
+│       ├── templates/
+│       │   ├── base.html                 ← Full page shell (head, layout, scripts)
+│       │   ├── index.html                ← Main template composing all components
+│       │   └── components/
+│       │       ├── ticker.html           ← Top announcement ticker bar
+│       │       ├── main_stage.html       ← Left 2/3: project detail views
+│       │       ├── terminal.html         ← Right 1/3: green CRT project index
+│       │       ├── sticky_note.html      ← Contact sticky note overlay
+│       │       └── bottom_bar.html       ← Footer status bar
 │       ├── static/
-│       │   ├── css/command-center.css
-│       │   ├── js/ticker.js
-│       │   └── assets/
-│       └── build.py                  ← Build script: reads data via core, renders to dist/
-├── data/                             ← JSON data files (single source of truth)
-│   ├── projects.json
-│   ├── announcements.json
-│   ├── profile.json
-│   └── links.json
-├── dist/                             ← Build output (served by Nginx) — add to .gitignore
-│   ├── index.html                    ← Generated command center homepage
-│   ├── css/
-│   ├── js/
-│   ├── assets/
-│   │   └── meandering-muck/          ← Copied from root assets/meandering-muck/
-│   ├── meandering-muck.html          ← Copied from root
-│   ├── meandering-muck-support.html  ← Copied from root
-│   └── meandering-muck-privacy.html  ← Copied from root
-├── docs/
-│   └── IMPLEMENTATION-PLAN.md
-│── # --- Existing files (untouched at root, copied to dist/ during build) ---
-├── meandering-muck.html
-├── meandering-muck-support.html
-├── meandering-muck-privacy.html
-├── support-form-google-web-app.js
-├── assets/meandering-muck/
-├── index.html                        ← OLD (not served, superseded by dist/)
-├── style.css                         ← OLD (not served, superseded by dist/)
-├── CNAME                             ← OLD (GitHub Pages, not used on Hetzner)
+│       │   ├── css/
+│       │   │   └── command-center.css    ← All styles for the command center
+│       │   └── js/
+│       │       ├── navigation.js         ← Terminal click → main stage swap
+│       │       └── sticky.js             ← Random sticky note positioning
+│       └── build.py                      ← Build script: data → templates → dist/
+├── data/
+│   ├── projects.json                     ← All projects with detail view content
+│   ├── announcements.json                ← Ticker items
+│   └── profile.json                      ← Owner info (name, contact, tagline)
+├── dist/                                 ← Build output (served by Nginx)
+│   ├── index.html                        ← Generated command center
+│   ├── css/ js/                          ← Generated static assets
+│   ├── meandering-muck.html              ← Copied from root (unchanged)
+│   ├── meandering-muck-support.html      ← Copied from root (unchanged)
+│   ├── meandering-muck-privacy.html      ← Copied from root (unchanged)
+│   └── assets/meandering-muck/           ← Copied from root (unchanged)
+├── reference/
+│   └── mockup-v3.html                    ← Design reference mockup (THE source of truth for look & feel)
+├── meandering-muck.html                  ← Source, copied to dist/
+├── meandering-muck-support.html          ← Source, copied to dist/
+├── meandering-muck-privacy.html          ← Source, copied to dist/
+├── support-form-google-web-app.js        ← Google Apps Script ref (not served)
+├── assets/meandering-muck/               ← Source, copied to dist/
+├── index.html                            ← OLD homepage (superseded, not served)
+├── style.css                             ← OLD styles (superseded, not served)
+├── CNAME                                 ← OLD GitHub Pages config (not used)
 ├── deploy.sh
 ├── requirements.txt
 ├── .gitignore
 ├── README.md
-└── CLAUDE.md                         ← This file
+└── CLAUDE.md
 ```
 
-## Key Principles
+### Key Architectural Decisions
 
-1. **No file moves.** Existing Meandering Muck files stay at root level. The build script copies them into `dist/` preserving their original filenames and relative paths. This means zero internal link updates are needed.
+1. **No file moves or renames.** Existing Meandering Muck files stay at root. The build script copies them into `dist/` preserving their original filenames and paths. Zero internal link updates needed.
 2. **sv-core is a reusable library.** The schemas and data access layer in `packages/core/` will eventually be consumed by sv-tools and sv-mcp (separate repos). Design it as a clean, importable Python package.
-3. **Data-driven everything.** The website reads from JSON files in `data/`. No content is hardcoded in templates. Every piece of text, every project card, every announcement comes from the data layer.
+3. **Data-driven everything.** The website reads from JSON files in `data/`. No content is hardcoded in templates. Every piece of text, every project, every announcement comes from the data layer.
 4. **Static output.** The build script generates pure static HTML/CSS/JS into `dist/`. No runtime server for the website. Nginx serves files.
 5. **Server supports multiple sites.** Nginx config uses sites-available/sites-enabled pattern so sv-tools can be added to the same Hetzner server later.
 
@@ -88,151 +93,159 @@ shadowedvaca-site/
 - **Python 3.11+** — Build system and data layer
 - **Pydantic** — Schema validation
 - **Jinja2** — HTML templating
-- **Vanilla HTML/CSS/JS** — No frontend frameworks. Minimal client-side JS (ticker animation, hover effects).
+- **Vanilla HTML/CSS/JS** — No frontend frameworks. Minimal client-side JS (navigation, sticky note positioning).
 - **Nginx** — Web server on Hetzner
 - **Let's Encrypt / Certbot** — SSL
 
-## Design: The Command Center
+## Design: Split-Screen Command Center
 
 ### Concept
-Dark-themed dashboard that looks like a mission control center. Not stacked cards. Not AI slop. Dense, informative, scannable — like a control room with multiple monitors showing different project statuses.
+
+A single-screen split-screen layout. NOT a scrolling page with stacked sections. NOT a grid of boxes/cards. The site fills the viewport and is divided into two zones:
+
+- **Main Stage (left 2/3):** Shows the detail view for whichever project is selected. This is the "monitor" — it displays one thing at a time with full focus.
+- **Terminal Sidebar (right 1/3):** A retro CRT-style green-on-black terminal that serves as the project index/navigation. Clicking a project here swaps the main stage content.
+
+Think: a mission control workstation where the left screen shows the active feed and the right screen is the directory.
+
+### Reference Mockup
+
+**The file `reference/mockup-v3.html` is the definitive design reference.** Open it in a browser. The generated site must match this mockup's layout, colors, typography, interactions, and feel. Use it as the source of truth when building templates and CSS.
 
 ### Color Palette
+
 | Role | Hex |
 |------|-----|
-| Background (deep) | `#0b0e13` |
-| Background (panel) | `#111620` |
-| Background (elevated) | `#1a1f2b` |
-| Border / divider | `#1e2533` |
+| Background (deep) | `#0a0c10` |
+| Background (terminal) | `#030806` |
+| Divider / border | `#1e2533` |
 | Text (primary) | `#c8cdd3` |
 | Text (secondary) | `#6b7280` |
 | Accent (primary/cyan) | `#00d4ff` |
 | Accent (attention/amber) | `#f0a030` |
+| Terminal green (bright) | `#33ff33` |
+| Terminal green (dim) | `#1a9e1a` |
+| Terminal green (faint) | `#0d4f0d` |
 | Status: live/shipped | `#2ecc71` |
 | Status: in-progress | `#f0a030` |
 | Status: concept | `#00d4ff` at 40% opacity |
 
-### Layout
-- **Top ticker**: Scrolling announcements (amber on dark), CSS animation, pauses on hover
-- **Hero section**: Featured project (Meandering Muck) with YouTube trailer embed, store links, tagline
-- **Project panels**: Grid of compact cards (NOT vertical stack). Each has: status dot, name, one-liner, links, category badge
-- **Profile bar**: Compact horizontal section — name, title, skills as tags, roles, contact
-- **Workbench**: Dimmer section for codename teasers and upcoming concepts
-- **Desktop**: CSS Grid layout, panels side by side
-- **Mobile (<768px)**: Panels stack to single column, ticker stays at top
+### Layout Components
+
+**Ticker Bar (top, full width):**
+- Scrolling horizontal announcements, amber text on dark background
+- CSS animation, pauses on hover
+- Data-driven from `announcements.json`
+
+**Main Stage (left 2/3 of viewport):**
+- Shows one project detail view at a time
+- Each project view contains: category label, title, tagline, meta tags (status, platform, tech), content area (video embed, screenshots, or placeholder), action buttons (links to sites, demos, press kits), description text, and optionally a feature list
+- Content scrolls vertically within this zone if needed
+- Meandering Muck is the default view on load
+- Smooth fade transition when switching between projects
+
+**Terminal Sidebar (right 1/3 of viewport):**
+- Black background with CRT scanline overlay (repeating-linear-gradient)
+- Green phosphor text (`#33ff33`) using Share Tech Mono font
+- Prompt line at top: `shadowedvaca@cmd:~$ ls --projects` with blinking cursor
+- Projects grouped into sections: `── active ──`, `── upcoming ──`, `── systems ──`, `── archive ──`
+- Each project is clickable — click highlights it (left green border) and swaps the main stage
+- Selected project gets a brighter background
+
+**Sticky Note (on main stage, bottom area):**
+- A square (~180×180px) yellow sticky note with a tape strip across the top
+- Contains: name, company, location, email, tagline
+- Uses Caveat (handwritten Google Font)
+- Positioned absolutely at the bottom of the main stage
+- **Semi-random horizontal position:** On page load, JS places it roughly centered ±120px (clamped to stay in bounds). Slight random rotation (-3° to +1°). Recalculates on window resize.
+
+**Bottom Bar (bottom, full width):**
+- Thin status bar with copyright and tagline
+- Share Tech Mono font, subdued color
 
 ### Typography
-System font stack: `-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif`
+
+- **Body text:** IBM Plex Sans (Google Fonts) — weights 300, 400, 600
+- **Monospace / UI elements:** Share Tech Mono (Google Fonts)
+- **Sticky note:** Caveat (Google Fonts) — weights 400, 600
+
+System font stack as fallback: `-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif`
 
 ### Visual Effects
-- Panel border glow on hover (subtle cyan)
-- Status dot pulse animation for "live" items
-- Ticker smooth scroll with seamless loop
-- No heavy animations. Performance matters.
 
-## Projects to Display
+- CRT scanline overlay on terminal (CSS repeating-linear-gradient, pointer-events: none)
+- Subtle inner glow on terminal (box-shadow inset, green tint)
+- Blinking cursor animation on terminal prompt
+- Cyan gradient glow on the split divider
+- Fade-in animation when swapping main stage views
+- Terminal project highlight on hover (faint green background + left border)
+- **No heavy animations. Performance matters.**
 
-### Featured (Hero Section)
-- **Meandering Muck** — Tilt-controlled maze game. Launching ~2/24/2026 on iOS and Android.
-  - YouTube trailer: https://www.youtube.com/embed/U35kuoxncfI
-  - Press kit: /meandering-muck.html
-  - Original itch.io release: https://shadowedvaca.itch.io/meandering-muck
-  - App Store / Google Play links: TBD (use placeholder "Coming Soon" badges)
+### Responsive Behavior
 
-### Project Panel Cards
-- **Salt All The Things** — WoW podcast. Launching 3/3/2026. Site: https://saltallthethings.com
-- **Pull All The Things** — WoW guild site with raid roster management. Site: https://pullallthethings.com, Discord: https://discord.gg/jgSSRBvjHM
-- **sv-tools** — Developer tools and automation. In progress. Open source planned.
-- **Podcast Show Planner** — Custom show planning system built for SATT. Live at saltallthethings.com
-- **Raid Team Manager** — Roster and raid management built for PATT. Live at pullallthethings.com
+- **Desktop (>900px):** Side-by-side split, viewport-height layout, no page scroll
+- **Tablet/Mobile (≤900px):** Stacks vertically — main stage on top, terminal below (max-height 40vh). Page scrolls. Ticker stays at top.
+- **Small mobile (≤500px):** Reduced padding, smaller title font
 
-### Workbench (Teasers)
-- Placeholder codenames with dim status dots. No real details yet.
+### Interaction
 
-## Server Details
-
-- **Provider**: Hetzner Cloud
-- **Plan**: CPX11 (2 vCPU, 2 GB RAM, 40 GB disk)
-- **IP**: 5.78.114.224
-- **Datacenter**: Hillsboro, OR (hil-dc1)
-- **Target OS**: Ubuntu 24.04 LTS (server will be rebuilt fresh before Phase 4)
-- **Domain**: shadowedvaca.com (DNS at Bluehost, will be pointed to Hetzner IP)
-
-## Implementation Phases
-
-Work through these phases in order. Commit at the end of each phase and present a summary for review before moving to the next.
-
-### Phase 1: Project Scaffolding & Data Layer
-- Create .gitignore (include dist/, __pycache__/, *.pyc, .env, etc.)
-- Create the packages/ directory structure
-- Create pyproject.toml with dependencies (jinja2, pydantic)
-- Create requirements.txt
-- Create Pydantic models in packages/core/schemas/
-- Create data access module (packages/core/data.py)
-- Seed JSON data files in data/
-- Write test script to validate data loading
-- Create README.md
-- Commit: "add command center scaffolding and data layer"
-- **STOP FOR REVIEW**
-
-### Phase 2: Build System & Templates
-- Create build.py that reads data via sv-core and renders Jinja2 templates to dist/
-- Build copies existing MM files from root into dist/ (preserving filenames and relative paths)
-- Build copies assets/meandering-muck/ into dist/assets/meandering-muck/
-- Create all Jinja2 templates (base, index, components)
-- Create placeholder CSS and JS
-- Verify build produces valid HTML
-- **STOP FOR REVIEW**
-
-### Phase 3: Command Center Visual Design
-- Implement full dark-theme CSS per design spec
-- Implement ticker.js animation
-- Responsive layout (desktop grid, mobile stack)
-- Test at multiple viewport sizes
-- **STOP FOR REVIEW**
-
-### Phase 4: Server Provisioning & Deployment
-- REQUIRES: Mike to rebuild server to Ubuntu 24.04, share SSH access, update DNS
-- SSH into server, security setup (deploy user, firewall, disable root password login)
-- Install and configure Nginx with sites-available pattern
-- SSL via Certbot
-- Create deploy.sh script
-- Initial deployment
-- **STOP FOR REVIEW**
-
-### Phase 5: Content Polish & Launch Readiness
-- Verify all links
-- Add Open Graph / Twitter Card meta tags
-- Add favicon
-- Performance check
-- Final deploy
-- Tag as v1.0
-- **STOP FOR REVIEW**
+- Clicking a project in the terminal sidebar:
+  1. Removes `selected` class from all terminal projects
+  2. Adds `selected` class to clicked project
+  3. Hides all `.stage-view` elements
+  4. Shows the target `.stage-view` with fade-in animation
+  5. Scrolls main stage content area to top
 
 ## Data Schemas
 
-See data/*.json for the current data. The Pydantic models in packages/core/schemas/ must validate this data.
+The Pydantic models in `packages/core/schemas/` must validate the JSON data. Key models:
 
 ### Project
-- id (str), name (str), tagline (str), description (str)
-- status: "shipped" | "live" | "launching" | "in-progress" | "concept"
-- category: "game" | "podcast" | "wow" | "tool"
-- featured (bool), visibility: "public" | "teaser" | "hidden"
-- links (dict of str→str|null), launch_date (str|null), image (str|null), sort_order (int)
+- `id` (str) — unique identifier, maps to stage view ID
+- `name` (str) — display name
+- `tagline` (str) — one-liner shown under title
+- `description` (list[str]) — paragraphs of description text
+- `status` — `"live"` | `"launching"` | `"in-progress"` | `"concept"` | `"archived"`
+- `category` (str) — label shown above title (e.g., "Featured Project", "System — Custom Built")
+- `section` — `"active"` | `"upcoming"` | `"systems"` | `"archive"` — which terminal group it belongs to
+- `terminal_desc` (str) — short description shown in terminal sidebar
+- `meta_tags` (list[dict]) — tags shown in the meta row (label + optional status style)
+- `links` (list[dict]) — action buttons (label, url, style: primary/secondary)
+- `features` (list[str], optional) — feature bullet list for systems
+- `media` (dict, optional) — video embed URL, screenshot paths, or placeholder config
+- `sort_order` (int) — ordering within section
+- `featured` (bool) — if true, this is the default view on page load
 
 ### Announcement
-- id (str), text (str), date (str), active (bool), priority (int)
+- `id` (str), `text` (str), `dot_style` (str: "live" or "soon"), `active` (bool), `sort_order` (int)
 
 ### Profile
-- name, title, company, location, bio (str)
-- skills (list[str]), roles (list[dict]), contact (dict)
+- `name`, `company`, `location`, `email`, `tagline` (str)
+- `bottom_bar_tagline` (str) — text shown in bottom status bar
 
-### Link
-- label, url, platform, category (str)
+## Projects Data
+
+### Active
+- **Meandering Muck** — Tilt-controlled maze game. Launching late Feb 2026 on iOS/Android. Featured (default view). Has YouTube embed, store link placeholders, press kit and support links.
+- **Pull All The Things** — WoW guild site + raid roster management. Live. Links to site and Discord.
+
+### Upcoming
+- **Salt All The Things** — WoW podcast. Launching 3/3/2026. Link to site.
+- **sv-tools** — Dev tools & automation. In progress. No external links yet.
+
+### Systems
+- **Podcast Show Planner** — Custom podcast planning tool. In use. Will have demo link. Features: episode timeline, topic queue, guest scheduling, rundown templates, research linking.
+- **Raid Team Manager** — Guild roster & comp management. In use. Will have demo link. Features: roster management, comp builder, attendance tracking, bench rotation, Discord integration.
+
+### Archive
+- **Meandering Muck (itch.io)** — Original game jam release, 2024. Link to itch.io page.
 
 ## Important Notes
 
-- sv-tools and sv-mcp are SEPARATE repos. Do not scaffold them here. sv-core in this repo will eventually be extracted as a dependency they consume.
-- Keep client-side JavaScript minimal. No React, no Vue, no frameworks. Vanilla JS only.
-- The site must load fast. It's static files — there's no excuse for slow performance.
-- Mike is on Windows. All scripts must work on Windows (use Python for cross-platform compatibility, avoid bash-only constructs in build scripts).
+- **The reference mockup (`reference/mockup-v3.html`) is the design bible.** Match it closely.
+- sv-tools and sv-mcp are SEPARATE repos. Do not scaffold them here.
+- The Meandering Muck sub-pages are existing files. Copy them as-is during build. Do not modify their content or styling.
+- Keep client-side JavaScript minimal. Vanilla JS only. No React, Vue, or frameworks.
+- The site must load fast. Static files — no excuse for slow performance.
+- Mike is on Windows. All scripts must work on Windows (use Python for cross-platform compatibility).
+- Google Fonts (IBM Plex Sans, Share Tech Mono, Caveat) should be loaded from Google CDN, not self-hosted.
