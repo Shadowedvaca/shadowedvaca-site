@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#0a0c10">
+  <title>404 — Not Found | Shadowedvaca LLC</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      background: #030806;
+      color: #33ff33;
+      font-family: 'Share Tech Mono', 'Courier New', monospace;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* CRT scanline overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 0, 0, 0.15) 2px,
+        rgba(0, 0, 0, 0.15) 4px
+      );
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .terminal-box {
+      max-width: 520px;
+      width: 90%;
+      padding: 2rem 2.5rem;
+      border: 1px solid #0d4f0d;
+      box-shadow: inset 0 0 60px rgba(51, 255, 51, 0.03), 0 0 40px rgba(51, 255, 51, 0.05);
+    }
+
+    .prompt-line {
+      color: #1a9e1a;
+      font-size: 0.85rem;
+      letter-spacing: 0.1em;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid #0d4f0d;
+      padding-bottom: 0.75rem;
+    }
+
+    .error-code {
+      font-size: 4rem;
+      color: #33ff33;
+      letter-spacing: 0.1em;
+      text-shadow: 0 0 20px rgba(51, 255, 51, 0.4);
+      margin-bottom: 0.5rem;
+    }
+
+    .error-label {
+      font-size: 1rem;
+      color: #1a9e1a;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+    }
+
+    .error-msg {
+      color: #1a9e1a;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      margin-bottom: 1.75rem;
+    }
+
+    .error-msg span { color: #33ff33; }
+
+    .nav-links {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .nav-links a {
+      color: #33ff33;
+      text-decoration: none;
+      font-size: 0.9rem;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid #0d4f0d;
+      padding-bottom: 2px;
+      transition: color 0.15s, border-color 0.15s;
+    }
+
+    .nav-links a:hover {
+      color: #00d4ff;
+      border-color: #00d4ff;
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 9px;
+      height: 15px;
+      background: #33ff33;
+      vertical-align: text-bottom;
+      margin-left: 2px;
+      animation: blink 1s step-end infinite;
+    }
+
+    @keyframes blink { 50% { opacity: 0; } }
+  </style>
+</head>
+<body>
+  <div class="terminal-box">
+    <div class="prompt-line">shadowedvaca@cmd:~$ ls --path<span class="cursor"></span></div>
+    <div class="error-code">404</div>
+    <div class="error-label">── file not found ──</div>
+    <div class="error-msg">
+      <span>ERROR:</span> The path you requested does not exist.<br>
+      It may have moved, been deleted, or never existed.
+    </div>
+    <nav class="nav-links">
+      <a href="/">↩ return home</a>
+      <a href="mailto:contact@shadowedvaca.com">contact</a>
+    </nav>
+  </div>
+</body>
+</html>

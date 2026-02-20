@@ -132,6 +132,10 @@ a:hover { text-decoration: underline; }
   scrollbar-color: #1e2533 transparent;
 }
 
+.main-stage-scroll::-webkit-scrollbar { width: 4px; }
+.main-stage-scroll::-webkit-scrollbar-track { background: transparent; }
+.main-stage-scroll::-webkit-scrollbar-thumb { background: #1e2533; border-radius: 2px; }
+
 /* --------------------------------------------------------------------------
    6. Stage Views (individual project detail panels)
    -------------------------------------------------------------------------- */
@@ -342,6 +346,7 @@ a:hover { text-decoration: underline; }
   flex-direction: column;
   justify-content: center;
   cursor: grab;
+  -webkit-user-select: none;
   user-select: none;
 }
 
@@ -476,6 +481,10 @@ a:hover { text-decoration: underline; }
   scrollbar-width: thin;
   scrollbar-color: var(--green-faint) transparent;
 }
+
+.terminal-content::-webkit-scrollbar { width: 4px; }
+.terminal-content::-webkit-scrollbar-track { background: transparent; }
+.terminal-content::-webkit-scrollbar-thumb { background: var(--green-faint); border-radius: 2px; }
 
 .terminal-header {
   color: var(--green-dim);
