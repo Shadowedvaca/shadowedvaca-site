@@ -98,6 +98,7 @@
   }
 
   function onTouchMove(e) {
+    if (!isDragging) { return; }
     var t = e.touches[0];
     moveDrag(t.clientX, t.clientY);
     e.preventDefault();
