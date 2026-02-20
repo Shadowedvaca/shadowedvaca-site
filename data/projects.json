@@ -29,33 +29,6 @@
     "featured": true
   },
   {
-    "id": "pull-all",
-    "name": "Pull All The Things",
-    "tagline": "Casual Heroic Raiding with Real-Life Balance & Immaculate Vibes",
-    "description": [
-      "A tight-knit World of Warcraft guild for adult gamers. Focused on Heroic raid progression and Mythic+ while keeping real-life first — no toxicity, no drama, just good pulls.",
-      "Guild website with a custom-built raid roster and composition management system. Raiding Friday & Saturday evenings with a 20-player Heroic roster on Sen'jin."
-    ],
-    "status": "live",
-    "category": "Guild Site",
-    "section": "active",
-    "terminal_desc": "WoW guild site + raid roster management",
-    "meta_tags": [
-      {"label": "\u25ce Live", "style": "live"},
-      {"label": "World of Warcraft"},
-      {"label": "Horde & Alliance"},
-      {"label": "Sen'jin"}
-    ],
-    "links": [
-      {"label": "Visit Site", "url": "https://pullallthethings.com", "style": "primary"},
-      {"label": "Discord", "url": "https://discord.gg/jgSSRBvjHM", "style": "secondary"}
-    ],
-    "features": null,
-    "media": {"type": "placeholder", "icon": "\u2694", "alt": "Screenshot / demo preview goes here"},
-    "sort_order": 2,
-    "featured": false
-  },
-  {
     "id": "salt-all",
     "name": "Salt All The Things",
     "tagline": "Two friends, two decades of WoW, and zero filter \u2014 the good, the bad, and the salty.",
@@ -64,8 +37,8 @@
       "Built on a custom show planning system for episode organization, topic tracking, and guest coordination. Launching on Spotify, Apple Podcasts, YouTube, and Amazon Music."
     ],
     "status": "launching",
-    "category": "Upcoming \u2014 Podcast",
-    "section": "upcoming",
+    "category": "Podcast",
+    "section": "active",
     "terminal_desc": "WoW podcast. Premieres 3/3/2026.",
     "meta_tags": [
       {"label": "\u25ce Launching 3/3/2026", "style": "soon"},
@@ -79,29 +52,144 @@
     ],
     "features": null,
     "media": {"type": "image", "image_url": "https://saltallthethings.com/images/512x512.jpeg", "alt": "Salt All The Things logo"},
+    "sort_order": 2,
+    "featured": false
+  },
+  {
+    "id": "pull-all",
+    "name": "Pull All The Things",
+    "tagline": "Casual Heroic Raiding with Real-Life Balance & Immaculate Vibes",
+    "description": [
+      "A tight-knit World of Warcraft guild for adult gamers. Focused on Heroic raid progression and Mythic+ while keeping real-life first \u2014 no toxicity, no drama, just good pulls.",
+      "Guild website with a custom-built raid roster and composition management system. Raiding Friday & Saturday evenings with a 20-player Heroic roster on Sen'jin."
+    ],
+    "status": "live",
+    "category": "Guild Site",
+    "section": "websites",
+    "terminal_desc": "WoW guild site + raid roster management",
+    "meta_tags": [
+      {"label": "\u25ce Live", "style": "live"},
+      {"label": "World of Warcraft"},
+      {"label": "Horde & Alliance"},
+      {"label": "Sen'jin"}
+    ],
+    "links": [
+      {"label": "Visit Site", "url": "https://pullallthethings.com", "style": "primary"},
+      {"label": "Discord", "url": "https://discord.gg/jgSSRBvjHM", "style": "secondary"}
+    ],
+    "features": null,
+    "media": {"type": "placeholder", "icon": "\u2694", "alt": "Screenshot coming soon"},
     "sort_order": 3,
     "featured": false
   },
   {
-    "id": "sv-tools",
-    "name": "sv-tools",
-    "tagline": "Developer tools and automation suite.",
+    "id": "fraying",
+    "name": "The Fraying",
+    "tagline": "A horror game that listens to your conversations and uses your vulnerability against you.",
     "description": [
-      "A collection of developer tools and automation utilities built to support Shadowedvaca projects. Designed as a loosely coupled ecosystem with shared data schemas."
+      "A horror game concept built around ambient listening \u2014 it observes what you talk about and surfaces your real-world anxieties inside the game world. The horror is personal because it knows you."
     ],
-    "status": "in-progress",
-    "category": "In Development",
-    "section": "upcoming",
-    "terminal_desc": "Dev tools & automation suite",
+    "status": "concept",
+    "category": "Game \u2014 Concept",
+    "section": "games",
+    "terminal_desc": "Horror game that listens and learns",
     "meta_tags": [
-      {"label": "\u25ce In Progress", "style": "concept"},
-      {"label": "Python"},
-      {"label": "Internal Tools"}
+      {"label": "\u25ce Concept", "style": "concept"},
+      {"label": "Horror"},
+      {"label": "AI-Driven"}
     ],
     "links": [],
     "features": null,
     "media": null,
     "sort_order": 4,
+    "featured": false
+  },
+  {
+    "id": "threads",
+    "name": "Threads",
+    "tagline": "Explore a patient's mindscape across therapy sessions where the world changes as trust deepens.",
+    "description": [
+      "A narrative exploration game where you move through a patient's mental landscape session by session. The world literally changes as the therapeutic relationship develops \u2014 new areas open, old ones transform, and the truth emerges in layers."
+    ],
+    "status": "concept",
+    "category": "Game \u2014 Concept",
+    "section": "games",
+    "terminal_desc": "Mindscape explorer, therapy as mechanic",
+    "meta_tags": [
+      {"label": "\u25ce Concept", "style": "concept"},
+      {"label": "Narrative"},
+      {"label": "Exploration"}
+    ],
+    "links": [],
+    "features": null,
+    "media": null,
+    "sort_order": 5,
+    "featured": false
+  },
+  {
+    "id": "the-tome",
+    "name": "The Tome",
+    "tagline": "Your map is alive, it has its own agenda, and it's learning to lie to you.",
+    "description": [
+      "A dungeon crawler where your map is the central mechanic \u2014 and the antagonist. It starts accurate, then begins omitting things, then actively misleads you. The only way forward is learning to read between its lies."
+    ],
+    "status": "concept",
+    "category": "Game \u2014 Concept",
+    "section": "games",
+    "terminal_desc": "Dungeon crawler with a lying map",
+    "meta_tags": [
+      {"label": "\u25ce Concept", "style": "concept"},
+      {"label": "Dungeon Crawler"},
+      {"label": "Puzzle"}
+    ],
+    "links": [],
+    "features": null,
+    "media": null,
+    "sort_order": 6,
+    "featured": false
+  },
+  {
+    "id": "convergence",
+    "name": "Convergence",
+    "tagline": "A co-op game where you hold your partner's map in a world that's falling apart around you.",
+    "description": [
+      "A co-op game built on asymmetric information. You can see where your partner needs to go, but not where you are. They can see where you are, but not where they need to go. Communication is the core mechanic."
+    ],
+    "status": "concept",
+    "category": "Game \u2014 Concept",
+    "section": "games",
+    "terminal_desc": "Asymmetric co-op navigation",
+    "meta_tags": [
+      {"label": "\u25ce Concept", "style": "concept"},
+      {"label": "Co-op"},
+      {"label": "Asymmetric"}
+    ],
+    "links": [],
+    "features": null,
+    "media": null,
+    "sort_order": 7,
+    "featured": false
+  },
+  {
+    "id": "dueling-decks",
+    "name": "Dueling Decks",
+    "tagline": "A two-player card game where your deck is your life force \u2014 every upgrade brings you closer to death.",
+    "description": [
+      "A card game where strengthening your deck depletes it. Your cards are your health, your resources, and your win condition \u2014 so every upgrade is also a sacrifice. The tension between power and survival is the entire game."
+    ],
+    "status": "concept",
+    "category": "Game \u2014 Concept",
+    "section": "games",
+    "terminal_desc": "Deckbuilder where upgrades cost your life",
+    "meta_tags": [
+      {"label": "\u25ce Concept", "style": "concept"},
+      {"label": "Card Game"},
+      {"label": "Two-Player"}
+    ],
+    "links": [],
+    "features": null,
+    "media": null,
+    "sort_order": 8,
     "featured": false
   },
   {
@@ -113,8 +201,8 @@
       "Built to support Salt All The Things and designed to be reusable for any podcast workflow."
     ],
     "status": "live",
-    "category": "System \u2014 Custom Built",
-    "section": "systems",
+    "category": "Utility \u2014 Custom Built",
+    "section": "utilities",
     "terminal_desc": "Custom podcast planning tool",
     "meta_tags": [
       {"label": "\u25ce In Use", "style": "live"},
@@ -132,7 +220,7 @@
       "Notes and research linking per topic"
     ],
     "media": {"type": "placeholder", "icon": "\ud83d\udccb", "alt": "Demo / screenshot of the show planner goes here"},
-    "sort_order": 5,
+    "sort_order": 9,
     "featured": false
   },
   {
@@ -143,8 +231,8 @@
       "A roster and raid composition management tool built for Pull All The Things. Tracks players, roles, specs, availability, and generates optimal raid compositions."
     ],
     "status": "live",
-    "category": "System \u2014 Custom Built",
-    "section": "systems",
+    "category": "Utility \u2014 Custom Built",
+    "section": "utilities",
     "terminal_desc": "Guild roster & comp management",
     "meta_tags": [
       {"label": "\u25ce In Use", "style": "live"},
@@ -162,7 +250,292 @@
       "Integration with guild Discord"
     ],
     "media": {"type": "placeholder", "icon": "\u2694", "alt": "Demo / screenshot of the raid manager goes here"},
-    "sort_order": 6,
+    "sort_order": 10,
+    "featured": false
+  },
+  {
+    "id": "sv-tools",
+    "name": "sv-tools",
+    "tagline": "Developer tools and automation suite.",
+    "description": [
+      "A collection of developer tools and automation utilities built to support Shadowedvaca projects. Designed as a loosely coupled ecosystem with shared data schemas."
+    ],
+    "status": "in-progress",
+    "category": "Utility \u2014 In Development",
+    "section": "utilities",
+    "terminal_desc": "Dev tools & automation suite",
+    "meta_tags": [
+      {"label": "\u25ce In Progress", "style": "concept"},
+      {"label": "Python"},
+      {"label": "Internal Tools"}
+    ],
+    "links": [],
+    "features": null,
+    "media": null,
+    "sort_order": 11,
+    "featured": false
+  },
+  {
+    "id": "npc-chatbots",
+    "name": "NPC Chatbots",
+    "tagline": "A browser-based tool for writers to build and test LLM-powered characters through interactive mind maps.",
+    "description": [
+      "A visual tool for writers and game designers to build, wire up, and test AI-driven characters. Design a character's personality, memories, and relationships as a mind map, then chat with them directly in the browser."
+    ],
+    "status": "concept",
+    "category": "Utility \u2014 Concept",
+    "section": "utilities",
+    "terminal_desc": "Build & test LLM characters visually",
+    "meta_tags": [
+      {"label": "\u25ce Concept", "style": "concept"},
+      {"label": "AI / LLM"},
+      {"label": "Writing Tool"}
+    ],
+    "links": [],
+    "features": null,
+    "media": null,
+    "sort_order": 12,
+    "featured": false
+  },
+  {
+    "id": "book-club",
+    "name": "Book Club",
+    "tagline": "A voting and scheduling app for book clubs with multi-channel notifications.",
+    "description": [
+      "A lightweight app for keeping book clubs organized. Members propose and vote on books, schedule meetings, and get notified through whatever channels they already use \u2014 Discord, text, email."
+    ],
+    "status": "concept",
+    "category": "Utility \u2014 Concept",
+    "section": "utilities",
+    "terminal_desc": "Voting & scheduling for book clubs",
+    "meta_tags": [
+      {"label": "\u25ce Concept", "style": "concept"},
+      {"label": "Community"},
+      {"label": "Scheduling"}
+    ],
+    "links": [],
+    "features": null,
+    "media": null,
+    "sort_order": 13,
+    "featured": false
+  },
+  {
+    "id": "game-group-os",
+    "name": "Game Group OS",
+    "tagline": "A game night intelligence platform that knows what your group knows and makes organizing effortless.",
+    "description": [
+      "An organizer for tabletop game nights that tracks who owns what, who knows the rules, player counts, play time, and preferences. Suggests the best game for tonight based on who's actually showing up."
+    ],
+    "status": "concept",
+    "category": "Utility \u2014 Concept",
+    "section": "utilities",
+    "terminal_desc": "Smart game night organizer",
+    "meta_tags": [
+      {"label": "\u25ce Concept", "style": "concept"},
+      {"label": "Tabletop"},
+      {"label": "Organizer"}
+    ],
+    "links": [],
+    "features": null,
+    "media": null,
+    "sort_order": 14,
+    "featured": false
+  },
+  {
+    "id": "wishlist",
+    "name": "Wishlist",
+    "tagline": "A personal wishlist tool with instant capture from anywhere \u2014 replacing Amazon, owned by you.",
+    "description": [
+      "A private wishlist that lives outside of Amazon. Capture items from any store via browser extension or share link. Share with family for birthdays and holidays. Your list, your data."
+    ],
+    "status": "concept",
+    "category": "Utility \u2014 Concept",
+    "section": "utilities",
+    "terminal_desc": "Personal wishlist, off Amazon",
+    "meta_tags": [
+      {"label": "\u25ce Concept", "style": "concept"},
+      {"label": "Personal"},
+      {"label": "Privacy-First"}
+    ],
+    "links": [],
+    "features": null,
+    "media": null,
+    "sort_order": 15,
+    "featured": false
+  },
+  {
+    "id": "journal",
+    "name": "Journal",
+    "tagline": "A minimal, encrypted journaling app built for quick entries on any device.",
+    "description": [
+      "A no-frills journaling app where entries are encrypted client-side before they leave your device. Fast to open, fast to write, fast to close. Built for the kind of journaling that actually happens \u2014 30 seconds before bed."
+    ],
+    "status": "concept",
+    "category": "Utility \u2014 Concept",
+    "section": "utilities",
+    "terminal_desc": "Minimal encrypted journaling",
+    "meta_tags": [
+      {"label": "\u25ce Concept", "style": "concept"},
+      {"label": "Personal"},
+      {"label": "Encrypted"}
+    ],
+    "links": [],
+    "features": null,
+    "media": null,
+    "sort_order": 16,
+    "featured": false
+  },
+  {
+    "id": "complexify",
+    "name": "Complexify",
+    "tagline": "A text tool that replaces words with fancier synonyms and learns your vocabulary preferences over time.",
+    "description": [
+      "Paste in text, get back a more sophisticated version. Complexify replaces plain words with elevated synonyms, adjusts to your taste as you accept and reject suggestions, and builds a personalized vocabulary profile over time."
+    ],
+    "status": "concept",
+    "category": "Utility \u2014 Concept",
+    "section": "utilities",
+    "terminal_desc": "Synonym replacer that learns your style",
+    "meta_tags": [
+      {"label": "\u25ce Concept", "style": "concept"},
+      {"label": "Writing Tool"},
+      {"label": "AI / NLP"}
+    ],
+    "links": [],
+    "features": null,
+    "media": null,
+    "sort_order": 17,
+    "featured": false
+  },
+  {
+    "id": "riven",
+    "name": "Riven",
+    "tagline": "A boy whose mind exists in two realities \u2014 one dying, one thriving \u2014 and only he can see both.",
+    "description": [
+      "A novel concept about a boy who simultaneously experiences two parallel realities: one decaying around him, one flourishing. No one else can see what he sees. The story is about what it costs to be the only witness."
+    ],
+    "status": "concept",
+    "category": "Creative Writing \u2014 Concept",
+    "section": "creative",
+    "terminal_desc": "Boy between two realities",
+    "meta_tags": [
+      {"label": "\u25ce Concept", "style": "concept"},
+      {"label": "Novel"},
+      {"label": "Speculative Fiction"}
+    ],
+    "links": [],
+    "features": null,
+    "media": null,
+    "sort_order": 18,
+    "featured": false
+  },
+  {
+    "id": "tick-tock",
+    "name": "Tick Tock",
+    "tagline": "A family discovers the old man they're caring for is a creature that feeds on fear by warping reality.",
+    "description": [
+      "A horror story about a family taking in an elderly stranger who seems harmless at first. As small things go wrong and reality begins to bend, they realize he isn't aging \u2014 he's feeding."
+    ],
+    "status": "concept",
+    "category": "Creative Writing \u2014 Concept",
+    "section": "creative",
+    "terminal_desc": "Horror: reality-warping creature",
+    "meta_tags": [
+      {"label": "\u25ce Concept", "style": "concept"},
+      {"label": "Horror"},
+      {"label": "Short Story"}
+    ],
+    "links": [],
+    "features": null,
+    "media": null,
+    "sort_order": 19,
+    "featured": false
+  },
+  {
+    "id": "side-quest",
+    "name": "Side Quest",
+    "tagline": "A hero's journey told by people who never noticed the hero \u2014 each narrator is too busy being the hero of their own story.",
+    "description": [
+      "An ensemble novel told entirely from the perspectives of background characters in a classic hero's journey. None of them realize there's a hero. Each one is the protagonist of their own completely unrelated story."
+    ],
+    "status": "concept",
+    "category": "Creative Writing \u2014 Concept",
+    "section": "creative",
+    "terminal_desc": "Hero's journey from the sidelines",
+    "meta_tags": [
+      {"label": "\u25ce Concept", "style": "concept"},
+      {"label": "Novel"},
+      {"label": "Comedy"}
+    ],
+    "links": [],
+    "features": null,
+    "media": null,
+    "sort_order": 20,
+    "featured": false
+  },
+  {
+    "id": "psychic-neighbors",
+    "name": "Psychic Neighbors",
+    "tagline": "A grandmother's coup, a psychic cold war, and a property line that keeps moving.",
+    "description": [
+      "A dark comedy about a suburban neighborhood with too many psychics and not enough land. A grandmother has decided the property line is a matter of principle. Things escalate from there."
+    ],
+    "status": "concept",
+    "category": "Creative Writing \u2014 Concept",
+    "section": "creative",
+    "terminal_desc": "Suburban psychic cold war",
+    "meta_tags": [
+      {"label": "\u25ce Concept", "style": "concept"},
+      {"label": "Novel"},
+      {"label": "Dark Comedy"}
+    ],
+    "links": [],
+    "features": null,
+    "media": null,
+    "sort_order": 21,
+    "featured": false
+  },
+  {
+    "id": "poetry",
+    "name": "Poetry",
+    "tagline": "A collection of poems from a transformative period.",
+    "description": [
+      "A personal poetry collection written during a period of significant change. No particular form or school \u2014 just honest writing from a time worth remembering."
+    ],
+    "status": "concept",
+    "category": "Creative Writing",
+    "section": "creative",
+    "terminal_desc": "Poetry collection",
+    "meta_tags": [
+      {"label": "\u25ce Concept", "style": "concept"},
+      {"label": "Poetry"}
+    ],
+    "links": [],
+    "features": null,
+    "media": null,
+    "sort_order": 22,
+    "featured": false
+  },
+  {
+    "id": "next-player",
+    "name": "Next Player",
+    "tagline": "A physical WiFi-connected button for tracking turns at board game night.",
+    "description": [
+      "A 3D-printed WiFi button that sits on the table during board games. Press it to pass the turn \u2014 it logs timestamps, tracks who's taking too long, and can send a nudge to someone's phone if they've been thinking for eight minutes."
+    ],
+    "status": "concept",
+    "category": "3D Printing \u2014 Concept",
+    "section": "printing",
+    "terminal_desc": "WiFi turn-tracker button",
+    "meta_tags": [
+      {"label": "\u25ce Concept", "style": "concept"},
+      {"label": "3D Printing"},
+      {"label": "IoT"}
+    ],
+    "links": [],
+    "features": null,
+    "media": null,
+    "sort_order": 23,
     "featured": false
   },
   {
@@ -187,7 +560,7 @@
     ],
     "features": null,
     "media": null,
-    "sort_order": 7,
+    "sort_order": 24,
     "featured": false
   }
 ]

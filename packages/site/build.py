@@ -89,7 +89,7 @@ def build() -> None:
             [p for p in all_projects if p.section == section],
             key=lambda p: p.sort_order,
         )
-        for section in ("active", "upcoming", "systems", "archive")
+        for section in ("active", "websites", "games", "utilities", "creative", "printing", "archive")
     }
 
     # All projects ordered by sort_order (for main stage view rendering)

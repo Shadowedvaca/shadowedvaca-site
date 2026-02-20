@@ -29,7 +29,7 @@ class Project(BaseModel):
     description: list[str]            # paragraphs of body text
     status: Literal["live", "launching", "in-progress", "concept", "archived"]
     category: str                     # label above title, e.g. "Featured Project"
-    section: Literal["active", "upcoming", "systems", "archive"]
+    section: Literal["active", "websites", "games", "utilities", "creative", "printing", "archive"]
     terminal_desc: str                # short line shown in terminal sidebar
     meta_tags: list[MetaTag]          # tag row under the title
     links: list[ProjectLink]          # action buttons
