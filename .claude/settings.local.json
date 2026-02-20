@@ -21,7 +21,10 @@
       "WebFetch(domain:www.saltallthethings.com)",
       "WebFetch(domain:www.pullallthethings.com)",
       "WebFetch(domain:saltallthethings.com)",
-      "WebFetch(domain:pullallthethings.com)"
+      "WebFetch(domain:pullallthethings.com)",
+      "Bash(node --version:*)",
+      "Bash(npm:*)",
+      "Bash(node -e:*)"
     ]
   }
 }

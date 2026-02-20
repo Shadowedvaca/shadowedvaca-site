@@ -1,6 +1,10 @@
 # Build output
 dist/
 
+# Node.js (book-club package)
+node_modules/
+packages/book-club/client/dist/
+
 # Python
 __pycache__/
 *.pyc

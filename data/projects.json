@@ -300,22 +300,33 @@
   {
     "id": "book-club",
     "name": "Book Club",
-    "tagline": "A voting and scheduling app for book clubs with multi-channel notifications.",
+    "tagline": "Propose books, vote, schedule meetings \u2014 a full club management app for small groups.",
     "description": [
-      "A lightweight app for keeping book clubs organized. Members propose and vote on books, schedule meetings, and get notified through whatever channels they already use \u2014 Discord, text, email."
+      "A full-stack web app for keeping book clubs organized. Members register with invite codes, propose books, vote using ranked-choice or approval voting, and schedule discussion meetings with availability polling.",
+      "Built with React, Node.js, and PostgreSQL. Invite-only with admin controls for round management, member oversight, and notifications."
     ],
-    "status": "concept",
-    "category": "Utility \u2014 Concept",
+    "status": "live",
+    "category": "Utility \u2014 Custom Built",
     "section": "utilities",
-    "terminal_desc": "Voting & scheduling for book clubs",
+    "terminal_desc": "Book club voting & scheduling app",
     "meta_tags": [
-      {"label": "\u25ce Concept", "style": "concept"},
-      {"label": "Community"},
-      {"label": "Scheduling"}
+      {"label": "\u25ce Live", "style": "live"},
+      {"label": "React + Node.js"},
+      {"label": "PostgreSQL"},
+      {"label": "Invite-Only"}
     ],
-    "links": [],
-    "features": null,
-    "media": null,
+    "links": [
+      {"label": "Open App", "url": "https://bookclub.shadowedvaca.com", "style": "primary"}
+    ],
+    "features": [
+      "Invite-code registration with admin-controlled access",
+      "Book proposals with cover art, author, and description",
+      "Ranked-choice and approval voting with tie-breaking",
+      "Meeting scheduling with yes/maybe/no availability polling",
+      "Admin panel for round management and member oversight",
+      "Data export for full club history"
+    ],
+    "media": {"type": "placeholder", "icon": "\ud83d\udcda", "alt": "Book Club app screenshot"},
     "sort_order": 13,
     "featured": false
   },
