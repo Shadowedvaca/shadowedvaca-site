@@ -631,24 +631,16 @@ a:hover { text-decoration: underline; }
    15. Responsive — Tablet / Mobile (≤ 900px): stacked layout
    -------------------------------------------------------------------------- */
 @media (max-width: 900px) {
+  /* Kill the entire nested-flex viewport-lock layout.
+     On mobile everything is plain block flow — body scrolls. */
   html, body { overflow: auto; height: auto; }
-  .layout { height: auto; min-height: 100vh; }
-  /* flex:none so content-split sizes to its children, not flex allocation.
-     overflow:visible so nothing is clipped. Body scroll takes over. */
-  .content-split { flex-direction: column; flex: none; overflow: visible; }
 
-  .main-stage {
-    flex: none;
-    overflow: visible;
-  }
+  .layout          { display: block; height: auto; min-height: 0; }
+  .content-split   { display: block; overflow: visible; }
+  .main-stage      { display: block; overflow: visible; position: relative; }
+  .main-stage-scroll { overflow: visible; padding: 1rem; padding-bottom: 2rem; }
 
-  .main-stage-scroll {
-    overflow: visible;
-    padding: 1rem;
-    padding-bottom: 2rem;
-  }
-
-  .split-divider { width: 100%; height: 1px; }
+  .split-divider { display: block; width: 100%; height: 1px; }
 
   .split-divider::after {
     top: 0; bottom: 0;
@@ -657,12 +649,10 @@ a:hover { text-decoration: underline; }
     background: linear-gradient(to right, transparent, var(--cyan), transparent);
   }
 
-  .terminal-sidebar { flex: none; max-height: 60vh; }
+  /* Terminal keeps its own internal flex + scroll — just cap its height */
+  .terminal-sidebar { max-height: 60vh; }
 
   .featured-title { font-size: 2rem; }
-
-  /* Sticky note hidden on mobile — its absolute positioning and touch
-     handlers interfere with page scroll. Contact info is in the terminal. */
   .sticky-note { display: none; }
 }
 
