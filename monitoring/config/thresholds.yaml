@@ -1,0 +1,50 @@
+server:
+  disk_warning_pct: 75
+  disk_critical_pct: 90
+  memory_warning_pct: 75
+  memory_critical_pct: 90
+  swap_warning_pct: 50
+  swap_critical_pct: 80
+  cpu_warning_pct: 80
+  cpu_critical_pct: 95
+  ssl_warning_days: 14
+  ssl_critical_days: 7
+  iowait_warning_pct: 30
+  iowait_critical_pct: 50
+
+cost:
+  hourly_warning_usd: 0.50
+  hourly_critical_usd: 2.00
+  daily_warning_usd: 2.00
+  daily_critical_usd: 10.00
+  weekly_warning_usd: 10.00
+  weekly_critical_usd: 50.00
+  monthly_warning_usd: 30.00
+  monthly_critical_usd: 100.00
+
+alerting:
+  cooldown_warning_minutes: 30
+  cooldown_critical_minutes: 15
+  email_to: "mike@shadowedvaca.com"
+
+# Token pricing (USD per 1M tokens) — update when pricing changes
+pricing:
+  anthropic:
+    claude-sonnet-4-6:
+      input: 3.00
+      output: 15.00
+      cache_read: 0.30
+      cache_write: 3.75
+    claude-haiku-4-5-20251001:
+      input: 0.80
+      output: 4.00
+      cache_read: 0.08
+      cache_write: 1.00
+  openai:
+    gpt-4o:
+      input: 2.50
+      output: 10.00
+  google:
+    gemini-2.0-flash:
+      input: 0.10
+      output: 0.40
