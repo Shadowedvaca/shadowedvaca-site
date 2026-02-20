@@ -655,6 +655,9 @@ a:hover { text-decoration: underline; }
     background: linear-gradient(to right, transparent, var(--cyan), transparent);
   }
 
+  /* Allow content to flow to body so body scroll works */
+  .content-split { overflow: visible; }
+
   .terminal-sidebar { flex: none; max-height: 60vh; }
 
   .featured-title { font-size: 2rem; }
