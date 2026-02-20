@@ -36,7 +36,6 @@
 
 html, body {
   height: 100%;
-  overflow: hidden;
   background: var(--bg-deep);
   color: var(--text-primary);
   font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -57,6 +56,7 @@ a:hover { text-decoration: underline; }
   display: flex;
   flex-direction: column;
   height: 100vh;
+  overflow: hidden;  /* Viewport scroll lock lives here, NOT on html/body */
 }
 
 .content-split {
@@ -631,11 +631,12 @@ a:hover { text-decoration: underline; }
    15. Responsive — Tablet / Mobile (≤ 900px): stacked layout
    -------------------------------------------------------------------------- */
 @media (max-width: 900px) {
-  /* Kill the entire nested-flex viewport-lock layout.
-     On mobile everything is plain block flow — body scrolls. */
-  html, body { overflow: auto; height: auto; }
+  /* Kill the viewport-lock layout. Everything becomes plain block flow.
+     html/body no longer have overflow:hidden (moved to .layout on desktop)
+     so we just need to undo .layout's lock. */
+  html, body { height: auto; }
 
-  .layout          { display: block; height: auto; min-height: 0; }
+  .layout          { display: block; height: auto; overflow: visible; }
   .content-split   { display: block; overflow: visible; }
   .main-stage      { display: block; overflow: visible; position: relative; }
   .main-stage-scroll { overflow: visible; padding: 1rem; padding-bottom: 2rem; }
