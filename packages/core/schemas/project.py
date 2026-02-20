@@ -15,10 +15,11 @@ class ProjectLink(BaseModel):
 
 
 class MediaConfig(BaseModel):
-    type: Literal["video", "placeholder"]
+    type: Literal["video", "placeholder", "image"]
     embed_url: Optional[str] = None   # for type="video" — YouTube embed URL
+    image_url: Optional[str] = None   # for type="image" — logo or banner image URL
     icon: Optional[str] = None        # for type="placeholder" — decorative emoji/char
-    alt: Optional[str] = None         # for type="placeholder" — caption text
+    alt: Optional[str] = None         # for type="placeholder" or "image" — caption/alt text
 
 
 class Project(BaseModel):

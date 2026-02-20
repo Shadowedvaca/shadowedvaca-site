@@ -31,9 +31,10 @@
   {
     "id": "pull-all",
     "name": "Pull All The Things",
-    "tagline": "WoW guild community with custom raid roster management.",
+    "tagline": "Casual Heroic Raiding with Real-Life Balance & Immaculate Vibes",
     "description": [
-      "Guild website and community hub for Pull All The Things, a World of Warcraft raiding guild. Features a custom-built raid roster and composition management system."
+      "A tight-knit World of Warcraft guild for adult gamers. Focused on Heroic raid progression and Mythic+ while keeping real-life first — no toxicity, no drama, just good pulls.",
+      "Guild website with a custom-built raid roster and composition management system. Raiding Friday & Saturday evenings with a 20-player Heroic roster on Sen'jin."
     ],
     "status": "live",
     "category": "Guild Site",
@@ -42,7 +43,8 @@
     "meta_tags": [
       {"label": "\u25ce Live", "style": "live"},
       {"label": "World of Warcraft"},
-      {"label": "Community"}
+      {"label": "Horde & Alliance"},
+      {"label": "Sen'jin"}
     ],
     "links": [
       {"label": "Visit Site", "url": "https://pullallthethings.com", "style": "primary"},
@@ -56,9 +58,10 @@
   {
     "id": "salt-all",
     "name": "Salt All The Things",
-    "tagline": "A WoW podcast. Premiering March 3, 2026.",
+    "tagline": "Two friends, two decades of WoW, and zero filter \u2014 the good, the bad, and the salty.",
     "description": [
-      "A World of Warcraft podcast launching March 2026. Built with a custom show planning system for episode organization, topic tracking, and guest coordination."
+      "A World of Warcraft podcast premiering March 3, 2026. Two longtime players with nothing to prove and everything to say \u2014 covering current content, hot takes, and the kind of conversations that only happen after 20 years in Azeroth.",
+      "Built on a custom show planning system for episode organization, topic tracking, and guest coordination. Launching on Spotify, Apple Podcasts, YouTube, and Amazon Music."
     ],
     "status": "launching",
     "category": "Upcoming \u2014 Podcast",
@@ -67,13 +70,14 @@
     "meta_tags": [
       {"label": "\u25ce Launching 3/3/2026", "style": "soon"},
       {"label": "World of Warcraft"},
-      {"label": "Podcast"}
+      {"label": "Podcast"},
+      {"label": "Spotify \u00b7 Apple \u00b7 YouTube"}
     ],
     "links": [
       {"label": "Visit Site", "url": "https://saltallthethings.com", "style": "primary"}
     ],
     "features": null,
-    "media": {"type": "placeholder", "icon": "\ud83c\udfa4", "alt": "Podcast branding / episode preview goes here"},
+    "media": {"type": "image", "image_url": "https://saltallthethings.com/images/512x512.jpeg", "alt": "Salt All The Things logo"},
     "sort_order": 3,
     "featured": false
   },

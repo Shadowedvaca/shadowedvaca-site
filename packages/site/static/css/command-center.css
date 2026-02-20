@@ -239,7 +239,23 @@ a:hover { text-decoration: underline; }
 }
 
 /* --------------------------------------------------------------------------
-   9. Action buttons
+   9. Project logo image
+   -------------------------------------------------------------------------- */
+.project-logo-wrapper {
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+}
+
+.project-logo {
+  max-height: 180px;
+  max-width: 100%;
+  border-radius: 8px;
+  display: block;
+}
+
+/* --------------------------------------------------------------------------
+   10. Action buttons
    -------------------------------------------------------------------------- */
 .action-row {
   display: flex;

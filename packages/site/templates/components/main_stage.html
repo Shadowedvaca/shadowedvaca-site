@@ -25,6 +25,10 @@
             loading="lazy">
           </iframe>
         </div>
+        {% elif project.media.type == "image" and project.media.image_url %}
+        <div class="project-logo-wrapper">
+          <img src="{{ project.media.image_url }}" alt="{{ project.media.alt or project.name }}" class="project-logo">
+        </div>
         {% elif project.media.type == "placeholder" %}
         <div class="screenshot-placeholder">
           {% if project.media.icon %}<span class="placeholder-icon" aria-hidden="true">{{ project.media.icon }}</span>{% endif %}
