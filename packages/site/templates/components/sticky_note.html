@@ -3,5 +3,8 @@
   <div class="sticky-company">{{ profile.company }}</div>
   <div class="sticky-detail">{{ profile.location }}</div>
   <div class="sticky-detail"><a href="mailto:{{ profile.email }}">{{ profile.email }}</a></div>
+  {% if profile.calendly_url %}
+  <div class="sticky-booking"><a href="{{ profile.calendly_url }}" target="_blank" rel="noopener noreferrer">Book time with me!</a></div>
+  {% endif %}
   <div class="sticky-tagline">{{ profile.tagline | nl2br }}</div>
 </div>

@@ -376,6 +376,23 @@ a:hover { text-decoration: underline; }
   color: #5a5030;
 }
 
+.sticky-booking {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-top: 0.3rem;
+}
+
+.sticky-booking a {
+  color: #3a6b8c;
+  text-decoration: underline;
+  text-decoration-color: rgba(58, 107, 140, 0.4);
+}
+
+.sticky-booking a:hover {
+  color: #2a5070;
+  text-decoration-color: #2a5070;
+}
+
 .sticky-tagline {
   font-size: 0.8rem;
   color: #7a7050;
