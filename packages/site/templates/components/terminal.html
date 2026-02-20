@@ -8,8 +8,7 @@
     {% set sections = [
       ("active",   "── active ──"),
       ("upcoming", "── upcoming ──"),
-      ("systems",  "── systems ──"),
-      ("archive",  "── archive ──")
+      ("systems",  "── systems ──")
     ] %}
 
     {% for section_key, section_label in sections %}
@@ -42,6 +41,37 @@
         </a>
       </div>
       {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if profile.funding_links %}
+    <div class="terminal-section">
+      <div class="terminal-section-label">── funding ──</div>
+      {% for link in profile.funding_links %}
+      <div class="terminal-contact">
+        <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer">
+          <span aria-hidden="true">&#x25b8;</span> {{ link.label }}
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% set archive_projects = projects_by_section["archive"] %}
+    {% if archive_projects %}
+    <div class="terminal-section">
+      <div class="terminal-section-label">── archive ──</div>
+
+      {% for project in archive_projects %}
+      <div class="terminal-project{% if project.featured %} selected{% endif %}" data-target="view-{{ project.id }}">
+        <div class="project-name">
+          <span class="status-char {{ project.status | status_char_class }}" aria-hidden="true">&#x25b8;</span>
+          {{ project.name }}
+        </div>
+        <div class="project-desc">{{ project.terminal_desc }}</div>
+      </div>
+      {% endfor %}
+
     </div>
     {% endif %}
 
