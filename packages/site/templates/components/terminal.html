@@ -34,9 +34,22 @@
     {% endif %}
     {% endfor %}
 
-    {% if profile.social_links %}
     <div class="terminal-section">
       <div class="terminal-section-label">── contact ──</div>
+      {% if profile.email %}
+      <div class="terminal-contact">
+        <a href="mailto:{{ profile.email }}">
+          <span aria-hidden="true">&#x25b8;</span> {{ profile.email }}
+        </a>
+      </div>
+      {% endif %}
+      {% if profile.calendly_url %}
+      <div class="terminal-contact">
+        <a href="{{ profile.calendly_url }}" target="_blank" rel="noopener noreferrer">
+          <span aria-hidden="true">&#x25b8;</span> Book time with me
+        </a>
+      </div>
+      {% endif %}
       {% for link in profile.social_links %}
       <div class="terminal-contact">
         <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer">
@@ -45,7 +58,6 @@
       </div>
       {% endfor %}
     </div>
-    {% endif %}
 
     {% if profile.funding_links %}
     <div class="terminal-section">
