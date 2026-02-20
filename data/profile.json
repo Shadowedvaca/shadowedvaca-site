@@ -5,5 +5,10 @@
   "email": "contact@shadowedvaca.com",
   "tagline": "20+ yrs data \u00b7 self-taught dev\nAI tinkerer",
   "bottom_bar_tagline": "Independent Developer & Consultant",
-  "calendly_url": "https://calendly.com/mike-morris-jr/30min"
+  "calendly_url": "https://calendly.com/mike-morris-jr/30min",
+  "social_links": [
+    {"label": "LinkedIn", "url": "https://www.linkedin.com/in/mike-morris/"},
+    {"label": "Reddit",   "url": "https://www.reddit.com/user/Shadowedvaca/"},
+    {"label": "GitHub",   "url": "https://github.com/Shadowedvaca"}
+  ]
 }

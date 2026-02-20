@@ -542,6 +542,36 @@ a:hover { text-decoration: underline; }
   margin-top: 0.15rem;
 }
 
+/* Contact links (LinkedIn, Reddit, GitHub, etc.) */
+.terminal-contact {
+  padding: 0.45rem 0 0.45rem 0.35rem;
+  border-bottom: 1px solid rgba(51, 255, 51, 0.06);
+  border-left: 2px solid transparent;
+  transition: background 0.15s, border-left-color 0.15s;
+}
+
+.terminal-contact:last-child { border-bottom: none; }
+
+.terminal-contact:hover {
+  background: rgba(51, 255, 51, 0.04);
+  border-left-color: var(--green-bright);
+}
+
+.terminal-contact a {
+  color: var(--green-bright);
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+}
+
+.terminal-contact a:hover {
+  text-decoration: none;
+  color: var(--green-bright);
+  opacity: 0.8;
+}
+
 /* Blinking cursor in the terminal prompt line */
 .terminal-cursor {
   display: inline-block;

@@ -32,5 +32,18 @@
     {% endif %}
     {% endfor %}
 
+    {% if profile.social_links %}
+    <div class="terminal-section">
+      <div class="terminal-section-label">── contact ──</div>
+      {% for link in profile.social_links %}
+      <div class="terminal-contact">
+        <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer">
+          <span aria-hidden="true">&#x25b8;</span> {{ link.label }}
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
   </div>
 </div>
