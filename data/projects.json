@@ -74,7 +74,8 @@
       {"label": "Spotify \u00b7 Apple \u00b7 YouTube"}
     ],
     "links": [
-      {"label": "Visit Site", "url": "https://saltallthethings.com", "style": "primary"}
+      {"label": "Visit Site", "url": "https://saltallthethings.com", "style": "primary"},
+      {"label": "Discord", "url": "https://discord.gg/jgSSRBvjHM", "style": "secondary"}
     ],
     "features": null,
     "media": {"type": "image", "image_url": "https://saltallthethings.com/images/512x512.jpeg", "alt": "Salt All The Things logo"},
