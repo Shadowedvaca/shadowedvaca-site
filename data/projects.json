@@ -24,7 +24,7 @@
       {"label": "Support", "url": "meandering-muck-support.html", "style": "secondary"}
     ],
     "features": null,
-    "media": {"type": "video", "embed_url": "https://www.youtube.com/embed/U35kuoxncfI"},
+    "media": {"type": "video", "embed_url": "https://www.youtube.com/embed/U35kuoxncfI", "image_url": "/assets/meandering-muck/Title_512_512.png", "alt": "Meandering Muck logo"},
     "sort_order": 1,
     "featured": true
   },

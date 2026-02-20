@@ -16,6 +16,11 @@
 
       {% if project.media %}
         {% if project.media.type == "video" and project.media.embed_url %}
+        {% if project.media.image_url %}
+        <div class="project-logo-wrapper">
+          <img src="{{ project.media.image_url }}" alt="{{ project.media.alt or project.name }}" class="project-logo">
+        </div>
+        {% endif %}
         <div class="video-wrapper">
           <iframe
             src="{{ project.media.embed_url }}"
