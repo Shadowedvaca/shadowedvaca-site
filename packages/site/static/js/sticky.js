@@ -1,12 +1,16 @@
 /**
  * Sticky note — shadowedvaca.com command center
  *
+ * Desktop only. On mobile (≤900px) the note is hidden via CSS.
+ *
  * On load: places the note at a semi-random horizontal position
  * (center ±120px, clamped) with a slight random rotation (-3° to +1°).
+ * Random values are generated ONCE at init and reused on resize so the
+ * note doesn't jump when the browser address bar shows/hides.
  *
- * Draggable: the user can grab and reposition the note anywhere within
- * the main stage. Supports mouse and touch. On resize, resets to the
- * random position only if the note hasn't been dragged yet.
+ * Draggable via mouse. Touch drag is intentionally disabled — the
+ * touchstart/touchmove preventDefault required for dragging blocks
+ * page scroll on mobile.
  */
 (function () {
   "use strict";
@@ -17,6 +21,11 @@
   var dragOffsetX = 0;
   var dragOffsetY = 0;
   var resizeTimer;
+
+  // Random values stored once at init — reused on every resize call so
+  // a viewport-height change (address bar show/hide) doesn't re-randomise.
+  var _offsetFrac = 0;   // -1 to +1, fraction of maxOffset
+  var _rotation   = 0;   // degrees
 
   // ── Initial random placement ─────────────────────────────────────────────
 
@@ -29,14 +38,12 @@
     var center      = stageWidth / 2;
     var maxOffset   = Math.min(120, (stageWidth - stickyWidth) / 2 - margin);
 
-    var offset   = (Math.random() * 2 - 1) * maxOffset;
-    var leftPos  = center - (stickyWidth / 2) + offset;
-    var rotation = -3 + Math.random() * 4;   // -3° to +1°
+    var leftPos = center - (stickyWidth / 2) + _offsetFrac * maxOffset;
 
     sticky.style.left      = leftPos + "px";
     sticky.style.top       = "auto";
     sticky.style.bottom    = "2.5rem";
-    sticky.style.transform = "rotate(" + rotation + "deg)";
+    sticky.style.transform = "rotate(" + _rotation + "deg)";
   }
 
   // ── Drag helpers ─────────────────────────────────────────────────────────
@@ -91,21 +98,6 @@
   function onMouseMove(e) { moveDrag(e.clientX, e.clientY); }
   function onMouseUp()    { endDrag(); }
 
-  function onTouchStart(e) {
-    var t = e.touches[0];
-    startDrag(t.clientX, t.clientY);
-    e.preventDefault();
-  }
-
-  function onTouchMove(e) {
-    if (!isDragging) { return; }
-    var t = e.touches[0];
-    moveDrag(t.clientX, t.clientY);
-    e.preventDefault();
-  }
-
-  function onTouchEnd() { endDrag(); }
-
   // ── Init ─────────────────────────────────────────────────────────────────
 
   function init() {
@@ -113,19 +105,18 @@
     if (!sticky) { return; }
     stage = sticky.parentElement;
 
+    // Generate random values once — reused on every positionSticky() call
+    _offsetFrac = Math.random() * 2 - 1;   // -1 to +1
+    _rotation   = -3 + Math.random() * 4;  // -3° to +1°
+
     positionSticky();
 
-    // Mouse
+    // Mouse drag (desktop only — touch drag disabled to keep page scroll working)
     sticky.addEventListener("mousedown", onMouseDown);
     document.addEventListener("mousemove", onMouseMove);
     document.addEventListener("mouseup",   onMouseUp);
 
-    // Touch (passive: false so we can call preventDefault)
-    sticky.addEventListener("touchstart", onTouchStart, { passive: false });
-    document.addEventListener("touchmove",  onTouchMove,  { passive: false });
-    document.addEventListener("touchend",   onTouchEnd);
-
-    // Re-randomise on resize only if the user hasn't dragged the note
+    // Re-calculate layout bounds on resize, reusing the same random position
     window.addEventListener("resize", function () {
       clearTimeout(resizeTimer);
       resizeTimer = setTimeout(positionSticky, 150);
