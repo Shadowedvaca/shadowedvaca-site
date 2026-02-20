@@ -633,7 +633,9 @@ a:hover { text-decoration: underline; }
 @media (max-width: 900px) {
   html, body { overflow: auto; height: auto; }
   .layout { height: auto; min-height: 100vh; }
-  .content-split { flex-direction: column; }
+  /* flex:none so content-split sizes to its children, not flex allocation.
+     overflow:visible so nothing is clipped. Body scroll takes over. */
+  .content-split { flex-direction: column; flex: none; overflow: visible; }
 
   .main-stage {
     flex: none;
@@ -654,9 +656,6 @@ a:hover { text-decoration: underline; }
     width: auto; height: 1px;
     background: linear-gradient(to right, transparent, var(--cyan), transparent);
   }
-
-  /* Allow content to flow to body so body scroll works */
-  .content-split { overflow: visible; }
 
   .terminal-sidebar { flex: none; max-height: 60vh; }
 
