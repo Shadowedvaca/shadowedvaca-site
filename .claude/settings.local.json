@@ -17,7 +17,11 @@
       "Bash(git rm:*)",
       "Bash(bash deploy.sh)",
       "Bash(curl:*)",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "WebFetch(domain:www.saltallthethings.com)",
+      "WebFetch(domain:www.pullallthethings.com)",
+      "WebFetch(domain:saltallthethings.com)",
+      "WebFetch(domain:pullallthethings.com)"
     ]
   }
 }
