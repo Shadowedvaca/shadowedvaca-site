@@ -193,6 +193,28 @@
     "featured": false
   },
   {
+    "id": "project-starship",
+    "name": "Project Starship",
+    "tagline": "We built this city on rock and roll.",
+    "description": [
+      "A Vampire Survivors-style game where the music IS the gameplay."
+    ],
+    "status": "concept",
+    "category": "Game \u2014 Concept",
+    "section": "games",
+    "terminal_desc": "Vampire Survivors meets music gameplay",
+    "meta_tags": [
+      {"label": "\u25ce Concept", "style": "concept"},
+      {"label": "Action"},
+      {"label": "Godot 4"}
+    ],
+    "links": [],
+    "features": null,
+    "media": null,
+    "sort_order": 9,
+    "featured": false
+  },
+  {
     "id": "show-planner",
     "name": "Podcast Show Planner",
     "tagline": "Custom planning tool for podcast production.",
