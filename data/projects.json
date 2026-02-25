@@ -7,19 +7,19 @@
       "Tilt your phone to navigate a slime through procedurally generated mazes. Two modes: Competitive (timers, trophies, leaderboards) or Cozy (just solve at your own pace).",
       "No ads. No data harvesting. No tricks. You pay once, you own the game."
     ],
-    "status": "launching",
+    "status": "live",
     "category": "Featured Project",
     "section": "active",
     "terminal_desc": "Tilt-controlled maze game. iOS & Android.",
     "meta_tags": [
-      {"label": "\u25ce Launching Late Feb 2026", "style": "soon"},
+      {"label": "\u25ce Live", "style": "live"},
       {"label": "iOS + Android"},
       {"label": "$2.99 Premium"},
       {"label": "Godot 4"}
     ],
     "links": [
-      {"label": "App Store \u2014 Coming Soon", "url": "#", "style": "primary"},
-      {"label": "Google Play \u2014 Coming Soon", "url": "#", "style": "primary"},
+      {"label": "App Store", "url": "https://apps.apple.com/us/app/meandering-muck/id6753329065", "style": "primary"},
+      {"label": "Google Play", "url": "https://play.google.com/store/apps/details?id=com.shadowedvaca.meanderingmuck", "style": "primary"},
       {"label": "Press Kit", "url": "meandering-muck.html", "style": "secondary"},
       {"label": "Support", "url": "meandering-muck-support.html", "style": "secondary"}
     ],
