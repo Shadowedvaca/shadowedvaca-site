@@ -179,6 +179,12 @@ def build() -> None:
         shutil.copytree(mm_assets_src, DIST_DIR / "assets" / "meandering-muck")
         print("  Copied assets/meandering-muck/ -> dist/assets/meandering-muck/")
 
+    # --- Copy hub/ -> dist/hub/ (authenticated tool pages) ---
+    hub_src = REPO_ROOT / "hub"
+    if hub_src.exists():
+        shutil.copytree(hub_src, DIST_DIR / "hub")
+        print("  Copied hub/ -> dist/hub/")
+
     print(f"\nBuild complete. Output: {DIST_DIR}")
 
 

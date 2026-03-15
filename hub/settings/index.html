@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings — Shadowedvaca</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-deep:        #0a0c10;
+      --bg-card:        #0d1117;
+      --divider:        #1e2533;
+      --text-primary:   #c8cdd3;
+      --text-secondary: #6b7280;
+      --cyan:           #00d4ff;
+      --cyan-dim:       rgba(0, 212, 255, 0.12);
+      --green-bright:   #33ff33;
+      --green-dim:      #1a9e1a;
+      --amber:          #f0a030;
+      --danger:         #e74c3c;
+      --danger-dim:     rgba(231, 76, 60, 0.1);
+      --success:        #2ecc71;
+      --success-dim:    rgba(46, 204, 113, 0.1);
+    }
+
+    html, body {
+      min-height: 100vh;
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 3rem 1.5rem 4rem;
+    }
+
+    /* ---- Header ---- */
+    .page-header {
+      width: 100%;
+      max-width: 520px;
+      margin-bottom: 2.5rem;
+    }
+
+    .prompt-line {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.85rem;
+      color: var(--green-dim);
+      margin-bottom: 0.4rem;
+    }
+
+    .prompt-line .prompt-user { color: var(--green-bright); }
+    .prompt-line .prompt-cmd  { color: var(--text-secondary); }
+
+    .page-title {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 1.4rem;
+      color: var(--cyan);
+      letter-spacing: 0.04em;
+    }
+
+    /* ---- Divider ---- */
+    .section-divider {
+      width: 100%;
+      max-width: 520px;
+      border: none;
+      border-top: 1px solid var(--divider);
+      margin: 0 0 2rem;
+    }
+
+    /* ---- Section ---- */
+    .settings-section {
+      width: 100%;
+      max-width: 520px;
+      margin-bottom: 2.5rem;
+    }
+
+    .section-heading {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--divider);
+    }
+
+    /* ---- Form ---- */
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+    }
+
+    input[type="password"] {
+      width: 100%;
+      background: #070909;
+      border: 1px solid var(--divider);
+      border-radius: 4px;
+      padding: 10px 14px;
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    input[type="password"]:focus {
+      border-color: var(--cyan);
+      box-shadow: 0 0 0 2px var(--cyan-dim);
+    }
+
+    /* ---- Alerts ---- */
+    .alert {
+      display: none;
+      border-radius: 4px;
+      padding: 10px 14px;
+      font-size: 0.85rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .alert-error {
+      background: var(--danger-dim);
+      border: 1px solid var(--danger);
+      color: var(--danger);
+    }
+
+    .alert-success {
+      background: var(--success-dim);
+      border: 1px solid var(--success);
+      color: var(--success);
+    }
+
+    /* ---- Buttons ---- */
+    .btn-row {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      margin-top: 0.5rem;
+    }
+
+    .btn-primary {
+      background: var(--cyan);
+      color: #000;
+      border: none;
+      border-radius: 4px;
+      padding: 10px 20px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+
+    .btn-primary:hover  { opacity: 0.85; }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ---- Footer ---- */
+    .page-footer {
+      width: 100%;
+      max-width: 520px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.75rem;
+    }
+
+    .page-footer a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .page-footer a:hover { color: var(--cyan); }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <div class="prompt-line">
+      <span class="prompt-user">shadowedvaca@cmd</span><span class="prompt-cmd">:~$ open settings</span>
+    </div>
+    <div class="page-title">settings</div>
+  </div>
+
+  <hr class="section-divider">
+
+  <div class="settings-section">
+    <div class="section-heading">change password</div>
+
+    <form id="changePasswordForm" onsubmit="handleChangePassword(event)">
+      <div class="form-group">
+        <label for="currentPassword">Current Password</label>
+        <input type="password" id="currentPassword" autocomplete="current-password" required>
+      </div>
+      <div class="form-group">
+        <label for="newPassword">New Password</label>
+        <input type="password" id="newPassword" autocomplete="new-password" required>
+      </div>
+      <div class="form-group">
+        <label for="confirmPassword">Confirm New Password</label>
+        <input type="password" id="confirmPassword" autocomplete="new-password" required>
+      </div>
+
+      <div class="alert alert-error"   id="pwError"></div>
+      <div class="alert alert-success" id="pwSuccess">Password updated.</div>
+
+      <div class="btn-row">
+        <button type="submit" class="btn-primary" id="submitBtn">Update Password</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="page-footer">
+    <a href="/hub/">← back to hub</a>
+  </div>
+
+  <script>
+    var STORAGE_KEY = 'sv_site_jwt';
+
+    function getSession() {
+      try {
+        var raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return null;
+        var data = JSON.parse(raw);
+        if (!data || !data.token) return null;
+        var parts = data.token.split('.');
+        if (parts.length !== 3) return null;
+        var payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+        if (payload.exp && payload.exp * 1000 < Date.now()) {
+          localStorage.removeItem(STORAGE_KEY);
+          return null;
+        }
+        return data;
+      } catch (e) { return null; }
+    }
+
+    // Auth gate
+    var session = getSession();
+    if (!session) {
+      location.href = '/login.html?next=' + encodeURIComponent(location.pathname);
+    }
+
+    async function handleChangePassword(e) {
+      e.preventDefault();
+      var currentPw  = document.getElementById('currentPassword').value;
+      var newPw      = document.getElementById('newPassword').value;
+      var confirmPw  = document.getElementById('confirmPassword').value;
+      var errorEl    = document.getElementById('pwError');
+      var successEl  = document.getElementById('pwSuccess');
+      var submitBtn  = document.getElementById('submitBtn');
+
+      errorEl.style.display = 'none';
+      successEl.style.display = 'none';
+
+      if (newPw !== confirmPw) {
+        errorEl.textContent = 'New passwords do not match';
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      if (newPw.length < 8) {
+        errorEl.textContent = 'New password must be at least 8 characters';
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Updating...';
+
+      try {
+        var resp = await fetch('/api/auth/change-password', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + session.token
+          },
+          body: JSON.stringify({ current_password: currentPw, new_password: newPw })
+        });
+
+        var data = await resp.json();
+
+        if (!resp.ok) {
+          errorEl.textContent = data.detail || 'Failed to update password';
+          errorEl.style.display = 'block';
+        } else {
+          successEl.style.display = 'block';
+          document.getElementById('changePasswordForm').reset();
+        }
+      } catch (err) {
+        errorEl.textContent = 'Connection error — check your network';
+        errorEl.style.display = 'block';
+      }
+
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Update Password';
+    }
+  </script>
+</body>
+</html>

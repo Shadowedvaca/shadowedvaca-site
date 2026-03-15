@@ -180,7 +180,7 @@
     (function () {
       var data = getSession();
       if (data) {
-        var next = new URLSearchParams(location.search).get('next') || '/';
+        var next = new URLSearchParams(location.search).get('next') || '/hub/';
         location.href = next;
       }
     })();
@@ -193,7 +193,7 @@
         if (!data.token) return null;
         var parts = data.token.split('.');
         if (parts.length !== 3) return null;
-        var payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+        var payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/hub/')));
         if (payload.exp && payload.exp * 1000 < Date.now()) {
           localStorage.removeItem(STORAGE_KEY);
           return null;
@@ -235,7 +235,7 @@
           isAdmin: data.isAdmin || false
         }));
 
-        var next = new URLSearchParams(location.search).get('next') || '/';
+        var next = new URLSearchParams(location.search).get('next') || '/hub/';
         location.href = next;
 
       } catch (err) {

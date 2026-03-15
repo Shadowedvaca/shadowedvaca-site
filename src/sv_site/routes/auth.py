@@ -120,3 +120,27 @@ async def me(_user: dict = Depends(require_auth)) -> dict:
         "username": _user.get("username"),
         "isAdmin": _user.get("is_admin", False),
     }
+
+
+# ---------------------------------------------------------------------------
+# POST /api/auth/change-password
+# ---------------------------------------------------------------------------
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
+
+
+@router.post("/auth/change-password")
+async def change_password(
+    body: ChangePasswordRequest,
+    _user: dict = Depends(require_auth),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    user = await get_user_by_username(db, _user["username"])
+    if user is None or not verify_password(body.current_password, user.password_hash):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+    user.password_hash = hash_password(body.new_password)
+    await db.flush()
+    return {"ok": True}
