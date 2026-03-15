@@ -3,6 +3,7 @@ name: Deploy shadowedvaca.com
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -17,13 +18,13 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install dependencies
+      - name: Install build dependencies
         run: pip install -r requirements.txt
 
       - name: Build site
         run: python packages/site/build.py
 
-      - name: Deploy to server
+      - name: Set up SSH
         env:
           SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
           HOST: ${{ secrets.DEPLOY_HOST }}
@@ -32,6 +33,44 @@ jobs:
           echo "$SSH_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H $HOST >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Deploy static files
+        env:
+          HOST: ${{ secrets.DEPLOY_HOST }}
+        run: |
           rsync -avz --delete \
             -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
             dist/ deploy@$HOST:/var/www/shadowedvaca.com/
+          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no \
+            login.html register.html deploy@$HOST:/var/www/shadowedvaca.com/
+
+      - name: Update server (deps, nginx, service)
+        env:
+          HOST: ${{ secrets.DEPLOY_HOST }}
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no root@$HOST bash << 'ENDSSH'
+            set -e
+
+            echo "=== Pulling latest code on server ==="
+            cd /opt/shadowedvaca
+            git fetch origin
+            git reset --hard origin/main
+
+            echo "=== Installing Python dependencies ==="
+            venv/bin/pip install -q -r requirements.txt
+
+            echo "=== Updating nginx config ==="
+            cp deploy/nginx/shadowedvaca.com.conf /etc/nginx/sites-available/shadowedvaca.com
+            nginx -t
+            systemctl reload nginx
+
+            echo "=== Restarting sv_site service ==="
+            systemctl restart shadowedvaca
+            systemctl is-active shadowedvaca
+
+            echo "=== Health check ==="
+            sleep 2
+            curl -sf http://127.0.0.1:8050/api/health
+
+            echo "=== Done ==="
+          ENDSSH
