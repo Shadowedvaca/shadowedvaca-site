@@ -180,7 +180,7 @@
     (function () {
       var data = getSession();
       if (data) {
-        var next = new URLSearchParams(location.search).get('next') || '/ideas/';
+        var next = new URLSearchParams(location.search).get('next') || '/';
         location.href = next;
       }
     })();
@@ -235,7 +235,7 @@
           isAdmin: data.isAdmin || false
         }));
 
-        var next = new URLSearchParams(location.search).get('next') || '/ideas/';
+        var next = new URLSearchParams(location.search).get('next') || '/';
         location.href = next;
 
       } catch (err) {
