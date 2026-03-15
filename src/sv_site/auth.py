@@ -77,6 +77,7 @@ async def generate_invite_code(
     db: AsyncSession,
     created_by_user_id: int,
     expires_hours: int = 48,
+    permissions: list[str] | None = None,
 ) -> str:
     """Generate an invite code. Returns the code string."""
     code = _generate_code()
@@ -85,6 +86,7 @@ async def generate_invite_code(
         code=code,
         created_by_user_id=created_by_user_id,
         expires_at=expires_at,
+        permissions=permissions or [],
     )
     db.add(invite)
     await db.flush()

@@ -1,4 +1,4 @@
-"""Auth routes: login, register, invite, me."""
+"""Auth routes: login, register, invite, me, change-password."""
 
 from __future__ import annotations
 
@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from sv_site.auth import (
@@ -17,7 +18,8 @@ from sv_site.auth import (
 )
 from sv_site.config import get_settings
 from sv_site.database import get_db
-from sv_site.models import User
+from sv_site.models import InviteCode, User, UserPermission
+from sv_site.tools import GRANTABLE_SLUGS, LOCKED_SLUGS
 from sv_common.auth.passwords import hash_password, verify_password
 
 router = APIRouter()
@@ -60,11 +62,18 @@ class RegisterRequest(BaseModel):
 
 @router.post("/auth/register", status_code=201)
 async def register(body: RegisterRequest, db: AsyncSession = Depends(get_db)) -> dict:
-    # Validate and consume invite code first
+    # Validate and consume invite code, capture its permissions
     try:
-        await consume_invite_code(db, body.inviteCode)
+        invite = await consume_invite_code(db, body.inviteCode)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+    # Re-fetch to read permissions column (consume_invite_code may not have loaded it)
+    result = await db.execute(
+        select(InviteCode).where(InviteCode.code == body.inviteCode)
+    )
+    invite_row = result.scalar_one_or_none()
+    granted_slugs: list[str] = invite_row.permissions if invite_row else []
 
     # Check username not taken
     existing = await get_user_by_username(db, body.username)
@@ -82,6 +91,11 @@ async def register(body: RegisterRequest, db: AsyncSession = Depends(get_db)) ->
     db.add(user)
     await db.flush()
 
+    # Apply non-locked permissions from the invite
+    for slug in granted_slugs:
+        if slug in GRANTABLE_SLUGS:
+            db.add(UserPermission(user_id=user.id, tool_slug=slug))
+
     token = create_access_token(
         user_id=user.id, username=user.username, is_admin=user.is_admin
     )
@@ -93,19 +107,27 @@ async def register(body: RegisterRequest, db: AsyncSession = Depends(get_db)) ->
 # ---------------------------------------------------------------------------
 
 
+class InviteRequest(BaseModel):
+    permissions: list[str] = []
+
+
 @router.post("/auth/invite")
 async def create_invite(
+    body: InviteRequest = InviteRequest(),
     _user: dict = Depends(require_auth),
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     if not _user.get("is_admin"):
         raise HTTPException(status_code=403, detail="Admin access required")
 
+    # Only store valid, grantable slugs
+    clean_perms = [s for s in body.permissions if s in GRANTABLE_SLUGS]
+
     user_id: int | None = _user.get("user_id")
-    code = await generate_invite_code(db, created_by_user_id=user_id)
+    code = await generate_invite_code(db, created_by_user_id=user_id, permissions=clean_perms)
     site_url = get_settings().site_url.rstrip("/")
     invite_url = f"{site_url}/register.html?code={code}"
-    return {"invite_url": invite_url}
+    return {"invite_url": invite_url, "code": code}
 
 
 # ---------------------------------------------------------------------------
@@ -114,11 +136,25 @@ async def create_invite(
 
 
 @router.get("/auth/me")
-async def me(_user: dict = Depends(require_auth)) -> dict:
+async def me(
+    _user: dict = Depends(require_auth),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    # Load permission rows for this user
+    result = await db.execute(
+        select(UserPermission.tool_slug).where(
+            UserPermission.user_id == _user.get("user_id")
+        )
+    )
+    stored_slugs = [row[0] for row in result.all()]
+    # Always include locked tools
+    all_permissions = list(LOCKED_SLUGS | set(stored_slugs))
+
     return {
         "user_id": _user.get("user_id"),
         "username": _user.get("username"),
         "isAdmin": _user.get("is_admin", False),
+        "permissions": all_permissions,
     }
 
 

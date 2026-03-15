@@ -17,7 +17,14 @@ CREATE TABLE IF NOT EXISTS shadowedvaca.invite_codes (
     code                VARCHAR(16) PRIMARY KEY,
     created_by_user_id  INTEGER REFERENCES shadowedvaca.users(id) ON DELETE SET NULL,
     used_at             TIMESTAMPTZ,
-    expires_at          TIMESTAMPTZ
+    expires_at          TIMESTAMPTZ,
+    permissions         JSONB NOT NULL DEFAULT '[]'::jsonb
+);
+
+CREATE TABLE IF NOT EXISTS shadowedvaca.user_permissions (
+    user_id   INTEGER NOT NULL REFERENCES shadowedvaca.users(id) ON DELETE CASCADE,
+    tool_slug VARCHAR(64) NOT NULL,
+    PRIMARY KEY (user_id, tool_slug)
 );
 
 -- To create the first admin user, generate a bcrypt hash and insert directly:

@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Users — Shadowedvaca Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-deep:        #0a0c10;
+      --bg-card:        #0d1117;
+      --divider:        #1e2533;
+      --text-primary:   #c8cdd3;
+      --text-secondary: #6b7280;
+      --cyan:           #00d4ff;
+      --cyan-dim:       rgba(0, 212, 255, 0.1);
+      --green-bright:   #33ff33;
+      --green-dim:      #1a9e1a;
+      --amber:          #f0a030;
+      --danger:         #e74c3c;
+      --danger-dim:     rgba(231, 76, 60, 0.1);
+      --success:        #2ecc71;
+      --success-dim:    rgba(46, 204, 113, 0.1);
+    }
+
+    html, body {
+      min-height: 100vh;
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 3rem 1.5rem 4rem;
+    }
+
+    .page-header {
+      width: 100%;
+      max-width: 680px;
+      margin-bottom: 2.5rem;
+    }
+
+    .prompt-line {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.85rem;
+      color: var(--green-dim);
+      margin-bottom: 0.4rem;
+    }
+
+    .prompt-line .prompt-user { color: var(--green-bright); }
+    .prompt-line .prompt-cmd  { color: var(--text-secondary); }
+
+    .page-title {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 1.4rem;
+      color: var(--amber);
+      letter-spacing: 0.04em;
+    }
+
+    .section-divider {
+      width: 100%;
+      max-width: 680px;
+      border: none;
+      border-top: 1px solid var(--divider);
+      margin: 0 0 2rem;
+    }
+
+    /* ---- User cards ---- */
+    .user-list {
+      width: 100%;
+      max-width: 680px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .user-card {
+      background: var(--bg-card);
+      border: 1px solid var(--divider);
+      border-left: 3px solid var(--divider);
+      border-radius: 4px;
+      padding: 1.25rem 1.5rem;
+    }
+
+    .user-card.is-admin {
+      border-left-color: var(--amber);
+    }
+
+    .user-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      gap: 1rem;
+    }
+
+    .user-card-identity { flex: 1; }
+
+    .user-card-name {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .user-card-meta {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .user-badge {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem;
+      padding: 2px 8px;
+      border-radius: 3px;
+      white-space: nowrap;
+      border: 1px solid;
+    }
+
+    .user-badge.admin {
+      color: var(--amber);
+      border-color: var(--amber);
+      background: rgba(240, 160, 48, 0.1);
+    }
+
+    .user-badge.inactive {
+      color: var(--text-secondary);
+      border-color: var(--divider);
+      background: rgba(255,255,255,0.03);
+    }
+
+    /* ---- Permission checkboxes ---- */
+    .perm-section-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.6rem;
+    }
+
+    .perm-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .perm-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--divider);
+      border-radius: 3px;
+      padding: 5px 10px;
+    }
+
+    .perm-item.locked { opacity: 0.5; }
+
+    .perm-item input[type="checkbox"] {
+      width: 14px;
+      height: 14px;
+      accent-color: var(--cyan);
+      flex-shrink: 0;
+    }
+
+    .perm-item.locked input[type="checkbox"] { cursor: not-allowed; }
+
+    .perm-item-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text-primary);
+    }
+
+    /* ---- Card actions ---- */
+    .user-card-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-save {
+      background: none;
+      border: 1px solid var(--cyan);
+      border-radius: 3px;
+      padding: 5px 16px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--cyan);
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .btn-save:hover { background: var(--cyan-dim); }
+    .btn-save:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .btn-delete {
+      background: none;
+      border: 1px solid var(--divider);
+      border-radius: 3px;
+      padding: 5px 16px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+    }
+
+    .btn-delete:hover { color: var(--danger); border-color: var(--danger); }
+
+    .action-msg {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.72rem;
+      display: none;
+    }
+
+    .action-msg.ok  { color: var(--success); }
+    .action-msg.err { color: var(--danger); }
+
+    /* ---- Empty / loading ---- */
+    .state-msg {
+      width: 100%;
+      max-width: 680px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      padding: 1.5rem 0;
+    }
+
+    /* ---- Footer ---- */
+    .page-footer {
+      width: 100%;
+      max-width: 680px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.75rem;
+    }
+
+    .page-footer a { color: var(--text-secondary); text-decoration: none; transition: color 0.15s; }
+    .page-footer a:hover { color: var(--cyan); }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <div class="prompt-line">
+      <span class="prompt-user">shadowedvaca@cmd</span><span class="prompt-cmd">:~$ ls --users</span>
+    </div>
+    <div class="page-title">users</div>
+  </div>
+
+  <hr class="section-divider">
+
+  <div id="stateMsg" class="state-msg">Loading...</div>
+  <div class="user-list" id="userList"></div>
+
+  <div class="page-footer">
+    <a href="/hub/">← back to hub</a>
+  </div>
+
+  <script>
+    var STORAGE_KEY = 'sv_site_jwt';
+    var session = null;
+    var grantableTools = [];
+
+    function getSession() {
+      try {
+        var raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return null;
+        var data = JSON.parse(raw);
+        if (!data || !data.token) return null;
+        var parts = data.token.split('.');
+        if (parts.length !== 3) return null;
+        var payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+        if (payload.exp && payload.exp * 1000 < Date.now()) {
+          localStorage.removeItem(STORAGE_KEY);
+          return null;
+        }
+        return data;
+      } catch (e) { return null; }
+    }
+
+    function setStateMsg(text) {
+      var el = document.getElementById('stateMsg');
+      el.textContent = text;
+      el.style.display = text ? '' : 'none';
+    }
+
+    function buildUserCard(user, myUserId) {
+      var isMe = user.id === myUserId;
+      var card = document.createElement('div');
+      card.className = 'user-card' + (user.is_admin ? ' is-admin' : '');
+
+      // Header
+      var headerHtml =
+        '<div class="user-card-header">' +
+          '<div class="user-card-identity">' +
+            '<div class="user-card-name">' + escHtml(user.username) + (isMe ? ' <span style="font-size:0.7rem;color:var(--text-secondary)">(you)</span>' : '') + '</div>' +
+            '<div class="user-card-meta">id: ' + user.id + ' &nbsp;·&nbsp; joined: ' + user.created_at.slice(0,10) + '</div>' +
+          '</div>' +
+          (user.is_admin ? '<span class="user-badge admin">admin</span>' : '') +
+          (!user.is_active ? '<span class="user-badge inactive">inactive</span>' : '') +
+        '</div>';
+
+      // Permissions (only for non-admin users)
+      var permsHtml = '';
+      if (!user.is_admin) {
+        permsHtml += '<div class="perm-section-label">access</div><div class="perm-list" id="perms_' + user.id + '">';
+
+        // Locked: settings always on
+        permsHtml +=
+          '<label class="perm-item locked">' +
+            '<input type="checkbox" checked disabled>' +
+            '<span class="perm-item-label">settings</span>' +
+          '</label>';
+
+        // Grantable tools
+        grantableTools.forEach(function(tool) {
+          var checked = user.permissions.indexOf(tool.slug) !== -1 ? 'checked' : '';
+          permsHtml +=
+            '<label class="perm-item">' +
+              '<input type="checkbox" class="perm-cb" data-slug="' + tool.slug + '" ' + checked + '>' +
+              '<span class="perm-item-label">' + escHtml(tool.name.toLowerCase()) + '</span>' +
+            '</label>';
+        });
+
+        permsHtml += '</div>';
+      }
+
+      // Actions
+      var actionsHtml = '<div class="user-card-actions" id="actions_' + user.id + '">';
+      if (!user.is_admin) {
+        actionsHtml +=
+          '<button class="btn-save" onclick="savePerms(' + user.id + ')">[ save ]</button>';
+      }
+      if (!user.is_admin && !isMe) {
+        actionsHtml +=
+          '<button class="btn-delete" onclick="deleteUser(' + user.id + ', \'' + escHtml(user.username) + '\')">[ delete ]</button>';
+      }
+      actionsHtml +=
+        '<span class="action-msg" id="msg_' + user.id + '"></span>' +
+        '</div>';
+
+      card.innerHTML = headerHtml + permsHtml + actionsHtml;
+      return card;
+    }
+
+    function escHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function showMsg(userId, text, type) {
+      var el = document.getElementById('msg_' + userId);
+      if (!el) return;
+      el.textContent = text;
+      el.className = 'action-msg ' + type;
+      el.style.display = '';
+      setTimeout(function() { el.style.display = 'none'; }, 3000);
+    }
+
+    async function savePerms(userId) {
+      var permList = document.getElementById('perms_' + userId);
+      var cbs = permList.querySelectorAll('.perm-cb');
+      var perms = [];
+      cbs.forEach(function(cb) { if (cb.checked) perms.push(cb.dataset.slug); });
+
+      var actions = document.getElementById('actions_' + userId);
+      var saveBtn = actions.querySelector('.btn-save');
+      saveBtn.disabled = true;
+      saveBtn.textContent = '[ saving... ]';
+
+      try {
+        var resp = await fetch('/api/admin/users/' + userId + '/permissions', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + session.token
+          },
+          body: JSON.stringify({ permissions: perms })
+        });
+        var data = await resp.json();
+        if (resp.ok) {
+          showMsg(userId, 'saved', 'ok');
+        } else {
+          showMsg(userId, data.detail || 'error', 'err');
+        }
+      } catch (e) {
+        showMsg(userId, 'connection error', 'err');
+      }
+
+      saveBtn.disabled = false;
+      saveBtn.textContent = '[ save ]';
+    }
+
+    async function deleteUser(userId, username) {
+      if (!confirm('Delete user "' + username + '"? This cannot be undone.')) return;
+
+      try {
+        var resp = await fetch('/api/admin/users/' + userId, {
+          method: 'DELETE',
+          headers: { 'Authorization': 'Bearer ' + session.token }
+        });
+        if (resp.ok) {
+          var card = document.querySelector('#actions_' + userId).closest('.user-card');
+          card.style.transition = 'opacity 0.3s';
+          card.style.opacity = '0';
+          setTimeout(function() { card.remove(); }, 300);
+        } else {
+          var data = await resp.json();
+          showMsg(userId, data.detail || 'error', 'err');
+        }
+      } catch (e) {
+        showMsg(userId, 'connection error', 'err');
+      }
+    }
+
+    async function loadPage(myUserId) {
+      try {
+        var [toolsResp, usersResp] = await Promise.all([
+          fetch('/api/admin/tools', { headers: { 'Authorization': 'Bearer ' + session.token } }),
+          fetch('/api/admin/users', { headers: { 'Authorization': 'Bearer ' + session.token } })
+        ]);
+
+        if (!toolsResp.ok || !usersResp.ok) {
+          setStateMsg('Failed to load data.');
+          return;
+        }
+
+        var tools = await toolsResp.json();
+        var users = await usersResp.json();
+
+        grantableTools = tools.filter(function(t) { return !t.locked && !t.admin_only; });
+
+        setStateMsg('');
+        var list = document.getElementById('userList');
+        list.innerHTML = '';
+
+        if (users.length === 0) {
+          setStateMsg('No users found.');
+          return;
+        }
+
+        users.forEach(function(user) {
+          list.appendChild(buildUserCard(user, myUserId));
+        });
+
+      } catch (e) {
+        setStateMsg('Connection error.');
+      }
+    }
+
+    // Auth gate — admin only
+    session = getSession();
+    if (!session) {
+      location.href = '/login.html?next=' + encodeURIComponent(location.pathname);
+    } else {
+      fetch('/api/auth/me', { headers: { 'Authorization': 'Bearer ' + session.token } })
+        .then(function(r) { return r.json(); })
+        .then(function(me) {
+          if (!me.isAdmin) { location.href = '/hub/'; return; }
+          loadPage(me.user_id);
+        })
+        .catch(function() { location.href = '/hub/'; });
+    }
+  </script>
+</body>
+</html>

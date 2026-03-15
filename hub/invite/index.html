@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invite — Shadowedvaca Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-deep:        #0a0c10;
+      --bg-card:        #0d1117;
+      --divider:        #1e2533;
+      --text-primary:   #c8cdd3;
+      --text-secondary: #6b7280;
+      --cyan:           #00d4ff;
+      --cyan-dim:       rgba(0, 212, 255, 0.1);
+      --green-bright:   #33ff33;
+      --green-dim:      #1a9e1a;
+      --amber:          #f0a030;
+      --danger:         #e74c3c;
+      --danger-dim:     rgba(231, 76, 60, 0.1);
+      --success:        #2ecc71;
+      --success-dim:    rgba(46, 204, 113, 0.1);
+    }
+
+    html, body {
+      min-height: 100vh;
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 3rem 1.5rem 4rem;
+    }
+
+    .page-header {
+      width: 100%;
+      max-width: 520px;
+      margin-bottom: 2.5rem;
+    }
+
+    .prompt-line {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.85rem;
+      color: var(--green-dim);
+      margin-bottom: 0.4rem;
+    }
+
+    .prompt-line .prompt-user { color: var(--green-bright); }
+    .prompt-line .prompt-cmd  { color: var(--text-secondary); }
+
+    .page-title {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 1.4rem;
+      color: var(--amber);
+      letter-spacing: 0.04em;
+    }
+
+    .section-divider {
+      width: 100%;
+      max-width: 520px;
+      border: none;
+      border-top: 1px solid var(--divider);
+      margin: 0 0 2rem;
+    }
+
+    .settings-section {
+      width: 100%;
+      max-width: 520px;
+      margin-bottom: 2.5rem;
+    }
+
+    .section-heading {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--divider);
+    }
+
+    /* ---- Permission checkboxes ---- */
+    .tool-list { display: flex; flex-direction: column; gap: 0.75rem; }
+
+    .tool-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: var(--bg-card);
+      border: 1px solid var(--divider);
+      border-radius: 4px;
+      padding: 0.9rem 1.25rem;
+    }
+
+    .tool-row.locked { opacity: 0.55; }
+
+    .tool-row input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--cyan);
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .tool-row.locked input[type="checkbox"] { cursor: not-allowed; }
+
+    .tool-row-info { flex: 1; }
+
+    .tool-row-name {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .tool-row-desc {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .tool-row-badge {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--text-secondary);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--divider);
+      border-radius: 3px;
+      padding: 2px 7px;
+      white-space: nowrap;
+    }
+
+    /* ---- Alerts ---- */
+    .alert {
+      display: none;
+      border-radius: 4px;
+      padding: 10px 14px;
+      font-size: 0.85rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .alert-error   { background: var(--danger-dim);  border: 1px solid var(--danger);  color: var(--danger); }
+    .alert-success { background: var(--success-dim); border: 1px solid var(--success); color: var(--success); }
+
+    /* ---- Invite result ---- */
+    .invite-result {
+      display: none;
+      background: var(--bg-card);
+      border: 1px solid var(--divider);
+      border-left: 3px solid var(--amber);
+      border-radius: 4px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .invite-result-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--amber);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.6rem;
+    }
+
+    .invite-url-box {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    .invite-url {
+      flex: 1;
+      background: #070909;
+      border: 1px solid var(--divider);
+      border-radius: 4px;
+      padding: 8px 12px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.78rem;
+      color: var(--cyan);
+      word-break: break-all;
+    }
+
+    .copy-btn {
+      background: none;
+      border: 1px solid var(--divider);
+      border-radius: 4px;
+      padding: 7px 14px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: color 0.15s, border-color 0.15s;
+      flex-shrink: 0;
+    }
+
+    .copy-btn:hover { color: var(--cyan); border-color: var(--cyan); }
+
+    .invite-note {
+      margin-top: 0.6rem;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    /* ---- Buttons ---- */
+    .btn-primary {
+      background: var(--amber);
+      color: #000;
+      border: none;
+      border-radius: 4px;
+      padding: 10px 24px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: opacity 0.15s;
+      margin-top: 1.25rem;
+    }
+
+    .btn-primary:hover   { opacity: 0.85; }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .page-footer {
+      width: 100%;
+      max-width: 520px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.75rem;
+    }
+
+    .page-footer a { color: var(--text-secondary); text-decoration: none; transition: color 0.15s; }
+    .page-footer a:hover { color: var(--cyan); }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <div class="prompt-line">
+      <span class="prompt-user">shadowedvaca@cmd</span><span class="prompt-cmd">:~$ generate --invite</span>
+    </div>
+    <div class="page-title">invite</div>
+  </div>
+
+  <hr class="section-divider">
+
+  <div class="settings-section">
+    <div class="section-heading">access — choose what they can see</div>
+
+    <div class="tool-list" id="toolList">
+      <!-- Populated by JS -->
+    </div>
+
+    <div class="alert alert-error" id="genError"></div>
+
+    <button class="btn-primary" id="generateBtn" onclick="generateInvite()">Generate Invite Link</button>
+  </div>
+
+  <div class="invite-result" id="inviteResult">
+    <div class="invite-result-label">invite link — share this</div>
+    <div class="invite-url-box">
+      <div class="invite-url" id="inviteUrl"></div>
+      <button class="copy-btn" onclick="copyUrl()">[ copy ]</button>
+    </div>
+    <div class="invite-note">Expires in 48 hours. Single use.</div>
+  </div>
+
+  <div class="page-footer">
+    <a href="/hub/">← back to hub</a>
+  </div>
+
+  <script>
+    var STORAGE_KEY = 'sv_site_jwt';
+    var session = null;
+
+    // Tools that can be granted via invite (locked tools always included, not shown as option)
+    var GRANTABLE_TOOLS = [
+      // Add entries here as new tools are built, e.g.:
+      // { slug: 'ideas', name: 'Ideation Board', desc: 'Browse and search project ideas' },
+    ];
+
+    // Locked tools — always shown, always checked, cannot be unchecked
+    var LOCKED_TOOLS = [
+      { slug: 'settings', name: 'Settings', desc: 'Password and account preferences' },
+    ];
+
+    function getSession() {
+      try {
+        var raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return null;
+        var data = JSON.parse(raw);
+        if (!data || !data.token) return null;
+        var parts = data.token.split('.');
+        if (parts.length !== 3) return null;
+        var payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+        if (payload.exp && payload.exp * 1000 < Date.now()) {
+          localStorage.removeItem(STORAGE_KEY);
+          return null;
+        }
+        return data;
+      } catch (e) { return null; }
+    }
+
+    function renderTools() {
+      var list = document.getElementById('toolList');
+      list.innerHTML = '';
+
+      // Locked tools first
+      LOCKED_TOOLS.forEach(function(tool) {
+        var row = document.createElement('div');
+        row.className = 'tool-row locked';
+        row.innerHTML =
+          '<input type="checkbox" checked disabled>' +
+          '<div class="tool-row-info">' +
+            '<div class="tool-row-name">' + tool.name + '</div>' +
+            '<div class="tool-row-desc">' + tool.desc + '</div>' +
+          '</div>' +
+          '<span class="tool-row-badge">always on</span>';
+        list.appendChild(row);
+      });
+
+      // Grantable tools
+      GRANTABLE_TOOLS.forEach(function(tool) {
+        var row = document.createElement('div');
+        row.className = 'tool-row';
+        row.innerHTML =
+          '<input type="checkbox" id="perm_' + tool.slug + '" value="' + tool.slug + '">' +
+          '<div class="tool-row-info">' +
+            '<div class="tool-row-name">' + tool.name + '</div>' +
+            '<div class="tool-row-desc">' + tool.desc + '</div>' +
+          '</div>';
+        list.appendChild(row);
+      });
+
+      if (GRANTABLE_TOOLS.length === 0) {
+        var note = document.createElement('p');
+        note.style.cssText = 'font-size:0.8rem;color:var(--text-secondary);margin-top:0.75rem;';
+        note.textContent = 'No additional tools available to grant yet.';
+        list.appendChild(note);
+      }
+    }
+
+    async function generateInvite() {
+      var errorEl = document.getElementById('genError');
+      var btn = document.getElementById('generateBtn');
+      errorEl.style.display = 'none';
+
+      var permissions = [];
+      GRANTABLE_TOOLS.forEach(function(tool) {
+        var cb = document.getElementById('perm_' + tool.slug);
+        if (cb && cb.checked) permissions.push(tool.slug);
+      });
+
+      btn.disabled = true;
+      btn.textContent = 'Generating...';
+
+      try {
+        var resp = await fetch('/api/auth/invite', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + session.token
+          },
+          body: JSON.stringify({ permissions: permissions })
+        });
+
+        var data = await resp.json();
+
+        if (!resp.ok) {
+          errorEl.textContent = data.detail || 'Failed to generate invite';
+          errorEl.style.display = 'block';
+        } else {
+          document.getElementById('inviteUrl').textContent = data.invite_url;
+          document.getElementById('inviteResult').style.display = 'block';
+          document.getElementById('inviteResult').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      } catch (e) {
+        errorEl.textContent = 'Connection error';
+        errorEl.style.display = 'block';
+      }
+
+      btn.disabled = false;
+      btn.textContent = 'Generate Invite Link';
+    }
+
+    function copyUrl() {
+      var url = document.getElementById('inviteUrl').textContent;
+      navigator.clipboard.writeText(url).then(function() {
+        var btn = document.querySelector('.copy-btn');
+        btn.textContent = '[ copied! ]';
+        setTimeout(function() { btn.textContent = '[ copy ]'; }, 2000);
+      });
+    }
+
+    // Auth gate — admin only
+    session = getSession();
+    if (!session) {
+      location.href = '/login.html?next=' + encodeURIComponent(location.pathname);
+    } else {
+      // Verify admin on server
+      fetch('/api/auth/me', { headers: { 'Authorization': 'Bearer ' + session.token } })
+        .then(function(r) { return r.json(); })
+        .then(function(me) {
+          if (!me.isAdmin) { location.href = '/hub/'; return; }
+          renderTools();
+        })
+        .catch(function() { location.href = '/hub/'; });
+    }
+  </script>
+</body>
+</html>
