@@ -627,6 +627,16 @@ a:hover { text-decoration: underline; }
   flex-shrink: 0;
 }
 
+.bottom-bar-link {
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.bottom-bar-link:hover {
+  color: var(--accent);
+}
+
 /* --------------------------------------------------------------------------
    15. Responsive — Tablet / Mobile (≤ 900px): stacked layout
    -------------------------------------------------------------------------- */

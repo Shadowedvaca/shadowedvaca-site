@@ -1,4 +1,31 @@
 <div class="bottom-bar">
   <span>&#x00a9; 2026 {{ profile.company }}</span>
+  <span class="bottom-bar-nav" id="bottomBarNav">
+    <a href="/login.html" class="bottom-bar-link" id="loginLink">[ login ]</a>
+    <span class="bottom-bar-tools" id="toolsNav" style="display:none">
+      <a href="/ideas/" class="bottom-bar-link">[ ideas ]</a>
+    </span>
+  </span>
   <span>{{ profile.bottom_bar_tagline }}</span>
 </div>
+<script>
+(function () {
+  var STORAGE_KEY = 'sv_site_jwt';
+  try {
+    var raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      var data = JSON.parse(raw);
+      if (data && data.token) {
+        var parts = data.token.split('.');
+        if (parts.length === 3) {
+          var payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+          if (!payload.exp || payload.exp * 1000 > Date.now()) {
+            document.getElementById('loginLink').style.display = 'none';
+            document.getElementById('toolsNav').style.display = 'inline';
+          }
+        }
+      }
+    }
+  } catch (e) {}
+})();
+</script>
