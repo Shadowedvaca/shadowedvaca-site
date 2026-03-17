@@ -15,6 +15,14 @@ TOOLS: list[dict] = [
         "locked": True,
         "admin_only": False,
     },
+    {
+        "slug": "ideas",
+        "name": "Ideation Board",
+        "description": "Browse and search project ideas — spark to ship",
+        "path": "/ideas/",
+        "locked": False,
+        "admin_only": False,
+    },
 ]
 
 # Slugs that are always granted regardless of user_permissions rows
