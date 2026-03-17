@@ -63,7 +63,12 @@ async def process_feedback(
             messages=[{"role": "user", "content": user_content}],
         )
 
-        parsed = json.loads(message.content[0].text.strip())
+        raw_text = message.content[0].text.strip() if message.content else ""
+        logger.info("AI raw response: %r (stop_reason=%s)", raw_text[:200], message.stop_reason)
+        # Strip markdown code fences if present
+        if raw_text.startswith("```"):
+            raw_text = raw_text.split("\n", 1)[-1].rsplit("```", 1)[0].strip()
+        parsed = json.loads(raw_text)
 
         summary = parsed.get("summary") or None
         raw_sentiment = parsed.get("sentiment", "").lower()
