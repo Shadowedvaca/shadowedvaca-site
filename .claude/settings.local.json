@@ -25,7 +25,10 @@
       "Bash(node --version:*)",
       "Bash(npm:*)",
       "Bash(node -e:*)",
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(git stash:*)",
+      "Read(//mnt/h/Development/shadowedvaca-site/**)",
+      "Bash(git:*)"
     ]
   }
 }

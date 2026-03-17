@@ -44,7 +44,7 @@ shadowedvaca-site/
 
 ---
 
-## Phase 1: Project Scaffolding & Data Layer
+## Phase 1: Project Scaffolding & Data Layer ✅ COMPLETE
 
 **Goal:** Set up the project structure, Pydantic schemas, JSON data files, and build script skeleton.
 
@@ -98,7 +98,7 @@ shadowedvaca-site/
 
 ---
 
-## Phase 2: Templates & CSS — The Command Center
+## Phase 2: Templates & CSS — The Command Center ✅ COMPLETE
 
 **Goal:** Build the Jinja2 templates and CSS to produce the split-screen command center matching the reference mockup.
 
@@ -150,7 +150,7 @@ shadowedvaca-site/
 
 ---
 
-## Phase 3: Deploy to Hetzner
+## Phase 3: Deploy to Hetzner ✅ COMPLETE
 
 **Goal:** Get the site live at shadowedvaca.com on the Hetzner server.
 
@@ -191,7 +191,7 @@ shadowedvaca-site/
 
 ---
 
-## Phase 4: Polish & Content
+## Phase 4: Polish & Content ✅ COMPLETE
 
 **Goal:** Refine details, add any missing content, fix issues found during review.
 
@@ -210,15 +210,15 @@ shadowedvaca-site/
 
 ---
 
-## Phase 5: Future — Demo Pages (Not part of initial build)
+## Phase 5: Future — Ongoing
 
-These are planned but not built in this pass:
-
-- **Show Planner demo page** — Interactive demo showcasing the podcast planning tool
-- **Raid Team Manager demo page** — Interactive demo showcasing the roster management system
-- **App store links** — Replace "Coming Soon" buttons with real App Store / Google Play links when Meandering Muck launches
-- **Salt All The Things** — Update status and links when podcast launches 3/3/2026
-- **sv-tools integration** — Eventually connect to sv-tools via MCP for live data updates
+- **Show Planner demo page** — Not yet built
+- **Raid Team Manager demo page** — Not yet built
+- **App store links** — Meandering Muck not yet launched; "Coming Soon" buttons still in place
+- **Salt All The Things** — Launched 3/3/2026; links live
+- **sv-tools integration** — Ideas tool page live on sv-tools; admin-visible card added to hub; secret/public filter working. Full MCP integration TBD.
+- **Book Club app** — Built and live at `packages/book-club/`; not yet surfaced on the main site
+- **Monitoring** — Phase 1 complete (health checks running locally); email alerting and systemd deployment pending
 
 ---
 

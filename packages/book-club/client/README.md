@@ -1,16 +1,40 @@
-# React + Vite
+# Book Club — React Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React 18 + Vite + Tailwind CSS frontend for the Book Club app.
 
-Currently, two official plugins are available:
+## Dev server
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+From the repo root (`packages/book-club/`):
 
-## React Compiler
+```bash
+npm run dev
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Client runs on `http://localhost:5173`. Requires the Express API to be running on port 3001.
 
-## Expanding the ESLint configuration
+## Pages
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+| Route | Page |
+|-------|------|
+| `/` | Login / Register |
+| `/dashboard` | Dashboard (open round, winning book, upcoming meeting) |
+| `/rounds/:id` | Round detail (proposals, voting, meetings) |
+| `/rounds` | Past rounds archive |
+| `/profile` | Edit profile and notification prefs |
+| `/admin` | Admin panel (invite codes, round management, notifications) |
+
+## Environment
+
+Copy `.env.example` to `.env` and set `VITE_API_URL` if the API runs on a non-default port:
+
+```
+VITE_API_URL=http://localhost:3001/api
+```
+
+## Build
+
+```bash
+npm run build
+```
+
+Output goes to `dist/`. Serve statically or configure Nginx to proxy the API.

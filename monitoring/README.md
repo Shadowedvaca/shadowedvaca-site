@@ -15,17 +15,18 @@ monitoring/
 │   ├── server_health.py    Disk, memory, CPU, swap, processes
 │   └── nginx_status.py     Nginx process, HTTP response, SSL cert expiry
 ├── alerting/
-│   └── alerts.py           Alert dispatcher (Phase 1: console; Phase 2: email)
+│   └── alerts.py           Alert dispatcher (Phase 1: console; Phase 2: email — pending)
 ├── config/
 │   ├── thresholds.yaml     Warning/critical thresholds (committed)
 │   └── secrets.yaml.example  Template — copy to secrets.yaml and fill in
 ├── data/                   Runtime only, git-ignored
 │   └── monitoring.db       SQLite: metrics history, alert log
-├── deploy/                 Systemd units and install script (Phase 4)
+├── requirements.txt        Python dependencies (psutil, pyyaml, requests)
 ├── run_health_check.py     Entry point for server health checks
-├── run_cost_check.py       Entry point for AI cost checks (Phase 3)
 └── README.md               This file
 ```
+
+> **Current status:** Phase 1 complete (health checks, SQLite logging, console alerts). Email alerting (Phase 2), cost tracking (Phase 3), and systemd deployment (Phase 4) are pending. See `docs/MONITORING-PLAN.md`.
 
 ---
 

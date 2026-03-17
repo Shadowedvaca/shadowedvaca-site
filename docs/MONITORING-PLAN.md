@@ -8,7 +8,7 @@ Add lightweight monitoring and cost governance to the Hetzner server (CPX11, 5.7
 
 ---
 
-## Phase 1: Scaffolding & Server Health Checks
+## Phase 1: Scaffolding & Server Health Checks ✅ COMPLETE
 
 **Goal:** Create the monitoring framework and get server health checks running locally and on the server.
 
@@ -127,7 +127,7 @@ Add lightweight monitoring and cost governance to the Hetzner server (CPX11, 5.7
 
 ---
 
-## Phase 2: Email Alerting
+## Phase 2: Email Alerting ⏳ PENDING
 
 **Goal:** Get actual email alerts working so Mike doesn't have to check logs manually.
 
@@ -169,7 +169,7 @@ Add lightweight monitoring and cost governance to the Hetzner server (CPX11, 5.7
 
 ---
 
-## Phase 3: Cost Tracking
+## Phase 3: Cost Tracking ⏳ PENDING
 
 **Goal:** Track AI API spending and alert on cost anomalies.
 
@@ -232,7 +232,7 @@ Add lightweight monitoring and cost governance to the Hetzner server (CPX11, 5.7
 
 ---
 
-## Phase 4: Systemd Deployment
+## Phase 4: Systemd Deployment ⏳ PENDING
 
 **Goal:** Get monitoring running automatically on the server via systemd timers.
 
@@ -304,7 +304,7 @@ Add lightweight monitoring and cost governance to the Hetzner server (CPX11, 5.7
 
 ---
 
-## Phase 5: Hardening & Documentation
+## Phase 5: Hardening & Documentation ⏳ PENDING
 
 **Goal:** Make the monitoring system robust and self-documenting.
 

@@ -46,18 +46,37 @@ All content lives in `data/`:
 
 | File | Contents |
 |------|----------|
-| `data/projects.json` | All projects (game, podcast, wow, tool) |
+| `data/projects.json` | All projects (game, podcast, wow, tool, utilities, creative) |
 | `data/announcements.json` | Ticker announcements |
 | `data/profile.json` | Personal/professional profile |
-| `data/links.json` | Site-wide important links |
 
 Edit these files to update site content, then rebuild.
 
 ## Deployment
 
-See `docs/IMPLEMENTATION-PLAN.md` for full server setup and deployment instructions.
+Site is hosted on Hetzner Cloud (CPX11, `5.78.114.224`), served by Nginx from `dist/`.
 
-Site is hosted on Hetzner Cloud (CPX11), served by Nginx from `dist/`.
+```bash
+bash deploy.sh
+```
+
+## Packages
+
+| Package | Purpose |
+|---------|---------|
+| `packages/core/` | Shared Pydantic schemas + data access layer |
+| `packages/site/` | Command center: Jinja2 templates + build script |
+| `packages/book-club/` | Book club web app (React + Express + PostgreSQL) |
+
+## Monitoring
+
+Lightweight server health monitoring lives in `monitoring/`. Python scripts run via systemd timers, results stored in SQLite.
+
+```bash
+python monitoring/run_health_check.py --dry-run
+```
+
+See `monitoring/README.md` for setup and `docs/MONITORING-PLAN.md` for implementation status.
 
 ## Project: Meandering Muck
 
