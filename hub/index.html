@@ -206,6 +206,7 @@
     // Tools visible to all users (controlled by permissions)
     var ALL_TOOLS = [
       { slug: 'settings', name: 'Settings', label: 'account', desc: 'Password and account preferences', path: '/hub/settings/', locked: true },
+      { slug: 'ideas', name: 'Ideation Board', label: 'tools', desc: 'Browse and search project ideas — spark to ship', path: '/ideas/' },
     ];
 
     // Admin-only tools (not permission-controlled)
@@ -274,7 +275,7 @@
       var toolsLabel = document.getElementById('toolsLabel');
       var shown = 0;
       ALL_TOOLS.forEach(function(tool) {
-        if (tool.locked || permissions.indexOf(tool.slug) !== -1) {
+        if (isAdmin || tool.locked || permissions.indexOf(tool.slug) !== -1) {
           toolGrid.appendChild(makeCard(tool, false));
           shown++;
         }
