@@ -35,3 +35,7 @@ CREATE INDEX IF NOT EXISTS idx_cf_tags
 CREATE INDEX IF NOT EXISTS idx_cf_token
     ON shadowedvaca.customer_feedback (privacy_token)
     WHERE privacy_token IS NOT NULL;
+
+-- Grant permissions to the application user
+GRANT SELECT, INSERT, UPDATE, DELETE ON shadowedvaca.customer_feedback TO sv_site_user;
+GRANT USAGE, SELECT ON SEQUENCE shadowedvaca.customer_feedback_id_seq TO sv_site_user;
