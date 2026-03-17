@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Ideation Board — Shadowedvaca LLC{% endblock %}
+
+{% block scripts %}
+<script src="/js/marked.min.js"></script>
+<script src="/js/ideas.js"></script>
+{% endblock %}
+
+{% block body %}
+<div class="ideas-page">
+
+  <header class="ideas-header">
+    <a href="/hub/" class="ideas-back-link">← hub</a>
+    <div class="ideas-title-group">
+      <h1 class="ideas-title">Ideation Board</h1>
+      <p class="ideas-subtitle">Live ideas — spark to ship</p>
+    </div>
+  </header>
+
+  <div class="ideas-controls">
+    <select id="status-filter" class="ideas-select">
+      <option value="">All statuses</option>
+      <option value="spark">Spark</option>
+      <option value="exploring">Exploring</option>
+      <option value="researching">Researching</option>
+      <option value="committed">Committed</option>
+      <option value="shelved">Shelved</option>
+    </select>
+
+    <div class="ideas-sort-group">
+      <button id="sort-updated" class="ideas-sort-btn active" data-sort="updated">Recent</button>
+      <button id="sort-name" class="ideas-sort-btn" data-sort="name">A–Z</button>
+    </div>
+
+    <input
+      id="search-input"
+      class="ideas-search"
+      type="search"
+      placeholder="Search ideas..."
+      autocomplete="off"
+    />
+  </div>
+
+  <div id="idea-grid" class="ideas-grid">
+    <div id="ideas-loading" class="ideas-state-msg">Loading...</div>
+  </div>
+
+</div>
+
+<!-- Drill-in overlay -->
+<div id="idea-overlay" class="idea-overlay" hidden>
+  <div class="idea-overlay-backdrop" id="overlay-backdrop"></div>
+  <div class="idea-overlay-panel">
+    <button class="idea-overlay-close" id="overlay-close">✕</button>
+    <div id="overlay-content" class="idea-overlay-content"></div>
+  </div>
+</div>
+{% endblock %}
