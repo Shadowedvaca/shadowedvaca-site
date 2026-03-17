@@ -6,7 +6,7 @@ shadowedvaca schema: users, invite_codes, user_permissions
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import Boolean, ForeignKey, Integer, String
+from sqlalchemy import Boolean, CheckConstraint, ForeignKey, Integer, String, Text
 from sqlalchemy.dialects.postgresql import JSONB, TIMESTAMP
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
@@ -80,3 +80,32 @@ class UserPermission(Base):
     tool_slug: Mapped[str] = mapped_column(String(64), primary_key=True)
 
     user: Mapped[User] = relationship(back_populates="permissions")
+
+
+# ---------------------------------------------------------------------------
+# shadowedvaca.customer_feedback
+# ---------------------------------------------------------------------------
+
+
+class CustomerFeedback(Base):
+    __tablename__ = "customer_feedback"
+    __table_args__ = (
+        CheckConstraint("score BETWEEN 1 AND 10", name="ck_cf_score"),
+        {"schema": "shadowedvaca"},
+    )
+
+    id:                    Mapped[int]             = mapped_column(Integer, primary_key=True)
+    program_name:          Mapped[str]             = mapped_column(String(80), nullable=False)
+    received_at:           Mapped[datetime]        = mapped_column(
+                               TIMESTAMP(timezone=True), server_default=func.now()
+                           )
+    is_authenticated_user: Mapped[bool]            = mapped_column(Boolean, default=False)
+    is_anonymous:          Mapped[bool]            = mapped_column(Boolean, default=False)
+    privacy_token:         Mapped[Optional[str]]   = mapped_column(String(64))
+    score:                 Mapped[Optional[int]]   = mapped_column(Integer)
+    raw_feedback:          Mapped[str]             = mapped_column(Text, nullable=False)
+    summary:               Mapped[Optional[str]]   = mapped_column(Text)
+    sentiment:             Mapped[Optional[str]]   = mapped_column(String(20))
+    tags:                  Mapped[Optional[dict]]  = mapped_column(JSONB)
+    processed_at:          Mapped[Optional[datetime]] = mapped_column(TIMESTAMP(timezone=True))
+    processing_error:      Mapped[Optional[str]]   = mapped_column(Text)

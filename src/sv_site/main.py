@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sv_site.config import get_settings
 from sv_site.routes.admin import router as admin_router
 from sv_site.routes.auth import router as auth_router
+from sv_site.routes.feedback_ingest import router as feedback_ingest_router
 from sv_site.routes.ideas import router as ideas_router
 
 _settings = get_settings()
@@ -22,6 +23,7 @@ app.add_middleware(
 
 app.include_router(auth_router, prefix="/api")
 app.include_router(admin_router, prefix="/api")
+app.include_router(feedback_ingest_router)
 app.include_router(ideas_router, prefix="/api")
 
 
