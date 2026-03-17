@@ -179,6 +179,14 @@ def build() -> None:
         shutil.copytree(mm_assets_src, DIST_DIR / "assets" / "meandering-muck")
         print("  Copied assets/meandering-muck/ -> dist/assets/meandering-muck/")
 
+    # --- Render ideas/index.html ---
+    ideas_template = env.get_template("ideas/index.html")
+    ideas_html = ideas_template.render(site=site)
+    ideas_dir = DIST_DIR / "ideas"
+    ideas_dir.mkdir(exist_ok=True)
+    (ideas_dir / "index.html").write_text(ideas_html, encoding="utf-8")
+    print("  Rendered dist/ideas/index.html")
+
     # --- Copy hub/ -> dist/hub/ (authenticated tool pages) ---
     hub_src = REPO_ROOT / "hub"
     if hub_src.exists():
