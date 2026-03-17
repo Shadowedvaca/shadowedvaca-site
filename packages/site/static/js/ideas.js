@@ -28,8 +28,9 @@ function getToken() {
 // ---- Data ----
 
 var allIdeas = [];
+var isAdmin = false;
 var currentSort = 'updated';  // 'updated' | 'name'
-var currentStatus = '';
+var currentStatus = '';       // '' | status value | '__secret__'
 var currentSearch = '';
 
 async function loadIdeas() {
@@ -40,17 +41,35 @@ async function loadIdeas() {
     return;
   }
 
+  var authHeaders = { 'Authorization': 'Bearer ' + token };
+
   try {
-    var resp = await fetch(API_BASE + '/ideas?limit=200', {
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
-    if (resp.status === 401) {
+    // Fetch admin status and ideas in parallel
+    var [meResp, ideasResp] = await Promise.all([
+      fetch(API_BASE + '/auth/me', { headers: authHeaders }),
+      fetch(API_BASE + '/ideas?limit=200', { headers: authHeaders }),
+    ]);
+
+    if (meResp.status === 401 || ideasResp.status === 401) {
       localStorage.removeItem(JWT_KEY);
       location.href = '/login.html';
       return;
     }
-    if (!resp.ok) throw new Error('HTTP ' + resp.status);
-    var data = await resp.json();
+
+    if (meResp.ok) {
+      var me = await meResp.json();
+      isAdmin = me.isAdmin || false;
+      if (isAdmin) {
+        var select = document.getElementById('status-filter');
+        var secretOpt = document.createElement('option');
+        secretOpt.value = '__secret__';
+        secretOpt.textContent = 'Secret';
+        select.appendChild(secretOpt);
+      }
+    }
+
+    if (!ideasResp.ok) throw new Error('HTTP ' + ideasResp.status);
+    var data = await ideasResp.json();
     allIdeas = data.ideas || [];
     renderGrid();
   } catch (e) {
@@ -64,7 +83,9 @@ async function loadIdeas() {
 function getFiltered() {
   var ideas = allIdeas.slice();
 
-  if (currentStatus) {
+  if (currentStatus === '__secret__') {
+    ideas = ideas.filter(function(i) { return i.public === false; });
+  } else if (currentStatus) {
     ideas = ideas.filter(function(i) { return i.status === currentStatus; });
   }
   if (currentSearch) {
@@ -120,6 +141,8 @@ function renderGrid() {
     var color = STATUS_COLORS[idea.status] || '#c8cdd3';
     var updatedBadge = isRecentlyUpdated(idea.updated_at)
       ? '<span class="idea-badge idea-badge--updated">Updated</span>' : '';
+    var secretBadge = (isAdmin && idea.public === false)
+      ? '<span class="idea-badge idea-badge--secret">Secret</span>' : '';
     var docCount = idea.document_count || 0;
     var docBadge = docCount > 0
       ? '<span class="idea-badge idea-badge--docs">' + docCount + ' doc' + (docCount !== 1 ? 's' : '') + '</span>' : '';
@@ -132,7 +155,7 @@ function renderGrid() {
         '<div class="idea-card-header">' +
           '<span class="idea-status-dot" style="background:' + color + '" title="' + idea.status + '"></span>' +
           '<h2 class="idea-card-title">' + escapeHtml(idea.title) + '</h2>' +
-          '<div class="idea-card-badges">' + updatedBadge + docBadge + '</div>' +
+          '<div class="idea-card-badges">' + secretBadge + updatedBadge + docBadge + '</div>' +
         '</div>' +
         '<p class="idea-card-pitch">' + escapeHtml(idea.elevator_pitch) + '</p>' +
         (tags ? '<div class="idea-card-tags">' + tags + '</div>' : '') +

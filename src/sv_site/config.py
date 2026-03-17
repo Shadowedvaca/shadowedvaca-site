@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     site_url: str = "https://shadowedvaca.com"
     cors_origins: str = "https://shadowedvaca.com"
     sv_tools_url: str = "https://sv-tools.shadowedvaca.com"
+    sv_tools_api_key: str = ""
 
     # JWT settings
     jwt_algorithm: str = "HS256"
