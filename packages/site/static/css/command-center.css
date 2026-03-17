@@ -676,3 +676,402 @@ a:hover { text-decoration: underline; }
   .meta-tag { font-size: 0.85rem; padding: 0.25rem 0.6rem; }
   .action-btn { font-size: 0.9rem; padding: 0.45rem 0.85rem; }
 }
+
+
+/* ==========================================================================
+   17. Ideation Board (/ideas/)
+   ========================================================================== */
+
+.ideas-page {
+  min-height: 100vh;
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  padding: 2rem 1.5rem 4rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* Header */
+.ideas-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.ideas-back-link {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  padding-top: 0.35rem;
+  white-space: nowrap;
+  transition: color 0.15s;
+}
+
+.ideas-back-link:hover { color: var(--accent); }
+
+.ideas-title-group { flex: 1; }
+
+.ideas-title {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 1.6rem;
+  color: var(--accent);
+  letter-spacing: 0.04em;
+  margin-bottom: 0.2rem;
+}
+
+.ideas-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+/* Controls */
+.ideas-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.75rem;
+  flex-wrap: wrap;
+}
+
+.ideas-select,
+.ideas-search {
+  background: #0d1117;
+  border: 1px solid var(--divider);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 0.85rem;
+  padding: 0.4rem 0.75rem;
+  transition: border-color 0.15s;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.ideas-select:focus,
+.ideas-search:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.ideas-search {
+  flex: 1;
+  min-width: 160px;
+}
+
+.ideas-search::placeholder { color: var(--text-secondary); }
+
+.ideas-sort-group {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--divider);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.ideas-sort-btn {
+  background: #0d1117;
+  border: none;
+  border-right: 1px solid var(--divider);
+  color: var(--text-secondary);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.78rem;
+  padding: 0.4rem 0.75rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.ideas-sort-btn:last-child { border-right: none; }
+.ideas-sort-btn:hover { background: #111620; color: var(--text-primary); }
+.ideas-sort-btn.active { background: #111620; color: var(--accent); }
+
+/* Grid */
+.ideas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.ideas-state-msg {
+  grid-column: 1 / -1;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  padding: 2rem 0;
+}
+
+.ideas-error { color: #e05c5c; }
+
+/* Idea card */
+.idea-card {
+  background: #0d1117;
+  border: 1px solid var(--divider);
+  border-left: 3px solid transparent;
+  border-radius: 4px;
+  padding: 1.1rem 1.25rem;
+  cursor: pointer;
+  transition: border-left-color 0.15s, background 0.15s;
+}
+
+.idea-card:hover {
+  border-left-color: var(--accent);
+  background: #111620;
+}
+
+.idea-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.idea-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.idea-card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  flex: 1;
+  margin: 0;
+}
+
+.idea-card-badges {
+  display: flex;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
+.idea-badge {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.65rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.idea-badge--updated {
+  background: rgba(0, 212, 255, 0.1);
+  color: var(--accent);
+  border: 1px solid rgba(0, 212, 255, 0.25);
+}
+
+.idea-badge--docs {
+  background: rgba(107, 114, 128, 0.15);
+  color: var(--text-secondary);
+  border: 1px solid var(--divider);
+}
+
+.idea-card-pitch {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 0.6rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.idea-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-bottom: 0.6rem;
+}
+
+.idea-tag {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--divider);
+  border-radius: 3px;
+  padding: 0.1rem 0.4rem;
+}
+
+.idea-card-meta {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.72rem;
+  color: #4b5563;
+}
+
+/* Overlay */
+.idea-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+}
+
+.idea-overlay[hidden] { display: none; }
+
+.idea-overlay-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.idea-overlay-panel {
+  position: relative;
+  z-index: 1;
+  width: min(680px, 100vw);
+  height: 100vh;
+  background: #0d1117;
+  border-left: 1px solid var(--divider);
+  overflow-y: auto;
+  padding: 2rem;
+}
+
+.idea-overlay-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: 1px solid var(--divider);
+  border-radius: 3px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  width: 2rem;
+  height: 2rem;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.idea-overlay-close:hover { color: var(--text-primary); border-color: var(--text-secondary); }
+
+.idea-overlay-content { margin-top: 0.5rem; }
+
+.overlay-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.overlay-meta {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+}
+
+.overlay-pitch {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--divider);
+}
+
+.overlay-section-title {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 1.5rem 0 0.75rem;
+}
+
+.overlay-aspect-group {
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+}
+
+.overlay-aspect-group strong {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.overlay-aspect pre {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--divider);
+  border-radius: 3px;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  overflow-x: auto;
+  margin-top: 0.4rem;
+  white-space: pre-wrap;
+}
+
+.overlay-doc {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--divider);
+}
+
+.overlay-doc:last-child { border-bottom: none; }
+
+.overlay-doc-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.75rem;
+}
+
+.overlay-doc-date {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.72rem;
+  color: #4b5563;
+  font-weight: 400;
+}
+
+.overlay-doc-content {
+  font-size: 0.88rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+
+.overlay-doc-content h1,
+.overlay-doc-content h2,
+.overlay-doc-content h3 {
+  color: var(--text-primary);
+  font-size: 1rem;
+  margin: 1rem 0 0.4rem;
+}
+
+.overlay-doc-content p { margin-bottom: 0.6rem; }
+.overlay-doc-content ul, .overlay-doc-content ol { padding-left: 1.5rem; margin-bottom: 0.6rem; }
+.overlay-doc-content li { margin-bottom: 0.2rem; }
+
+.overlay-doc-content code {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.82rem;
+  background: rgba(255,255,255,0.05);
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+  color: var(--accent);
+}
+
+.overlay-doc-content pre code {
+  display: block;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--divider);
+  padding: 0.75rem;
+  overflow-x: auto;
+  color: var(--text-secondary);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .ideas-page { padding: 1.25rem 1rem 3rem; }
+  .ideas-title { font-size: 1.3rem; }
+  .ideas-grid { grid-template-columns: 1fr; }
+  .idea-overlay-panel { width: 100vw; border-left: none; }
+}
