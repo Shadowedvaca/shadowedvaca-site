@@ -4,16 +4,16 @@
 
 Ideas are stored in sv-tools (SQLite on `138.201.189.106`). The shadowedvaca.com board
 fetches from sv-tools via two unauthenticated public endpoints. No API key is required
-for these calls — they are server-to-server from sv-site to sv-tools on localhost.
+for these calls — sv-site proxies via `https://sv-tools.shadowedvaca.com`.
 
 ---
 
 ## Base URL
 
-sv-tools runs as a Docker container on the same server as shadowedvaca.com:
+sv-tools runs on its own dedicated server (`138.201.189.106`):
 
 ```
-http://127.0.0.1:8000/api/v1
+https://sv-tools.shadowedvaca.com/api/v1
 ```
 
 ---
