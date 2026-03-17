@@ -140,10 +140,16 @@ async def me(
     _user: dict = Depends(require_auth),
     db: AsyncSession = Depends(get_db),
 ) -> dict:
+    user_id = _user.get("user_id")
+
+    # Fresh DB lookup for is_admin (JWT may be stale)
+    user_row = await db.execute(select(User.is_admin).where(User.id == user_id))
+    is_admin: bool = user_row.scalar_one_or_none() or False
+
     # Load permission rows for this user
     result = await db.execute(
         select(UserPermission.tool_slug).where(
-            UserPermission.user_id == _user.get("user_id")
+            UserPermission.user_id == user_id
         )
     )
     stored_slugs = [row[0] for row in result.all()]
@@ -151,9 +157,9 @@ async def me(
     all_permissions = list(LOCKED_SLUGS | set(stored_slugs))
 
     return {
-        "user_id": _user.get("user_id"),
+        "user_id": user_id,
         "username": _user.get("username"),
-        "isAdmin": _user.get("is_admin", False),
+        "isAdmin": is_admin,
         "permissions": all_permissions,
     }
 
