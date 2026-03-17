@@ -134,7 +134,7 @@ Both repos must have matching values for `FEEDBACK_INGEST_KEY`. They must NOT sh
 
 | Variable | PATT | Hub | Notes |
 |----------|------|-----|-------|
-| `FEEDBACK_INGEST_KEY` | ✓ set | ✓ must match | Shared secret; authenticate ingest POSTs |
+| `FEEDBACK_INGEST_KEY` | ✓ set | ✓ set | Shared secret; authenticate ingest POSTs |
 | `FEEDBACK_PRIVACY_SALT` | ✓ set | — never set | Per-app only; different value for every client |
 | `FEEDBACK_HUB_URL` | ✓ set | — not needed | Hub's own base URL; PATT uses it to POST |
 | `ANTHROPIC_API_KEY` | — not needed | ✓ set | Hub-only; used for AI processing |
@@ -147,9 +147,9 @@ FEEDBACK_INGEST_KEY=df9bf11c5983d22bc23bdc7338707c2088107affc027490e9fbf00e50189
 FEEDBACK_PRIVACY_SALT=178ab60fe386f62692d9a5e87d5186c7bf445e0fad84df313db612f4ff8760de
 ```
 
-**Action required on Hub:** `FEEDBACK_INGEST_KEY` above must be set in the Hub's
-server env before F.3 goes live. Without it, PATT's Hub POSTs will receive 401 and
-`hub_feedback_id` will remain NULL (local records still save — no data loss).
+**Both sides configured.** Hub server env has been updated with the matching
+`FEEDBACK_INGEST_KEY` (confirmed 2026-03-17). End-to-end Hub sync is ready for
+F.3 to wire up.
 
 ---
 
@@ -159,7 +159,8 @@ The Hub call is fire-and-forget. PATT's local record is always saved first.
 If the Hub is unreachable, returns an error, or the ingest key is misconfigured:
 
 - Local record saved with `hub_feedback_id = NULL`
-- Warning logged: `"Hub feedback ingest failed (local record still saved): ..."`
+- `report_error("feedback_hub_sync_failed", severity="warning")` fired via `sv_common.errors`
+- `resolve_issue("feedback_hub_sync_failed")` called on the next successful sync
 - User sees no error — the form submission still succeeds
 
 There is no retry mechanism in F.2. A future phase can sweep local records where
