@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Feedback — Shadowedvaca Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-deep:        #0a0c10;
+      --bg-card:        #0d1117;
+      --bg-card-hover:  #111620;
+      --divider:        #1e2533;
+      --text-primary:   #c8cdd3;
+      --text-secondary: #6b7280;
+      --cyan:           #00d4ff;
+      --cyan-dim:       rgba(0, 212, 255, 0.1);
+      --green-bright:   #33ff33;
+      --green-dim:      #1a9e1a;
+      --amber:          #f0a030;
+      --danger:         #e74c3c;
+      --success:        #2ecc71;
+    }
+
+    html, body {
+      min-height: 100vh;
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 3rem 1.5rem 4rem;
+    }
+
+    /* ---- Header ---- */
+    .page-header {
+      width: 100%;
+      max-width: 900px;
+      margin-bottom: 2rem;
+    }
+
+    .prompt-line {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.85rem;
+      color: var(--green-dim);
+      margin-bottom: 0.4rem;
+    }
+
+    .prompt-line .prompt-user { color: var(--green-bright); }
+    .prompt-line .prompt-cmd  { color: var(--text-secondary); }
+
+    .page-title {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 1.4rem;
+      color: var(--amber);
+      letter-spacing: 0.04em;
+    }
+
+    .section-divider {
+      width: 100%;
+      max-width: 900px;
+      border: none;
+      border-top: 1px solid var(--divider);
+      margin: 0 0 1.75rem;
+    }
+
+    /* ---- Header row (title + meta) ---- */
+    .fb-header {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      align-items: baseline;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .fb-header h1 {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 1rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-weight: 400;
+    }
+
+    .fb-meta {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    /* ---- Filters ---- */
+    .fb-filters {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      align-items: center;
+      margin-bottom: 1.75rem;
+    }
+
+    .fb-filters select,
+    .fb-filters input[type="number"] {
+      background: var(--bg-card);
+      border: 1px solid var(--divider);
+      border-radius: 3px;
+      color: var(--text-primary);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.75rem;
+      padding: 5px 8px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .fb-filters select:focus,
+    .fb-filters input[type="number"]:focus { border-color: var(--cyan); }
+
+    .fb-filters input[type="number"] { width: 64px; }
+
+    .score-sep {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    .btn-apply {
+      background: none;
+      border: 1px solid var(--cyan);
+      border-radius: 3px;
+      padding: 5px 14px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--cyan);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .btn-apply:hover { background: var(--cyan-dim); }
+
+    /* ---- State messages ---- */
+    .state-msg {
+      width: 100%;
+      max-width: 900px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      padding: 1.5rem 0;
+    }
+
+    .state-msg.error { color: var(--danger); }
+
+    /* ---- Card grid ---- */
+    #fb-grid {
+      width: 100%;
+      max-width: 900px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+      gap: 1rem;
+    }
+
+    .fb-card {
+      background: var(--bg-card);
+      border: 1px solid var(--divider);
+      border-left: 3px solid var(--divider);
+      border-radius: 4px;
+      padding: 1.1rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+
+    /* ---- Card header ---- */
+    .fb-card-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .fb-program {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--amber);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .fb-score {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .fb-score--low  { color: #f87171; }
+    .fb-score--mid  { color: #fbbf24; }
+    .fb-score--high { color: #a3e635; }
+    .fb-score--top  { color: #4ade80; }
+
+    .fb-sentiment {
+      font-size: 0.75rem;
+      padding: 0.15rem 0.45rem;
+      border-radius: 3px;
+      border: 1px solid;
+      text-transform: capitalize;
+      white-space: nowrap;
+    }
+
+    .fb-sentiment--positive { color: #4ade80; border-color: rgba(74,222,128,0.3); background: rgba(74,222,128,0.1); }
+    .fb-sentiment--negative { color: #f87171; border-color: rgba(248,113,113,0.3); background: rgba(248,113,113,0.1); }
+    .fb-sentiment--neutral  { color: #9ca3af; border-color: rgba(156,163,175,0.3); background: rgba(156,163,175,0.1); }
+    .fb-sentiment--mixed    { color: #fbbf24; border-color: rgba(251,191,36,0.3);  background: rgba(251,191,36,0.1); }
+
+    .fb-date {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+
+    /* ---- Tags ---- */
+    .fb-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+
+    .fb-tag {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem;
+      padding: 2px 7px;
+      border: 1px solid var(--divider);
+      border-radius: 3px;
+      color: var(--text-secondary);
+      background: rgba(255,255,255,0.03);
+    }
+
+    /* ---- Summary ---- */
+    .fb-summary {
+      font-size: 0.85rem;
+      color: var(--text-primary);
+      line-height: 1.5;
+    }
+
+    .fb-summary.pending { color: var(--text-secondary); font-style: italic; }
+
+    /* ---- Raw feedback (collapsed) ---- */
+    .fb-raw {
+      font-size: 0.8rem;
+    }
+
+    .fb-raw summary {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+      user-select: none;
+      outline: none;
+    }
+
+    .fb-raw summary:hover { color: var(--cyan); }
+
+    .fb-raw blockquote {
+      margin-top: 0.5rem;
+      padding: 0.6rem 0.75rem;
+      border-left: 2px solid var(--divider);
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    /* ---- Card footer ---- */
+    .fb-card-footer {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 0.1rem;
+    }
+
+    .fb-badge {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem;
+      padding: 2px 7px;
+      border-radius: 3px;
+      border: 1px solid;
+    }
+
+    .fb-badge--user { color: var(--cyan); border-color: rgba(0,212,255,0.35); background: rgba(0,212,255,0.08); }
+    .fb-badge--anon { color: var(--text-secondary); border-color: var(--divider); background: rgba(255,255,255,0.03); }
+
+    .fb-token {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--text-secondary);
+      opacity: 0.6;
+    }
+
+    /* ---- Footer ---- */
+    .page-footer {
+      width: 100%;
+      max-width: 900px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    .page-footer a { color: var(--text-secondary); text-decoration: none; transition: color 0.15s; }
+    .page-footer a:hover { color: var(--cyan); }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <div class="prompt-line">
+      <span class="prompt-user">shadowedvaca@cmd</span><span class="prompt-cmd">:~$ ls --feedback</span>
+    </div>
+    <div class="page-title">customer feedback</div>
+  </div>
+
+  <hr class="section-divider">
+
+  <div class="fb-header">
+    <h1>All Responses</h1>
+    <span class="fb-meta" id="fb-meta"></span>
+  </div>
+
+  <div class="fb-filters">
+    <select id="f-program">
+      <option value="">All Programs</option>
+    </select>
+    <select id="f-sentiment">
+      <option value="">All Sentiments</option>
+      <option value="positive">Positive</option>
+      <option value="neutral">Neutral</option>
+      <option value="negative">Negative</option>
+      <option value="mixed">Mixed</option>
+    </select>
+    <select id="f-tag">
+      <option value="">All Tags</option>
+      <option value="new feature request">new feature request</option>
+      <option value="bug report">bug report</option>
+      <option value="praise">praise</option>
+      <option value="improvement suggestion">improvement suggestion</option>
+      <option value="missing content">missing content</option>
+      <option value="performance issue">performance issue</option>
+      <option value="ui/ux">ui/ux</option>
+      <option value="documentation">documentation</option>
+      <option value="confusing/unclear">confusing/unclear</option>
+      <option value="other">other</option>
+    </select>
+    <input type="number" id="f-min-score" placeholder="Min" min="1" max="10" title="Min score">
+    <span class="score-sep">–</span>
+    <input type="number" id="f-max-score" placeholder="Max" min="1" max="10" title="Max score">
+    <button class="btn-apply" id="btn-apply">[ apply ]</button>
+  </div>
+
+  <div id="fb-loading" class="state-msg">Loading...</div>
+  <div id="fb-error"   class="state-msg error" style="display:none"></div>
+  <div id="fb-empty"   class="state-msg" style="display:none">No feedback found matching these filters.</div>
+  <div id="fb-grid"    style="display:none"></div>
+
+  <div class="page-footer">
+    <a href="/hub/">← back to hub</a>
+  </div>
+
+  <script>
+    var STORAGE_KEY = 'sv_site_jwt';
+
+    function getSession() {
+      try {
+        var raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return null;
+        var data = JSON.parse(raw);
+        if (!data || !data.token) return null;
+        var parts = data.token.split('.');
+        if (parts.length !== 3) return null;
+        var payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+        if (payload.exp && payload.exp * 1000 < Date.now()) {
+          localStorage.removeItem(STORAGE_KEY);
+          return null;
+        }
+        return data;
+      } catch (e) { return null; }
+    }
+
+    function show(id) { document.getElementById(id).style.display = ''; }
+    function hide(id) { document.getElementById(id).style.display = 'none'; }
+
+    function escHtml(str) {
+      return String(str == null ? '' : str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function relativeTime(iso) {
+      if (!iso) return '';
+      var then = new Date(iso);
+      var diff = Math.floor((Date.now() - then.getTime()) / 1000);
+      if (diff < 60)    return 'just now';
+      if (diff < 3600)  return Math.floor(diff / 60) + 'm ago';
+      if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+      if (diff < 604800) return Math.floor(diff / 86400) + 'd ago';
+      return then.toISOString().slice(0, 10);
+    }
+
+    function scoreClass(n) {
+      if (!n) return '';
+      if (n <= 3) return 'fb-score--low';
+      if (n <= 6) return 'fb-score--mid';
+      if (n <= 8) return 'fb-score--high';
+      return 'fb-score--top';
+    }
+
+    function renderCard(item) {
+      var card = document.createElement('div');
+      card.className = 'fb-card';
+
+      // Header
+      var scoreHtml = item.score != null
+        ? '<span class="fb-score ' + scoreClass(item.score) + '">' + item.score + '/10</span>'
+        : '';
+      var sentimentHtml = item.sentiment
+        ? '<span class="fb-sentiment fb-sentiment--' + escHtml(item.sentiment) + '">' + escHtml(item.sentiment) + '</span>'
+        : '';
+      var headerHtml =
+        '<div class="fb-card-header">' +
+          '<span class="fb-program">' + escHtml(item.program_name) + '</span>' +
+          scoreHtml +
+          sentimentHtml +
+          '<span class="fb-date" title="' + escHtml(item.received_at || '') + '">' + relativeTime(item.received_at) + '</span>' +
+        '</div>';
+
+      // Tags
+      var tagsHtml = '';
+      if (item.tags && item.tags.length > 0) {
+        tagsHtml = '<div class="fb-tags">' +
+          item.tags.map(function(t) { return '<span class="fb-tag">' + escHtml(t) + '</span>'; }).join('') +
+          '</div>';
+      }
+
+      // Summary
+      var summaryText = item.summary || null;
+      var summaryHtml = summaryText
+        ? '<p class="fb-summary">' + escHtml(summaryText) + '</p>'
+        : '<p class="fb-summary pending">(AI processing pending)</p>';
+
+      // Raw feedback
+      var rawHtml =
+        '<details class="fb-raw">' +
+          '<summary>Raw feedback</summary>' +
+          '<blockquote>' + escHtml(item.raw_feedback) + '</blockquote>' +
+        '</details>';
+
+      // Footer
+      var badgeHtml = item.is_authenticated_user
+        ? '<span class="fb-badge fb-badge--user" title="Submitted by a registered user">registered user</span>'
+        : '<span class="fb-badge fb-badge--anon">visitor</span>';
+      var tokenHtml = item.privacy_token
+        ? '<span class="fb-token" title="Anonymized submitter token (truncated)">' + escHtml(item.privacy_token) + '</span>'
+        : '';
+      var footerHtml =
+        '<div class="fb-card-footer">' + badgeHtml + tokenHtml + '</div>';
+
+      card.innerHTML = headerHtml + tagsHtml + summaryHtml + rawHtml + footerHtml;
+      return card;
+    }
+
+    var session = null;
+
+    async function loadPrograms() {
+      var resp = await fetch('/api/hub/feedback/programs', {
+        headers: { 'Authorization': 'Bearer ' + session.token },
+      });
+      if (!resp.ok) return;
+      var data = await resp.json();
+      var sel = document.getElementById('f-program');
+      data.data.programs.forEach(function(p) {
+        var opt = document.createElement('option');
+        opt.value = p;
+        opt.textContent = p;
+        sel.appendChild(opt);
+      });
+    }
+
+    async function loadFeedback(filters) {
+      show('fb-loading');
+      hide('fb-grid');
+      hide('fb-error');
+      hide('fb-empty');
+      document.getElementById('fb-meta').textContent = '';
+
+      var params = new URLSearchParams();
+      if (filters.program)   params.set('program_name', filters.program);
+      if (filters.sentiment) params.set('sentiment', filters.sentiment);
+      if (filters.tag)       params.set('tag', filters.tag);
+      if (filters.minScore)  params.set('min_score', filters.minScore);
+      if (filters.maxScore)  params.set('max_score', filters.maxScore);
+
+      try {
+        var resp = await fetch('/api/hub/feedback?' + params, {
+          headers: { 'Authorization': 'Bearer ' + session.token },
+        });
+        if (!resp.ok) throw new Error(resp.statusText);
+        var data = await resp.json();
+
+        hide('fb-loading');
+        var total = data.data.total;
+        document.getElementById('fb-meta').textContent =
+          total + ' total response' + (total !== 1 ? 's' : '');
+
+        if (data.data.feedback.length === 0) {
+          show('fb-empty');
+          return;
+        }
+
+        var grid = document.getElementById('fb-grid');
+        grid.innerHTML = '';
+        data.data.feedback.forEach(function(item) {
+          grid.appendChild(renderCard(item));
+        });
+        show('fb-grid');
+
+      } catch (err) {
+        hide('fb-loading');
+        document.getElementById('fb-error').textContent = 'Failed to load feedback: ' + err.message;
+        show('fb-error');
+      }
+    }
+
+    document.getElementById('btn-apply').addEventListener('click', function() {
+      loadFeedback({
+        program:   document.getElementById('f-program').value   || null,
+        sentiment: document.getElementById('f-sentiment').value || null,
+        tag:       document.getElementById('f-tag').value       || null,
+        minScore:  document.getElementById('f-min-score').value || null,
+        maxScore:  document.getElementById('f-max-score').value || null,
+      });
+    });
+
+    // Auth guard — admin only
+    session = getSession();
+    if (!session) {
+      location.href = '/login.html?next=' + encodeURIComponent(location.pathname);
+    } else {
+      fetch('/api/auth/me', { headers: { 'Authorization': 'Bearer ' + session.token } })
+        .then(function(r) { return r.json(); })
+        .then(function(me) {
+          if (!me.isAdmin) { location.href = '/hub/'; return; }
+          loadPrograms().then(function() { loadFeedback({}); });
+        })
+        .catch(function() { location.href = '/hub/'; });
+    }
+  </script>
+</body>
+</html>

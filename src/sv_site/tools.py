@@ -23,6 +23,14 @@ TOOLS: list[dict] = [
         "locked": False,
         "admin_only": False,
     },
+    {
+        "slug": "customer_feedback",
+        "name": "Customer Feedback",
+        "description": "Review feedback submitted across all apps.",
+        "path": "/hub/feedback/",
+        "locked": False,
+        "admin_only": True,
+    },
 ]
 
 # Slugs that are always granted regardless of user_permissions rows

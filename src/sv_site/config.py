@@ -20,6 +20,10 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     jwt_expire_minutes: int = 480  # 8 hours
 
+    # Feedback ingest
+    feedback_ingest_key: str = ""    # clients must send this header to POST /api/feedback/ingest
+    anthropic_api_key: str = ""      # for AI processing; empty = skip AI gracefully
+
 
 @lru_cache
 def get_settings() -> Settings:
