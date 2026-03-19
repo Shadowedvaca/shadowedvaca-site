@@ -182,26 +182,29 @@ function renderGrid() {
     });
   });
 
-  // Tags collapse: after layout, show toggle only when tags actually wrap to a second line
+  // Tags collapse: show toggle only when tags genuinely wrap to a second line.
+  // Temporarily lift max-height so offsetHeight reflects natural content height,
+  // then compare against a single tag's height to detect real wrapping.
   requestAnimationFrame(function() {
-    grid.querySelectorAll('.idea-card-tags').forEach(function(el) {
-      var id = el.id.replace('tags-', '');
-      var btn = el.parentElement.querySelector('.tags-toggle[data-id="' + id + '"]');
-      if (!btn) return;
-      if (expandedTags[id]) {
-        el.classList.add('tags-expanded');
-        btn.textContent = '↑';
-        btn.hidden = false;
-        return;
-      }
-      var tags = el.querySelectorAll('.idea-tag');
-      if (tags.length < 2) { btn.hidden = true; return; }
-      var firstTop = tags[0].getBoundingClientRect().top;
-      var wraps = false;
-      for (var i = 1; i < tags.length; i++) {
-        if (tags[i].getBoundingClientRect().top > firstTop + 2) { wraps = true; break; }
-      }
-      btn.hidden = !wraps;
+    requestAnimationFrame(function() {
+      grid.querySelectorAll('.idea-card-tags').forEach(function(el) {
+        var id = el.id.replace('tags-', '');
+        var btn = el.parentElement.querySelector('.tags-toggle[data-id="' + id + '"]');
+        if (!btn) return;
+        if (expandedTags[id]) {
+          el.classList.add('tags-expanded');
+          btn.textContent = '↑';
+          btn.hidden = false;
+          return;
+        }
+        var firstTag = el.querySelector('.idea-tag');
+        if (!firstTag) { btn.hidden = true; return; }
+        var lineH = firstTag.offsetHeight;
+        el.style.maxHeight = 'none';
+        var fullH = el.offsetHeight;
+        el.style.maxHeight = '';
+        btn.hidden = fullH <= lineH + 4;
+      });
     });
   });
 }
