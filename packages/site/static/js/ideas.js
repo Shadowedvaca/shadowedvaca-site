@@ -29,6 +29,7 @@ function getToken() {
 
 var allIdeas = [];
 var isAdmin = false;
+var expandedTags = {};   // keyed by idea id string; true = expanded
 var currentSort = 'updated';  // 'updated' | 'name'
 var currentStatus = '';       // '' | status value | '__secret__'
 var currentSearch = '';
@@ -144,8 +145,13 @@ function renderGrid() {
     var secretBadge = (isAdmin && idea.public === false)
       ? '<span class="idea-badge idea-badge--secret">Secret</span>' : '';
     var docCount = idea.document_count || 0;
-    var docBadge = docCount > 0
-      ? '<span class="idea-badge idea-badge--docs">' + docCount + ' doc' + (docCount !== 1 ? 's' : '') + '</span>' : '';
+    var artifactCount = idea.artifact_count || 0;
+    var countsParts = [];
+    if (docCount > 0) countsParts.push(docCount + ' doc' + (docCount !== 1 ? 's' : ''));
+    if (artifactCount > 0) countsParts.push(artifactCount + ' artifact' + (artifactCount !== 1 ? 's' : ''));
+    var countsText = countsParts.length > 0
+      ? '<span class="idea-card-counts">' + countsParts.join(' · ') + '</span>'
+      : '';
     var tags = (idea.tags || []).map(function(t) {
       return '<span class="idea-tag">' + escapeHtml(t) + '</span>';
     }).join('');
@@ -155,10 +161,13 @@ function renderGrid() {
         '<div class="idea-card-header">' +
           '<span class="idea-status-dot" style="background:' + color + '" title="' + idea.status + '"></span>' +
           '<h2 class="idea-card-title">' + escapeHtml(idea.title) + '</h2>' +
-          '<div class="idea-card-badges">' + secretBadge + updatedBadge + docBadge + '</div>' +
+          '<div class="idea-card-badges">' + secretBadge + updatedBadge + countsText + '</div>' +
         '</div>' +
         '<p class="idea-card-pitch">' + escapeHtml(idea.elevator_pitch) + '</p>' +
-        (tags ? '<div class="idea-card-tags">' + tags + '</div>' : '') +
+        (tags
+          ? '<div class="idea-card-tags" id="tags-' + idea.id + '">' + tags + '</div>' +
+            '<button class="tags-toggle" hidden data-id="' + idea.id + '" aria-label="expand tags">▾</button>'
+          : '') +
         '<p class="idea-card-meta">' + escapeHtml(idea.status) + ' · updated ' + daysAgo(idea.updated_at) + '</p>' +
       '</div>'
     );
@@ -167,8 +176,32 @@ function renderGrid() {
   grid.innerHTML = html;
 
   grid.querySelectorAll('.idea-card').forEach(function(card) {
-    card.addEventListener('click', function() {
+    card.addEventListener('click', function(e) {
+      if (e.target.closest('.tags-toggle')) return;
       openOverlay(parseInt(card.dataset.id));
+    });
+  });
+
+  // Tags collapse: after layout, show toggle only when tags actually wrap to a second line
+  requestAnimationFrame(function() {
+    grid.querySelectorAll('.idea-card-tags').forEach(function(el) {
+      var id = el.id.replace('tags-', '');
+      var btn = el.parentElement.querySelector('.tags-toggle[data-id="' + id + '"]');
+      if (!btn) return;
+      if (expandedTags[id]) {
+        el.classList.add('tags-expanded');
+        btn.textContent = '↑';
+        btn.hidden = false;
+        return;
+      }
+      var tags = el.querySelectorAll('.idea-tag');
+      if (tags.length < 2) { btn.hidden = true; return; }
+      var firstTop = tags[0].getBoundingClientRect().top;
+      var wraps = false;
+      for (var i = 1; i < tags.length; i++) {
+        if (tags[i].getBoundingClientRect().top > firstTop + 2) { wraps = true; break; }
+      }
+      btn.hidden = !wraps;
     });
   });
 }
@@ -193,6 +226,10 @@ async function openOverlay(ideaId) {
   document.body.style.overflow = 'hidden';
 
   var color = STATUS_COLORS[idea.status] || '#c8cdd3';
+  var allTags = (idea.tags || []).map(function(t) {
+    return '<span class="idea-tag">' + escapeHtml(t) + '</span>';
+  }).join('');
+
   content.innerHTML =
     '<h2 class="overlay-title">' + escapeHtml(idea.title) + '</h2>' +
     '<div class="overlay-meta">' +
@@ -201,7 +238,15 @@ async function openOverlay(ideaId) {
       (idea.project ? ' · <em>' + escapeHtml(idea.project) + '</em>' : '') +
     '</div>' +
     '<div class="overlay-pitch">' + escapeHtml(idea.elevator_pitch) + '</div>' +
-    '<div id="overlay-docs"><em>Loading documents...</em></div>';
+    (allTags ? '<div class="overlay-tags">' + allTags + '</div>' : '') +
+    '<div class="overlay-section">' +
+      '<div class="overlay-section-title">Documents</div>' +
+      '<div id="overlay-docs-list"><em class="overlay-loading">Loading...</em></div>' +
+    '</div>' +
+    '<div class="overlay-section">' +
+      '<div class="overlay-section-title">Artifacts</div>' +
+      '<div id="overlay-artifacts-list"><em class="overlay-loading">Loading...</em></div>' +
+    '</div>';
 
   var token = getToken();
   if (!token) return;
@@ -210,54 +255,88 @@ async function openOverlay(ideaId) {
     var resp = await fetch(API_BASE + '/ideas/' + ideaId, {
       headers: { 'Authorization': 'Bearer ' + token }
     });
-    if (!resp.ok) {
-      document.getElementById('overlay-docs').innerHTML = '<em>Could not load documents.</em>';
-      return;
-    }
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
     var data = await resp.json();
-    renderDocs(data.documents || [], data.aspects || []);
+    renderOverlayLinks(ideaId, data.documents || [], data.artifacts || []);
   } catch (e) {
-    document.getElementById('overlay-docs').innerHTML = '<em>Could not load documents.</em>';
+    var docsEl = document.getElementById('overlay-docs-list');
+    if (docsEl) docsEl.innerHTML = '<em class="overlay-error">Could not load details.</em>';
+    var artEl = document.getElementById('overlay-artifacts-list');
+    if (artEl) artEl.innerHTML = '';
   }
 }
 
-function renderDocs(docs, aspects) {
-  var container = document.getElementById('overlay-docs');
+function renderOverlayLinks(ideaId, docs, artifacts) {
+  renderLinkSection(
+    'overlay-docs-list',
+    docs,
+    function(doc) {
+      return '/ideas/viewer/?idea_id=' + ideaId + '&doc_id=' + doc.id;
+    },
+    function(doc) {
+      return escapeHtml(doc.title) +
+        ' <span class="overlay-link-meta">' + doc.created_at.slice(0, 10) + '</span>';
+    },
+    'No documents attached yet.'
+  );
+
+  renderLinkSection(
+    'overlay-artifacts-list',
+    artifacts,
+    function(art) {
+      return '/ideas/viewer/?idea_id=' + ideaId + '&artifact_id=' + art.id;
+    },
+    function(art) {
+      return escapeHtml(art.title) +
+        ' <span class="overlay-link-meta">' +
+        escapeHtml(art.artifact_type) + ' · ' + escapeHtml(art.format) +
+        '</span>';
+    },
+    'No artifacts attached yet.'
+  );
+}
+
+function renderLinkSection(containerId, items, hrefFn, labelFn, emptyMsg) {
+  var el = document.getElementById(containerId);
+  if (!el) return;
+  if (items.length === 0) {
+    el.innerHTML = '<em class="overlay-empty">' + emptyMsg + '</em>';
+    return;
+  }
+
   var html = '';
+  items.forEach(function(item, i) {
+    html +=
+      '<div class="overlay-link-row' + (i > 0 ? ' overlay-link-row--extra' : '') + '">' +
+        '<a href="' + hrefFn(item) + '" target="_blank" rel="noopener" class="overlay-link">' +
+          labelFn(item) +
+        '</a>' +
+      '</div>';
+  });
+  if (items.length > 1) {
+    html +=
+      '<button class="overlay-expand-btn" data-count="' + (items.length - 1) + '">' +
+        '▾ ' + (items.length - 1) + ' more' +
+      '</button>';
+  }
+  el.innerHTML = html;
 
-  if (aspects && aspects.length > 0) {
-    html += '<h3 class="overlay-section-title">Aspects</h3>';
-    var byType = {};
-    aspects.forEach(function(a) {
-      if (!byType[a.aspect_type]) byType[a.aspect_type] = [];
-      byType[a.aspect_type].push(a);
-    });
-    Object.keys(byType).forEach(function(type) {
-      html += '<div class="overlay-aspect-group"><strong>' + escapeHtml(type) + '</strong>';
-      byType[type].forEach(function(a) {
-        var label = a.title ? ' — ' + escapeHtml(a.title) : '';
-        html += '<div class="overlay-aspect">' + label + '<pre>' + escapeHtml(JSON.stringify(a.content, null, 2)) + '</pre></div>';
-      });
-      html += '</div>';
+  // Start collapsed — hide rows after the first
+  el.querySelectorAll('.overlay-link-row--extra').forEach(function(row) {
+    row.style.display = 'none';
+  });
+
+  var btn = el.querySelector('.overlay-expand-btn');
+  if (btn) {
+    btn.addEventListener('click', function() {
+      var extra = el.querySelectorAll('.overlay-link-row--extra');
+      var isExpanded = extra[0] && extra[0].style.display !== 'none';
+      extra.forEach(function(row) { row.style.display = isExpanded ? 'none' : ''; });
+      btn.textContent = isExpanded
+        ? '▾ ' + extra.length + ' more'
+        : '↑ collapse';
     });
   }
-
-  if (docs.length === 0) {
-    html += '<p><em>No documents attached yet.</em></p>';
-  } else {
-    html += '<h3 class="overlay-section-title">Documents (' + docs.length + ')</h3>';
-    docs.forEach(function(doc) {
-      html +=
-        '<div class="overlay-doc">' +
-          '<h4 class="overlay-doc-title">' + escapeHtml(doc.title) +
-            ' <span class="overlay-doc-date">' + doc.created_at.slice(0, 10) + '</span>' +
-          '</h4>' +
-          '<div class="overlay-doc-content">' + marked.parse(doc.content) + '</div>' +
-        '</div>';
-    });
-  }
-
-  container.innerHTML = html;
 }
 
 function closeOverlay() {
@@ -289,6 +368,18 @@ document.addEventListener('DOMContentLoaded', function() {
       currentSearch = e.target.value.trim();
       renderGrid();
     }, 200);
+  });
+
+  // Tags expand/collapse — delegated on grid so it survives re-renders
+  document.getElementById('idea-grid').addEventListener('click', function(e) {
+    var btn = e.target.closest('.tags-toggle');
+    if (!btn) return;
+    e.stopPropagation();
+    var id = btn.dataset.id;
+    expandedTags[id] = !expandedTags[id];
+    var tagsEl = document.getElementById('tags-' + id);
+    if (tagsEl) tagsEl.classList.toggle('tags-expanded', !!expandedTags[id]);
+    btn.textContent = expandedTags[id] ? '↑' : '▾';
   });
 
   document.getElementById('overlay-close').addEventListener('click', closeOverlay);

@@ -837,14 +837,20 @@ a:hover { text-decoration: underline; }
   font-size: 1rem;
   font-weight: 600;
   color: var(--text-primary);
-  flex: 1;
   margin: 0;
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .idea-card-badges {
   display: flex;
   gap: 0.35rem;
   flex-shrink: 0;
+  flex-wrap: wrap;
+  align-items: center;
 }
 
 .idea-badge {
@@ -862,11 +868,6 @@ a:hover { text-decoration: underline; }
   border: 1px solid rgba(0, 212, 255, 0.25);
 }
 
-.idea-badge--docs {
-  background: rgba(107, 114, 128, 0.15);
-  color: var(--text-secondary);
-  border: 1px solid var(--divider);
-}
 
 .idea-badge--secret {
   background: rgba(240, 160, 48, 0.1);
@@ -874,23 +875,48 @@ a:hover { text-decoration: underline; }
   border: 1px solid rgba(240, 160, 48, 0.3);
 }
 
+.idea-card-counts {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.68rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
 .idea-card-pitch {
   font-size: 0.85rem;
   color: var(--text-secondary);
   line-height: 1.5;
   margin-bottom: 0.6rem;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
 .idea-card-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 0.3rem;
-  margin-bottom: 0.6rem;
+  margin-bottom: 0;
+  overflow: hidden;
+  max-height: 1.8rem;
+  transition: max-height 0.2s ease;
 }
+
+.idea-card-tags.tags-expanded {
+  max-height: 20rem;
+}
+
+.tags-toggle {
+  display: inline-block;
+  background: none;
+  border: none;
+  padding: 0 0.2rem;
+  margin-top: 0.15rem;
+  margin-bottom: 0.4rem;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  letter-spacing: 0.05em;
+}
+.tags-toggle:hover { color: var(--accent); }
 
 .idea-tag {
   font-family: 'Share Tech Mono', monospace;
@@ -991,87 +1017,59 @@ a:hover { text-decoration: underline; }
   margin: 1.5rem 0 0.75rem;
 }
 
-.overlay-aspect-group {
+/* ---- Overlay big-card ---- */
+
+.overlay-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
   margin-bottom: 1rem;
-  font-size: 0.85rem;
 }
 
-.overlay-aspect-group strong {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 0.75rem;
+.overlay-section {
+  margin-bottom: 1.25rem;
+}
+
+.overlay-link-row {
+  margin-bottom: 0.35rem;
+}
+
+.overlay-link {
+  font-size: 0.88rem;
   color: var(--accent);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  text-decoration: none;
 }
+.overlay-link:hover { text-decoration: underline; }
 
-.overlay-aspect pre {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid var(--divider);
-  border-radius: 3px;
-  padding: 0.6rem 0.75rem;
-  font-size: 0.78rem;
-  color: var(--text-secondary);
-  overflow-x: auto;
-  margin-top: 0.4rem;
-  white-space: pre-wrap;
-}
-
-.overlay-doc {
-  margin-bottom: 1.5rem;
-  padding-bottom: 1.5rem;
-  border-bottom: 1px solid var(--divider);
-}
-
-.overlay-doc:last-child { border-bottom: none; }
-
-.overlay-doc-title {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 0.75rem;
-}
-
-.overlay-doc-date {
+.overlay-link-meta {
   font-family: 'Share Tech Mono', monospace;
   font-size: 0.72rem;
-  color: #4b5563;
-  font-weight: 400;
-}
-
-.overlay-doc-content {
-  font-size: 0.88rem;
-  line-height: 1.7;
   color: var(--text-secondary);
+  margin-left: 0.4rem;
 }
 
-.overlay-doc-content h1,
-.overlay-doc-content h2,
-.overlay-doc-content h3 {
-  color: var(--text-primary);
-  font-size: 1rem;
-  margin: 1rem 0 0.4rem;
-}
-
-.overlay-doc-content p { margin-bottom: 0.6rem; }
-.overlay-doc-content ul, .overlay-doc-content ol { padding-left: 1.5rem; margin-bottom: 0.6rem; }
-.overlay-doc-content li { margin-bottom: 0.2rem; }
-
-.overlay-doc-content code {
+.overlay-expand-btn {
+  background: none;
+  border: none;
+  padding: 0;
   font-family: 'Share Tech Mono', monospace;
-  font-size: 0.82rem;
-  background: rgba(255,255,255,0.05);
-  padding: 0.1rem 0.35rem;
-  border-radius: 3px;
-  color: var(--accent);
-}
-
-.overlay-doc-content pre code {
-  display: block;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid var(--divider);
-  padding: 0.75rem;
-  overflow-x: auto;
+  font-size: 0.75rem;
   color: var(--text-secondary);
+  cursor: pointer;
+  margin-top: 0.2rem;
+}
+.overlay-expand-btn:hover { color: var(--accent); }
+
+.overlay-loading,
+.overlay-empty {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+.overlay-error {
+  font-size: 0.82rem;
+  color: #e05c5c;
+  font-style: italic;
 }
 
 /* Responsive */
