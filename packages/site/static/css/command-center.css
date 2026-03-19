@@ -893,7 +893,7 @@ a:hover { text-decoration: underline; }
   display: flex;
   flex-wrap: wrap;
   gap: 0.3rem;
-  margin-bottom: 0;
+  margin-bottom: 0.4rem;
   overflow: hidden;
   max-height: 1.8rem;
   transition: max-height 0.2s ease;
