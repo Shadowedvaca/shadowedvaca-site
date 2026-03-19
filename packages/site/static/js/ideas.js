@@ -166,7 +166,7 @@ function renderGrid() {
         '<p class="idea-card-pitch">' + escapeHtml(idea.elevator_pitch) + '</p>' +
         (tags
           ? '<div class="idea-card-tags" id="tags-' + idea.id + '">' + tags + '</div>' +
-            '<button class="tags-toggle" hidden data-id="' + idea.id + '" aria-label="expand tags">▾</button>'
+            '<button class="tags-toggle" style="display:none" data-id="' + idea.id + '" aria-label="expand tags">▾</button>'
           : '') +
         '<p class="idea-card-meta">' + escapeHtml(idea.status) + ' · updated ' + daysAgo(idea.updated_at) + '</p>' +
       '</div>'
@@ -194,16 +194,16 @@ function renderGrid() {
         if (expandedTags[id]) {
           el.classList.add('tags-expanded');
           btn.textContent = '↑';
-          btn.hidden = false;
+          btn.style.display = '';
           return;
         }
         var firstTag = el.querySelector('.idea-tag');
-        if (!firstTag) { btn.hidden = true; return; }
+        if (!firstTag) { btn.style.display = 'none'; return; }
         var lineH = firstTag.offsetHeight;
         el.style.maxHeight = 'none';
         var fullH = el.offsetHeight;
         el.style.maxHeight = '';
-        btn.hidden = fullH <= lineH + 4;
+        btn.style.display = fullH <= lineH + 4 ? 'none' : '';
       });
     });
   });
