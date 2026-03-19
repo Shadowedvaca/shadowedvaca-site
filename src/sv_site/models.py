@@ -109,3 +109,47 @@ class CustomerFeedback(Base):
     tags:                  Mapped[Optional[dict]]  = mapped_column(JSONB)
     processed_at:          Mapped[Optional[datetime]] = mapped_column(TIMESTAMP(timezone=True))
     processing_error:      Mapped[Optional[str]]   = mapped_column(Text)
+
+
+# ---------------------------------------------------------------------------
+# shadowedvaca.idea_votes
+# ---------------------------------------------------------------------------
+
+
+class IdeaVote(Base):
+    __tablename__ = "idea_votes"
+    __table_args__ = (
+        CheckConstraint("vote IN (-1, 1)", name="ck_iv_vote"),
+        {"schema": "shadowedvaca"},
+    )
+
+    user_id:    Mapped[int]      = mapped_column(
+        Integer, ForeignKey("shadowedvaca.users.id", ondelete="CASCADE"), primary_key=True
+    )
+    idea_id:    Mapped[int]      = mapped_column(Integer, primary_key=True)
+    vote:       Mapped[int]      = mapped_column(Integer, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), server_default=func.now()
+    )
+
+    user: Mapped["User"] = relationship()
+
+
+# ---------------------------------------------------------------------------
+# shadowedvaca.idea_favorites
+# ---------------------------------------------------------------------------
+
+
+class IdeaFavorite(Base):
+    __tablename__ = "idea_favorites"
+    __table_args__ = {"schema": "shadowedvaca"}
+
+    user_id:    Mapped[int]      = mapped_column(
+        Integer, ForeignKey("shadowedvaca.users.id", ondelete="CASCADE"), primary_key=True
+    )
+    idea_id:    Mapped[int]      = mapped_column(Integer, primary_key=True)
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), server_default=func.now()
+    )
+
+    user: Mapped["User"] = relationship()
