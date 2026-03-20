@@ -34,6 +34,7 @@ var expandedTags = {};   // keyed by idea id string; true = expanded
 var currentSort = 'votes';    // 'votes' | 'updated' | 'name'
 var currentStatus = '';       // '' | status value | '__secret__'
 var currentSearch = '';
+var accessCache = {};  // keyed by idea_id string → array of {user_id, username, override}
 
 async function loadIdeas() {
   var token = getToken();
@@ -297,6 +298,117 @@ function updateReactionBar(bar, r) {
   }
 }
 
+// ---- Access control panel (admin only) ----
+
+async function loadAccessPanel(ideaId) {
+  var token = getToken();
+  if (!token) return;
+  try {
+    var resp = await fetch(API_BASE + '/admin/ideas/' + ideaId + '/access', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    var data = await resp.json();
+    accessCache[String(ideaId)] = data.users;
+    renderAccessPanel(ideaId);
+  } catch (e) {
+    var panel = document.getElementById('access-panel-' + ideaId);
+    if (panel) {
+      panel.querySelector('.idea-access-panel-inner').innerHTML =
+        '<em class="idea-access-error">Failed to load.</em>';
+    }
+  }
+}
+
+function renderAccessPanel(ideaId) {
+  var panel = document.getElementById('access-panel-' + ideaId);
+  if (!panel) return;
+  var inner = panel.querySelector('.idea-access-panel-inner');
+  var users = accessCache[String(ideaId)];
+  if (!users || users.length === 0) {
+    inner.innerHTML = '<em class="idea-access-empty">No non-admin users.</em>';
+    return;
+  }
+  var idea = allIdeas.find(function(i) { return String(i.id) === String(ideaId); });
+  var ideaPublic = idea ? !!idea.public : false;
+
+  var html = '';
+  users.forEach(function(u) {
+    var effective = (u.override !== null && u.override !== undefined)
+      ? u.override
+      : ideaPublic;
+    var hasOverride = (u.override !== null && u.override !== undefined);
+    var indicatorHtml = hasOverride
+      ? ' <span class="idea-access-override-dot" title="manually overridden">●</span>'
+      : '';
+    html +=
+      '<label class="idea-access-row">' +
+        '<input type="checkbox"' +
+          ' class="idea-access-checkbox"' +
+          ' data-idea-id="' + ideaId + '"' +
+          ' data-user-id="' + u.user_id + '"' +
+          (effective ? ' checked' : '') +
+        '>' +
+        '<span class="idea-access-username">' + escapeHtml(u.username) + indicatorHtml + '</span>' +
+      '</label>';
+  });
+  inner.innerHTML = html;
+
+  inner.querySelectorAll('.idea-access-checkbox').forEach(function(cb) {
+    cb.addEventListener('change', function() {
+      handleAccessChange(
+        parseInt(cb.dataset.ideaId),
+        parseInt(cb.dataset.userId),
+        cb.checked,
+        cb
+      );
+    });
+  });
+}
+
+async function handleAccessChange(ideaId, userId, checked, checkbox) {
+  var token = getToken();
+  if (!token) return;
+
+  var idea = allIdeas.find(function(i) { return i.id === ideaId; });
+  var ideaPublic = idea ? !!idea.public : false;
+  var isDefault = (checked === ideaPublic);
+
+  checkbox.disabled = true;
+
+  try {
+    var resp;
+    if (isDefault) {
+      resp = await fetch(API_BASE + '/admin/ideas/' + ideaId + '/access/' + userId, {
+        method: 'DELETE',
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+    } else {
+      resp = await fetch(API_BASE + '/admin/ideas/' + ideaId + '/access/' + userId, {
+        method: 'PUT',
+        headers: {
+          'Authorization': 'Bearer ' + token,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ can_view: checked })
+      });
+    }
+
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+
+    var users = accessCache[String(ideaId)];
+    if (users) {
+      var u = users.find(function(x) { return x.user_id === userId; });
+      if (u) u.override = isDefault ? null : checked;
+    }
+    renderAccessPanel(ideaId);
+
+  } catch (e) {
+    checkbox.checked = !checked;
+    checkbox.disabled = false;
+  }
+}
+
 // ---- Card rendering ----
 
 function renderGrid() {
@@ -348,6 +460,12 @@ function renderGrid() {
             '<button class="tags-toggle" style="display:none" data-id="' + idea.id + '" aria-label="expand tags">▾</button>'
           : '') +
         '<p class="idea-card-meta">' + escapeHtml(idea.status) + ' · updated ' + daysAgo(idea.updated_at) + '</p>' +
+        (isAdmin
+          ? '<button class="idea-access-toggle" data-idea-id="' + idea.id + '" aria-expanded="false">Access ▾</button>' +
+            '<div class="idea-access-panel" id="access-panel-' + idea.id + '" hidden>' +
+              '<div class="idea-access-panel-inner"><em class="idea-access-loading">Loading...</em></div>' +
+            '</div>'
+          : '') +
         '<div class="idea-card-reactions" data-idea-id="' + idea.id + '">' +
           '<button class="reaction-btn reaction-btn--up' + upActive + '" data-action="up" title="Thumbs up">▲ <span class="reaction-count">' + (r.ups || 0) + '</span></button>' +
           '<button class="reaction-btn reaction-btn--down' + downActive + '" data-action="down" title="Thumbs down">▼ <span class="reaction-count">' + (r.downs || 0) + '</span></button>' +
@@ -365,6 +483,8 @@ function renderGrid() {
       // Don't open overlay when clicking reaction buttons
       if (e.target.closest('.idea-card-reactions')) return;
       if (e.target.closest('.tags-toggle')) return;
+      if (e.target.closest('.idea-access-panel')) return;
+      if (e.target.closest('.idea-access-toggle')) return;
       openOverlay(parseInt(card.dataset.id));
     });
   });
@@ -377,6 +497,25 @@ function renderGrid() {
         e.stopPropagation();
         handleReactionClick(ideaId, btn.dataset.action, bar);
       });
+    });
+  });
+
+  grid.querySelectorAll('.idea-access-toggle').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var ideaId = btn.dataset.ideaId;
+      var panel = document.getElementById('access-panel-' + ideaId);
+      var isOpen = !panel.hidden;
+      panel.hidden = isOpen;
+      btn.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
+      btn.textContent = isOpen ? 'Access ▾' : 'Access ▴';
+      if (!isOpen) {
+        if (accessCache[ideaId]) {
+          renderAccessPanel(ideaId);
+        } else {
+          loadAccessPanel(ideaId);
+        }
+      }
     });
   });
 

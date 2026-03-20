@@ -1170,3 +1170,83 @@ a:hover { text-decoration: underline; }
   cursor: help;
   border: 1px dashed var(--divider);
 }
+
+/* Ideation Board — Access Control Panel (admin only) */
+
+.idea-access-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: none;
+  border: 1px solid rgba(240, 160, 48, 0.25);
+  border-radius: 3px;
+  color: rgba(240, 160, 48, 0.6);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.68rem;
+  padding: 0.2rem 0.5rem;
+  cursor: pointer;
+  margin-bottom: 0.4rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.idea-access-toggle:hover {
+  border-color: rgba(240, 160, 48, 0.6);
+  color: var(--amber);
+}
+.idea-access-toggle[aria-expanded="true"] {
+  border-color: rgba(240, 160, 48, 0.5);
+  color: var(--amber);
+  background: rgba(240, 160, 48, 0.06);
+}
+
+.idea-access-panel {
+  background: rgba(240, 160, 48, 0.03);
+  border: 1px solid rgba(240, 160, 48, 0.15);
+  border-radius: 4px;
+  padding: 0.5rem 0.6rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.75rem;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.idea-access-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+}
+.idea-access-row:last-child {
+  border-bottom: none;
+}
+
+.idea-access-row input[type="checkbox"] {
+  accent-color: var(--accent);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.idea-access-row input[type="checkbox"]:disabled {
+  cursor: wait;
+  opacity: 0.5;
+}
+
+.idea-access-username {
+  color: var(--text-primary);
+  flex: 1;
+}
+
+.idea-access-override-dot {
+  font-size: 0.55rem;
+  color: var(--amber);
+  margin-left: 0.25rem;
+  vertical-align: middle;
+}
+
+.idea-access-loading,
+.idea-access-error,
+.idea-access-empty {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+}
+.idea-access-error { color: #e05c5c; }
