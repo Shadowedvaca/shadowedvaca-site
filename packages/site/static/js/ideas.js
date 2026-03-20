@@ -338,8 +338,10 @@ function renderGrid() {
         '<div class="idea-card-header">' +
           '<span class="idea-status-dot" style="background:' + color + '" title="' + idea.status + '"></span>' +
           '<h2 class="idea-card-title">' + escapeHtml(idea.title) + '</h2>' +
-          '<div class="idea-card-badges">' + secretBadge + updatedBadge + countsText + '</div>' +
         '</div>' +
+        (secretBadge || updatedBadge || countsText
+          ? '<div class="idea-card-badges">' + secretBadge + updatedBadge + countsText + '</div>'
+          : '') +
         '<p class="idea-card-pitch">' + escapeHtml(idea.elevator_pitch) + '</p>' +
         (tags
           ? '<div class="idea-card-tags" id="tags-' + idea.id + '">' + tags + '</div>' +

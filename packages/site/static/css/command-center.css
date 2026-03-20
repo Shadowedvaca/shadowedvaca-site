@@ -848,9 +848,9 @@ a:hover { text-decoration: underline; }
 .idea-card-badges {
   display: flex;
   gap: 0.35rem;
-  flex-shrink: 0;
   flex-wrap: wrap;
   align-items: center;
+  margin-bottom: 0.5rem;
 }
 
 .idea-badge {

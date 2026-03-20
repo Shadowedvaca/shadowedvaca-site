@@ -28,7 +28,8 @@
       "Bash(cd:*)",
       "Bash(git stash:*)",
       "Read(//mnt/h/Development/shadowedvaca-site/**)",
-      "Bash(git:*)"
+      "Bash(git:*)",
+      "Read(//h/Development/**)"
     ]
   }
 }
