@@ -29,7 +29,9 @@ shadowedvaca-site/
 │           ├── admin.py                  ← /api/admin/* (user management, permissions)
 │           ├── feedback_ingest.py        ← POST /api/feedback/ingest (public, API key auth)
 │           ├── feedback_read.py          ← GET /api/hub/feedback (admin JWT)
-│           └── ideas.py                  ← /api/ideas/* (proxy to sv-tools)
+│           ├── ideas.py                  ← /api/ideas/* (proxy to sv-tools, override enforcement)
+│           ├── idea_reactions.py         ← /api/ideas/reactions, vote + favorite endpoints
+│           └── idea_access.py            ← /api/admin/ideas/{id}/access (per-user override CRUD)
 │
 ├── packages/
 │   ├── core/                             ← Shared data layer (Pydantic schemas + JSON loaders)
@@ -147,6 +149,9 @@ All tables live in the `shadowedvaca` schema.
 | `invite_codes` | code VARCHAR(16) PK, created_by_user_id FK, used_at, expires_at, permissions JSONB |
 | `user_permissions` | user_id FK, tool_slug — composite PK |
 | `customer_feedback` | id (SERIAL), program_name, received_at, score (1–10), raw_feedback, summary, sentiment, tags JSONB, privacy_token, processed_at, processing_error |
+| `idea_votes` | idea_id, user_id — composite PK, vote (1 or -1) |
+| `idea_favorites` | idea_id, user_id — composite PK |
+| `idea_access_overrides` | idea_id, user_id — composite PK, can_view BOOL, created_at, updated_at |
 
 `customer_feedback` is fully de-identified — no PII stored. Anonymous submissions force `privacy_token = NULL`.
 
@@ -203,10 +208,18 @@ Query params: `program_name`, `sentiment`, `tag`, `min_score`, `max_score`, `lim
 #### Ideas (`/api/ideas/`)
 | Method | Path | Auth | Purpose |
 |--------|------|------|---------|
-| GET | `/api/ideas` | JWT | List ideas (admin → full list, user → public only) |
+| GET | `/api/ideas` | JWT | List ideas (admin → full list, user → filtered by public + overrides) |
 | GET | `/api/ideas/{id}` | JWT | Get single idea |
+| GET | `/api/ideas/reactions` | JWT | All vote/favorite counts + current user's state |
+| PUT | `/api/ideas/{id}/vote` | JWT | Cast or change vote (`{"vote": 1}` or `{"vote": -1}`) |
+| DELETE | `/api/ideas/{id}/vote` | JWT | Retract vote |
+| PUT | `/api/ideas/{id}/favorite` | JWT | Favorite an idea |
+| DELETE | `/api/ideas/{id}/favorite` | JWT | Unfavorite an idea |
+| GET | `/api/admin/ideas/{id}/access` | Admin JWT | List all non-admin users + their override for this idea |
+| PUT | `/api/admin/ideas/{id}/access/{user_id}` | Admin JWT | Set override (`{"can_view": true/false}`) |
+| DELETE | `/api/admin/ideas/{id}/access/{user_id}` | Admin JWT | Remove override (reverts to idea.public default) |
 
-Proxies to sv-tools API with 10-second timeout.
+Proxies to sv-tools API with 10-second timeout. Access rule: `visible = overrides_map.get(idea_id, idea.public)` — override wins, falls back to sv-tools `public` flag.
 
 ## Static Site Builder
 
