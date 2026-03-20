@@ -507,38 +507,15 @@ function renderLinkSection(containerId, items, hrefFn, labelFn, emptyMsg) {
   }
 
   var html = '';
-  items.forEach(function(item, i) {
+  items.forEach(function(item) {
     html +=
-      '<div class="overlay-link-row' + (i > 0 ? ' overlay-link-row--extra' : '') + '">' +
+      '<div class="overlay-link-row">' +
         '<a href="' + hrefFn(item) + '" target="_blank" rel="noopener" class="overlay-link">' +
           labelFn(item) +
         '</a>' +
       '</div>';
   });
-  if (items.length > 1) {
-    html +=
-      '<button class="overlay-expand-btn" data-count="' + (items.length - 1) + '">' +
-        '▾ ' + (items.length - 1) + ' more' +
-      '</button>';
-  }
   el.innerHTML = html;
-
-  // Start collapsed — hide rows after the first
-  el.querySelectorAll('.overlay-link-row--extra').forEach(function(row) {
-    row.style.display = 'none';
-  });
-
-  var btn = el.querySelector('.overlay-expand-btn');
-  if (btn) {
-    btn.addEventListener('click', function() {
-      var extra = el.querySelectorAll('.overlay-link-row--extra');
-      var isExpanded = extra[0] && extra[0].style.display !== 'none';
-      extra.forEach(function(row) { row.style.display = isExpanded ? 'none' : ''; });
-      btn.textContent = isExpanded
-        ? '▾ ' + extra.length + ' more'
-        : '↑ collapse';
-    });
-  }
 }
 
 function closeOverlay() {

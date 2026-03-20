@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Viewer — Shadowedvaca</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: #0a0c10;
+      color: #c8cdd3;
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 0.95rem;
+      line-height: 1.7;
+    }
+
+    #viewer-header {
+      display: flex;
+      align-items: baseline;
+      gap: 1rem;
+      padding: 1rem 2rem;
+      border-bottom: 1px solid #1e2533;
+      position: sticky;
+      top: 0;
+      background: #0a0c10;
+      z-index: 10;
+    }
+
+    #back-link {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.8rem;
+      color: #6b7280;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+    #back-link:hover { color: #00d4ff; }
+
+    #viewer-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #c8cdd3;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1 1 0;
+      min-width: 0;
+    }
+
+    #viewer-meta {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.72rem;
+      color: #6b7280;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    #viewer-body {
+      padding: 2rem 2rem 4rem;
+    }
+
+    /* Markdown content */
+    #viewer-body h1,
+    #viewer-body h2,
+    #viewer-body h3,
+    #viewer-body h4 {
+      color: #c8cdd3;
+      font-weight: 600;
+      margin: 1.5rem 0 0.5rem;
+    }
+    #viewer-body h1 { font-size: 1.4rem; }
+    #viewer-body h2 { font-size: 1.15rem; border-bottom: 1px solid #1e2533; padding-bottom: 0.3rem; }
+    #viewer-body h3 { font-size: 1rem; }
+    #viewer-body h4 { font-size: 0.9rem; color: #6b7280; }
+
+    #viewer-body p { margin-bottom: 0.75rem; }
+
+    #viewer-body a { color: #00d4ff; }
+
+    #viewer-body ul,
+    #viewer-body ol {
+      padding-left: 1.5rem;
+      margin-bottom: 0.75rem;
+    }
+    #viewer-body li { margin-bottom: 0.25rem; }
+
+    #viewer-body code {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.85em;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid #1e2533;
+      border-radius: 3px;
+      padding: 0.1em 0.35em;
+      color: #00d4ff;
+    }
+
+    #viewer-body pre {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid #1e2533;
+      border-radius: 4px;
+      padding: 1rem;
+      overflow-x: auto;
+      margin-bottom: 1rem;
+    }
+    #viewer-body pre code {
+      background: none;
+      border: none;
+      padding: 0;
+      color: #c8cdd3;
+    }
+
+    #viewer-body blockquote {
+      border-left: 3px solid #1e2533;
+      margin: 0 0 0.75rem;
+      padding: 0.25rem 1rem;
+      color: #6b7280;
+    }
+
+    #viewer-body table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1rem;
+      font-size: 0.88rem;
+    }
+    #viewer-body th,
+    #viewer-body td {
+      border: 1px solid #1e2533;
+      padding: 0.4rem 0.75rem;
+      text-align: left;
+    }
+    #viewer-body th { background: rgba(255,255,255,0.04); color: #c8cdd3; }
+
+    #viewer-body hr {
+      border: none;
+      border-top: 1px solid #1e2533;
+      margin: 1.5rem 0;
+    }
+
+    /* Mermaid diagram container */
+    .mermaid {
+      background: #0d1117;
+      border: 1px solid #1e2533;
+      border-radius: 4px;
+      padding: 1.5rem;
+      overflow-x: auto;
+    }
+
+    /* Error / loading states */
+    .viewer-message {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.85rem;
+      color: #6b7280;
+      margin-top: 3rem;
+      text-align: center;
+    }
+    .viewer-message--error { color: #e05c5c; }
+  </style>
+</head>
+<body>
+
+<div id="viewer-header">
+  <a href="javascript:history.back()" id="back-link">← back</a>
+  <span id="viewer-title"></span>
+  <span id="viewer-meta"></span>
+</div>
+
+<div id="viewer-body">
+  <p class="viewer-message">Loading...</p>
+</div>
+
+<script src="/js/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+(function () {
+  var JWT_KEY = 'sv_site_jwt';
+  var API_BASE = '/api';
+
+  function getToken() {
+    try {
+      var raw = localStorage.getItem(JWT_KEY);
+      if (!raw) return null;
+      var data = JSON.parse(raw);
+      if (!data.token) return null;
+      var parts = data.token.split('.');
+      if (parts.length !== 3) return null;
+      var payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+      if (payload.exp && payload.exp * 1000 < Date.now()) {
+        localStorage.removeItem(JWT_KEY);
+        return null;
+      }
+      return data.token;
+    } catch (e) { return null; }
+  }
+
+  function showError(msg) {
+    document.getElementById('viewer-body').innerHTML =
+      '<p class="viewer-message viewer-message--error">' + msg + '</p>';
+  }
+
+  var params   = new URLSearchParams(location.search);
+  var ideaId   = params.get('idea_id');
+  var docId    = params.get('doc_id');
+  var artId    = params.get('artifact_id');
+
+  var token = getToken();
+  if (!token) {
+    location.href = '/login.html?next=' + encodeURIComponent(location.href);
+    return;
+  }
+  if (!ideaId || (!docId && !artId)) {
+    showError('Invalid viewer URL — missing idea_id or doc_id / artifact_id.');
+    return;
+  }
+
+  var headers = { 'Authorization': 'Bearer ' + token };
+
+  if (docId) {
+    // Documents: content is in the full idea detail response
+    fetch(API_BASE + '/ideas/' + ideaId, { headers: headers })
+      .then(function (r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      })
+      .then(function (data) {
+        var doc = (data.documents || []).find(function (d) {
+          return String(d.id) === String(docId);
+        });
+        if (!doc) throw new Error('Document not found in idea ' + ideaId);
+
+        document.title = doc.title + ' — Shadowedvaca';
+        document.getElementById('viewer-title').textContent = doc.title;
+        document.getElementById('viewer-meta').textContent  = doc.created_at.slice(0, 10);
+        document.getElementById('viewer-body').innerHTML    = marked.parse(doc.content);
+      })
+      .catch(function (e) { showError('Could not load document: ' + e.message); });
+
+  } else {
+    // Artifacts: fetched from the dedicated proxy route (Phase UI-4)
+    fetch(API_BASE + '/ideas/' + ideaId + '/artifacts/' + artId, { headers: headers })
+      .then(function (r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      })
+      .then(function (resp) {
+        var art = resp.artifact || resp;
+        document.title = art.title + ' — Shadowedvaca';
+        document.getElementById('viewer-title').textContent = art.title;
+        document.getElementById('viewer-meta').textContent  =
+          art.artifact_type + ' · ' + art.format + ' · ' + art.created_at.slice(0, 10);
+
+        var body = document.getElementById('viewer-body');
+        if (art.format === 'markdown') {
+          body.innerHTML = marked.parse(art.content);
+        } else if (art.format === 'mermaid') {
+          body.innerHTML = '<div class="mermaid">' + art.content + '</div>';
+          mermaid.initialize({ startOnLoad: false, theme: 'dark' });
+          mermaid.run({ nodes: body.querySelectorAll('.mermaid') });
+        } else {
+          // html format — content is trusted (our own data)
+          body.innerHTML = art.content;
+        }
+      })
+      .catch(function (e) { showError('Could not load artifact: ' + e.message); });
+  }
+}());
+</script>
+
+</body>
+</html>

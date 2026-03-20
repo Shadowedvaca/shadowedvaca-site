@@ -1,116 +1,253 @@
-# Shadowedvaca.com — Command Center Website
+# Shadowedvaca.com — Project Reference
 
 ## Project Overview
 
-This is the existing shadowedvaca-site repo, being rebuilt from a simple GitHub Pages site into a dark-themed split-screen "command center" hosted on Hetzner. The site serves as a living portfolio and launchpad for all of Mike's projects — games, podcasts, tools, and consulting work.
+This repo is a hybrid platform:
 
-The site is **data-driven**: JSON data files → Python build script → static HTML/CSS/JS → served by Nginx on Hetzner.
+1. **Static Command Center** — A data-driven portfolio website (JSON → Pydantic → Jinja2 → static HTML/CSS/JS) served by Nginx.
+2. **FastAPI Backend** — `src/sv_site/` — an authenticated API powering the hub, feedback pipeline, ideas board, and user management.
+3. **Hub** — `hub/` — admin-only static HTML/JS pages (feedback review, user management, invite generation, settings).
 
-## Existing Files
+Hosted on Hetzner CPX11 (Ubuntu 24.04, Nginx 1.24, PostgreSQL, Certbot SSL).
 
-This repo already contains files from the current GitHub Pages site. **These files stay where they are.** Do not move or rename them. The build script copies them into `dist/` during build, preserving their current paths.
-
-**Existing files at root (do not move, do not modify content/styling):**
-- `meandering-muck.html` — Press kit page
-- `meandering-muck-support.html` — Support form
-- `meandering-muck-privacy.html` — Privacy policy
-- `support-form-google-web-app.js` — Google Apps Script reference (not served directly)
-- `assets/meandering-muck/` — Images, press kit zip
-
-**Existing files that will be superseded (kept in repo but not served):**
-- `index.html` — Old homepage (replaced by generated command center)
-- `style.css` — Old styles (replaced by new CSS)
-- `CNAME` — GitHub Pages config (not used on Hetzner)
-
-## Architecture
+## Repository Structure
 
 ```
 shadowedvaca-site/
+├── src/
+│   ├── sv_common/                        ← Shared auth utilities (bcrypt re-export)
+│   └── sv_site/                          ← FastAPI application
+│       ├── main.py                       ← App init, router registration, CORS
+│       ├── config.py                     ← Pydantic settings (loaded from .env)
+│       ├── auth.py                       ← JWT, invite codes, password utilities
+│       ├── database.py                   ← Async SQLAlchemy engine + get_db() dep
+│       ├── models.py                     ← ORM models (User, InviteCode, UserPermission, CustomerFeedback)
+│       ├── tools.py                      ← Hub tool registry (static config)
+│       ├── feedback_processor.py         ← Claude Haiku AI processing for feedback
+│       └── routes/
+│           ├── auth.py                   ← /api/auth/* (login, register, invite, me, change-password)
+│           ├── admin.py                  ← /api/admin/* (user management, permissions)
+│           ├── feedback_ingest.py        ← POST /api/feedback/ingest (public, API key auth)
+│           ├── feedback_read.py          ← GET /api/hub/feedback (admin JWT)
+│           └── ideas.py                  ← /api/ideas/* (proxy to sv-tools)
+│
 ├── packages/
-│   ├── core/                             ← Shared data layer (Pydantic schemas + data access)
+│   ├── core/                             ← Shared data layer (Pydantic schemas + JSON loaders)
 │   │   ├── schemas/
-│   │   │   ├── project.py                ← Project model (name, status, description, links, features, etc.)
-│   │   │   ├── announcement.py           ← Ticker announcement model
-│   │   │   ├── profile.py                ← Owner profile model
-│   │   │   └── link.py                   ← Link model
-│   │   ├── data.py                       ← Data access functions (load/validate JSON)
+│   │   │   ├── project.py               ← Project model
+│   │   │   ├── announcement.py          ← Ticker announcement model
+│   │   │   └── profile.py               ← Owner profile model
+│   │   ├── data.py                      ← load_projects(), load_announcements(), load_profile()
 │   │   └── __init__.py
-│   └── site/
-│       ├── templates/
-│       │   ├── base.html                 ← Full page shell (head, layout, scripts)
-│       │   ├── index.html                ← Main template composing all components
-│       │   └── components/
-│       │       ├── ticker.html           ← Top announcement ticker bar
-│       │       ├── main_stage.html       ← Left 2/3: project detail views
-│       │       ├── terminal.html         ← Right 1/3: green CRT project index
-│       │       ├── sticky_note.html      ← Contact sticky note overlay
-│       │       └── bottom_bar.html       ← Footer status bar
-│       ├── static/
-│       │   ├── css/
-│       │   │   └── command-center.css    ← All styles for the command center
-│       │   └── js/
-│       │       ├── navigation.js         ← Terminal click → main stage swap
-│       │       └── sticky.js             ← Random sticky note positioning
-│       └── build.py                      ← Build script: data → templates → dist/
-├── data/
-│   ├── projects.json                     ← All projects with detail view content
-│   ├── announcements.json                ← Ticker items
-│   └── profile.json                      ← Owner info (name, contact, tagline)
-├── dist/                                 ← Build output (served by Nginx)
-│   ├── index.html                        ← Generated command center
-│   ├── css/ js/                          ← Generated static assets
-│   ├── meandering-muck.html              ← Copied from root (unchanged)
-│   ├── meandering-muck-support.html      ← Copied from root (unchanged)
-│   ├── meandering-muck-privacy.html      ← Copied from root (unchanged)
-│   └── assets/meandering-muck/           ← Copied from root (unchanged)
+│   ├── site/                            ← Static site builder
+│   │   ├── build.py                     ← Main build script: data → templates → dist/
+│   │   ├── templates/
+│   │   │   ├── base.html                ← Page shell (head, layout, scripts)
+│   │   │   ├── index.html               ← Main command center template
+│   │   │   ├── components/
+│   │   │   │   ├── ticker.html          ← Scrolling announcement bar
+│   │   │   │   ├── main_stage.html      ← Left 2/3: project detail views
+│   │   │   │   ├── terminal.html        ← Right 1/3: CRT project index
+│   │   │   │   ├── sticky_note.html     ← Contact sticky note overlay
+│   │   │   │   └── bottom_bar.html      ← Footer status bar
+│   │   │   └── ideas/
+│   │   │       └── index.html           ← Ideas board SPA template
+│   │   └── static/
+│   │       ├── css/command-center.css   ← All command center styles
+│   │       ├── js/
+│   │       │   ├── navigation.js        ← Terminal → stage swapping
+│   │       │   ├── sticky.js            ← Random sticky note positioning
+│   │       │   ├── ticker.js            ← Ticker animation
+│   │       │   ├── ideas.js             ← Ideas board client
+│   │       │   └── marked.min.js        ← Markdown parser
+│   │       ├── 404.html
+│   │       ├── favicon.svg
+│   │       └── robots.txt
+│   └── book-club/                       ← Book club app (React + Express, separate from main site)
+│
+├── hub/                                 ← Admin hub static pages (served by Nginx at /hub/)
+│   ├── index.html                       ← Hub dashboard
+│   ├── feedback/index.html              ← Feedback review UI
+│   ├── invite/index.html                ← Invite code generator
+│   ├── settings/index.html              ← Password / account settings
+│   └── users/index.html                 ← User management
+│
+├── data/                                ← JSON source of truth for static site
+│   ├── projects.json
+│   ├── announcements.json
+│   └── profile.json
+│
+├── deploy/
+│   ├── nginx/shadowedvaca.com.conf      ← Nginx reverse proxy + static file config
+│   ├── systemd/shadowedvaca.service     ← Systemd unit for FastAPI (Uvicorn)
+│   └── scripts/create_schema.sql        ← Initial DB schema
+│
+├── scripts/
+│   ├── validate_data.py                 ← Validates JSON data against Pydantic schemas
+│   └── migrations/add_customer_feedback.sql
+│
+├── tests/
+│   ├── conftest.py                      ← Fixtures: async_client, mock_db, test_settings
+│   ├── test_feedback_ingest.py
+│   └── test_feedback_read.py
+│
+├── monitoring/                          ← Server health checks + alerting
+├── docs/                                ← Implementation plans and notes
 ├── reference/
-│   └── mockup-v3.html                    ← Design reference mockup (THE source of truth for look & feel)
-├── meandering-muck.html                  ← Source, copied to dist/
-├── meandering-muck-support.html          ← Source, copied to dist/
-├── meandering-muck-privacy.html          ← Source, copied to dist/
-├── support-form-google-web-app.js        ← Google Apps Script ref (not served)
-├── assets/meandering-muck/               ← Source, copied to dist/
-├── index.html                            ← OLD homepage (superseded, not served)
-├── style.css                             ← OLD styles (superseded, not served)
-├── CNAME                                 ← OLD GitHub Pages config (not used)
-├── deploy.sh
+│   └── mockup-v3.html                   ← Design reference (source of truth for UI)
+│
+├── .github/workflows/deploy.yml         ← GitHub Actions CI/CD
+├── .env.example                         ← Environment variable template
+├── deploy.sh                            ← Local deploy: build → scp to server
 ├── requirements.txt
-├── .gitignore
-├── README.md
-└── CLAUDE.md
+├── pyproject.toml                       ← Project config + pytest settings
+│
+├── meandering-muck.html                 ← Source (copied to dist/ unchanged)
+├── meandering-muck-support.html
+├── meandering-muck-privacy.html
+├── assets/meandering-muck/
+├── index.html                           ← OLD homepage (superseded, not served)
+├── style.css                            ← OLD styles (superseded, not served)
+└── dist/                                ← Build output (served by Nginx, not committed)
 ```
-
-### Key Architectural Decisions
-
-1. **No file moves or renames.** Existing Meandering Muck files stay at root. The build script copies them into `dist/` preserving their original filenames and paths. Zero internal link updates needed.
-2. **sv-core is a reusable library.** The schemas and data access layer in `packages/core/` will eventually be consumed by sv-tools and sv-mcp (separate repos). Design it as a clean, importable Python package.
-3. **Data-driven everything.** The website reads from JSON files in `data/`. No content is hardcoded in templates. Every piece of text, every project, every announcement comes from the data layer.
-4. **Static output.** The build script generates pure static HTML/CSS/JS into `dist/`. No runtime server for the website. Nginx serves files.
-5. **Server supports multiple sites.** Nginx config uses sites-available/sites-enabled pattern so sv-tools can be added to the same Hetzner server later.
 
 ## Tech Stack
 
-- **Python 3.11+** — Build system and data layer
-- **Pydantic** — Schema validation
-- **Jinja2** — HTML templating
-- **Vanilla HTML/CSS/JS** — No frontend frameworks. Minimal client-side JS (navigation, sticky note positioning).
-- **Nginx** — Web server on Hetzner
-- **Let's Encrypt / Certbot** — SSL
+- **Python 3.11+** — Build system, data layer, and API backend
+- **FastAPI + Uvicorn** — Async API, 2 workers, listening on `127.0.0.1:8050`
+- **SQLAlchemy (async)** — ORM with asyncpg driver
+- **PostgreSQL** — Persistent storage (schema: `shadowedvaca`)
+- **Pydantic / pydantic-settings** — Schema validation and env config
+- **Jinja2** — Static site templating
+- **Anthropic Claude Haiku 4.5** — AI processing for feedback (graceful degradation if unavailable)
+- **Vanilla HTML/CSS/JS** — No frontend frameworks. Minimal client-side JS.
+- **Nginx 1.24** — Reverse proxy + static file serving
+- **Let's Encrypt / Certbot** — Auto-renewing SSL
+- **Google Fonts** — IBM Plex Sans, Share Tech Mono, Caveat (loaded from CDN, not self-hosted)
+
+## FastAPI Backend
+
+### Config (`config.py`)
+
+Key settings (loaded from `.env`):
+- `database_url` — PostgreSQL async connection string
+- `secret_key` — JWT signing secret
+- `jwt_algorithm` / `jwt_expire_minutes` — HS256, 480 min
+- `feedback_ingest_key` — Shared secret for `POST /api/feedback/ingest`
+- `anthropic_api_key` — Claude API key for feedback processing
+- `sv_tools_url` / `sv_tools_api_key` — For ideas proxy
+
+### Database Models (`models.py`)
+
+All tables live in the `shadowedvaca` schema.
+
+| Table | Key Columns |
+|-------|-------------|
+| `users` | id (SERIAL), username, password_hash, is_admin, is_active, created_at |
+| `invite_codes` | code VARCHAR(16) PK, created_by_user_id FK, used_at, expires_at, permissions JSONB |
+| `user_permissions` | user_id FK, tool_slug — composite PK |
+| `customer_feedback` | id (SERIAL), program_name, received_at, score (1–10), raw_feedback, summary, sentiment, tags JSONB, privacy_token, processed_at, processing_error |
+
+`customer_feedback` is fully de-identified — no PII stored. Anonymous submissions force `privacy_token = NULL`.
+
+### Tool Registry (`tools.py`)
+
+Three hub tools:
+- `settings` — locked (always granted, cannot revoke)
+- `ideas` — grantable via invite code
+- `customer_feedback` — admin-only
+
+### Auth (`auth.py`)
+
+- JWT: `create_access_token()` / `decode_access_token()` — payload has `{user_id, username, is_admin}`
+- Invite codes: 8-char alphanumeric (no 0/O/1/I/L), 48-hour default expiry
+- `require_auth(Authorization header)` — FastAPI dependency, HTTP 401 on missing/invalid token
+- Passwords: bcrypt via `sv_common.auth.passwords`
+
+### API Routes
+
+#### Auth (`/api/auth/`)
+| Method | Path | Auth | Purpose |
+|--------|------|------|---------|
+| POST | `/api/auth/login` | None | Username + password → JWT |
+| POST | `/api/auth/register` | None | Invite code → create user + JWT |
+| POST | `/api/auth/invite` | Admin JWT | Generate invite code (with optional tool permissions) |
+| GET | `/api/auth/me` | JWT | Current user (username, is_admin, permissions) |
+| POST | `/api/auth/change-password` | JWT | Change password |
+
+#### Admin (`/api/admin/`)
+| Method | Path | Auth | Purpose |
+|--------|------|------|---------|
+| GET | `/api/admin/tools` | Admin | List all tools |
+| GET | `/api/admin/users` | Admin | List all users + permissions |
+| PUT | `/api/admin/users/{id}/permissions` | Admin | Set grantable permissions |
+| DELETE | `/api/admin/users/{id}` | Admin | Delete user (not self, not admin) |
+
+#### Feedback Ingest (`/api/feedback/`)
+| Method | Path | Auth | Purpose |
+|--------|------|------|---------|
+| POST | `/api/feedback/ingest` | `X-Ingest-Key` header | Submit de-identified feedback |
+
+Payload: `{program_name, score (1–10), raw_feedback, is_authenticated_user?, is_anonymous?, privacy_token?}`
+
+AI processing happens synchronously (Claude Haiku). Degrades gracefully if API unavailable.
+
+#### Feedback Read (`/api/hub/feedback/`)
+| Method | Path | Auth | Purpose |
+|--------|------|------|---------|
+| GET | `/api/hub/feedback` | Admin JWT | List feedback (filterable, paginated) |
+| GET | `/api/hub/feedback/programs` | Admin JWT | Distinct program names |
+
+Query params: `program_name`, `sentiment`, `tag`, `min_score`, `max_score`, `limit` (default 50, max 200), `offset`
+
+#### Ideas (`/api/ideas/`)
+| Method | Path | Auth | Purpose |
+|--------|------|------|---------|
+| GET | `/api/ideas` | JWT | List ideas (admin → full list, user → public only) |
+| GET | `/api/ideas/{id}` | JWT | Get single idea |
+
+Proxies to sv-tools API with 10-second timeout.
+
+## Static Site Builder
+
+**Run:** `python packages/site/build.py` (from repo root)
+
+**Process:**
+1. Load + validate `data/*.json` via `packages/core/data.py`
+2. Group projects by section; identify `featured` project (default on load)
+3. Render Jinja2 templates → `dist/index.html`, `dist/ideas/index.html`
+4. Copy static assets (CSS, JS, 404, robots.txt, favicon) to `dist/`
+5. Copy Meandering Muck files to `dist/` unchanged
+
+**Windows gotchas:**
+- `shutil.rmtree(dist/)` fails if Explorer has the folder open → clear contents, keep dir
+- `strftime("%-d")` not supported → use `%d` + `.replace(" 0", " ")`
+- Use `namespace()` in Jinja2 for variables set inside loops
+
+## Data Schemas (Pydantic)
+
+### Project (`packages/core/schemas/project.py`)
+- `id`, `name`, `tagline`, `description: list[str]`, `category`, `terminal_desc`
+- `status`: `"live"` | `"launching"` | `"in-progress"` | `"concept"` | `"archived"`
+- `section`: `"active"` | `"websites"` | `"games"` | `"utilities"` | `"creative"` | `"printing"` | `"archive"`
+- `meta_tags: list[MetaTag]`, `links: list[ProjectLink]`, `features: list[str] | None`
+- `media: MediaConfig | None`, `sort_order: int`, `featured: bool`
+
+### Announcement (`packages/core/schemas/announcement.py`)
+- `id`, `text`, `dot_style` (`"live"` | `"soon"`), `active: bool`, `sort_order: int`
+
+### Profile (`packages/core/schemas/profile.py`)
+- `name`, `company`, `location`, `email`, `tagline`, `bottom_bar_tagline`
+- `calendly_url`, `social_links: list[dict]`, `funding_links: list[dict]`
 
 ## Design: Split-Screen Command Center
 
-### Concept
+The command center fills the viewport — NOT a scrolling page. Two zones:
 
-A single-screen split-screen layout. NOT a scrolling page with stacked sections. NOT a grid of boxes/cards. The site fills the viewport and is divided into two zones:
+- **Main Stage (left 2/3):** One project detail view at a time. Fade transition on switch. Meandering Muck is default.
+- **Terminal Sidebar (right 1/3):** CRT-style green-on-black project index. Click to swap main stage.
 
-- **Main Stage (left 2/3):** Shows the detail view for whichever project is selected. This is the "monitor" — it displays one thing at a time with full focus.
-- **Terminal Sidebar (right 1/3):** A retro CRT-style green-on-black terminal that serves as the project index/navigation. Clicking a project here swaps the main stage content.
-
-Think: a mission control workstation where the left screen shows the active feed and the right screen is the directory.
-
-### Reference Mockup
-
-**The file `reference/mockup-v3.html` is the definitive design reference.** Open it in a browser. The generated site must match this mockup's layout, colors, typography, interactions, and feel. Use it as the source of truth when building templates and CSS.
+**The file `reference/mockup-v3.html` is the design bible.** Match it for layout, colors, typography, and feel.
 
 ### Color Palette
 
@@ -121,131 +258,78 @@ Think: a mission control workstation where the left screen shows the active feed
 | Divider / border | `#1e2533` |
 | Text (primary) | `#c8cdd3` |
 | Text (secondary) | `#6b7280` |
-| Accent (primary/cyan) | `#00d4ff` |
-| Accent (attention/amber) | `#f0a030` |
+| Accent (cyan) | `#00d4ff` |
+| Accent (amber) | `#f0a030` |
 | Terminal green (bright) | `#33ff33` |
 | Terminal green (dim) | `#1a9e1a` |
 | Terminal green (faint) | `#0d4f0d` |
-| Status: live/shipped | `#2ecc71` |
-| Status: in-progress | `#f0a030` |
-| Status: concept | `#00d4ff` at 40% opacity |
-
-### Layout Components
-
-**Ticker Bar (top, full width):**
-- Scrolling horizontal announcements, amber text on dark background
-- CSS animation, pauses on hover
-- Data-driven from `announcements.json`
-
-**Main Stage (left 2/3 of viewport):**
-- Shows one project detail view at a time
-- Each project view contains: category label, title, tagline, meta tags (status, platform, tech), content area (video embed, screenshots, or placeholder), action buttons (links to sites, demos, press kits), description text, and optionally a feature list
-- Content scrolls vertically within this zone if needed
-- Meandering Muck is the default view on load
-- Smooth fade transition when switching between projects
-
-**Terminal Sidebar (right 1/3 of viewport):**
-- Black background with CRT scanline overlay (repeating-linear-gradient)
-- Green phosphor text (`#33ff33`) using Share Tech Mono font
-- Prompt line at top: `shadowedvaca@cmd:~$ ls --projects` with blinking cursor
-- Projects grouped into sections: `── active ──`, `── upcoming ──`, `── systems ──`, `── archive ──`
-- Each project is clickable — click highlights it (left green border) and swaps the main stage
-- Selected project gets a brighter background
-
-**Sticky Note (on main stage, bottom area):**
-- A square (~180×180px) yellow sticky note with a tape strip across the top
-- Contains: name, company, location, email, tagline
-- Uses Caveat (handwritten Google Font)
-- Positioned absolutely at the bottom of the main stage
-- **Semi-random horizontal position:** On page load, JS places it roughly centered ±120px (clamped to stay in bounds). Slight random rotation (-3° to +1°). Recalculates on window resize.
-
-**Bottom Bar (bottom, full width):**
-- Thin status bar with copyright and tagline
-- Share Tech Mono font, subdued color
-
-### Typography
-
-- **Body text:** IBM Plex Sans (Google Fonts) — weights 300, 400, 600
-- **Monospace / UI elements:** Share Tech Mono (Google Fonts)
-- **Sticky note:** Caveat (Google Fonts) — weights 400, 600
-
-System font stack as fallback: `-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif`
-
-### Visual Effects
-
-- CRT scanline overlay on terminal (CSS repeating-linear-gradient, pointer-events: none)
-- Subtle inner glow on terminal (box-shadow inset, green tint)
-- Blinking cursor animation on terminal prompt
-- Cyan gradient glow on the split divider
-- Fade-in animation when swapping main stage views
-- Terminal project highlight on hover (faint green background + left border)
-- **No heavy animations. Performance matters.**
+| Status live | `#2ecc71` |
+| Status in-progress | `#f0a030` |
+| Status concept | `#00d4ff` @ 40% opacity |
 
 ### Responsive Behavior
 
-- **Desktop (>900px):** Side-by-side split, viewport-height layout, no page scroll
-- **Tablet/Mobile (≤900px):** Stacks vertically — main stage on top, terminal below (max-height 40vh). Page scrolls. Ticker stays at top.
+- **Desktop (>900px):** Side-by-side split, viewport-height, no page scroll
+- **Tablet/Mobile (≤900px):** Stacks — main stage top, terminal below (max-height 40vh), page scrolls
 - **Small mobile (≤500px):** Reduced padding, smaller title font
 
-### Interaction
+## Deployment
 
-- Clicking a project in the terminal sidebar:
-  1. Removes `selected` class from all terminal projects
-  2. Adds `selected` class to clicked project
-  3. Hides all `.stage-view` elements
-  4. Shows the target `.stage-view` with fade-in animation
-  5. Scrolls main stage content area to top
+### Local
+```bash
+python packages/site/build.py      # Build static site → dist/
+bash deploy.sh                     # Build + scp to server (Git Bash on Windows)
+python -m pytest tests/ -v         # Run tests
+```
 
-## Data Schemas
+`deploy.sh` uses: `scp -r dist/* deploy@5.78.114.224:/var/www/shadowedvaca.com/`
+SSH key: `~/.ssh/va_hetzner_openssh`
 
-The Pydantic models in `packages/core/schemas/` must validate the JSON data. Key models:
+### Server Layout
+```
+/opt/shadowedvaca/          ← Git repo clone
+├── venv/                   ← Python venv
+├── .env                    ← Live secrets
+└── src/, deploy/, ...
 
-### Project
-- `id` (str) — unique identifier, maps to stage view ID
-- `name` (str) — display name
-- `tagline` (str) — one-liner shown under title
-- `description` (list[str]) — paragraphs of description text
-- `status` — `"live"` | `"launching"` | `"in-progress"` | `"concept"` | `"archived"`
-- `category` (str) — label shown above title (e.g., "Featured Project", "System — Custom Built")
-- `section` — `"active"` | `"upcoming"` | `"systems"` | `"archive"` — which terminal group it belongs to
-- `terminal_desc` (str) — short description shown in terminal sidebar
-- `meta_tags` (list[dict]) — tags shown in the meta row (label + optional status style)
-- `links` (list[dict]) — action buttons (label, url, style: primary/secondary)
-- `features` (list[str], optional) — feature bullet list for systems
-- `media` (dict, optional) — video embed URL, screenshot paths, or placeholder config
-- `sort_order` (int) — ordering within section
-- `featured` (bool) — if true, this is the default view on page load
+/var/www/shadowedvaca.com/  ← Static files (served by Nginx)
+```
 
-### Announcement
-- `id` (str), `text` (str), `dot_style` (str: "live" or "soon"), `active` (bool), `sort_order` (int)
+### Services
+- **Nginx** — reverse proxy + static files (ports 80/443)
+  - `/api/*` → proxy to `127.0.0.1:8050`
+  - `/ideas/*` → static SPA with fallback
+  - `/` → static files with 404 fallback
+  - Gzip on CSS/JS/JSON/SVG; 30-day cache on static assets
+- **shadowedvaca.service** — Uvicorn, 2 workers, runs as `www-data`
+- **PostgreSQL** — localhost:5432
 
-### Profile
-- `name`, `company`, `location`, `email`, `tagline` (str)
-- `bottom_bar_tagline` (str) — text shown in bottom status bar
+### CI/CD (GitHub Actions)
 
-## Projects Data
+`.github/workflows/deploy.yml`:
+1. Build static site
+2. Deploy `dist/` files to server
+3. Git pull + pip install on server
+4. Reload Nginx + restart systemd service
+5. Health check: `GET /api/health`
 
-### Active
-- **Meandering Muck** — Tilt-controlled maze game. Launching late Feb 2026 on iOS/Android. Featured (default view). Has YouTube embed, store link placeholders, press kit and support links.
-- **Pull All The Things** — WoW guild site + raid roster management. Live. Links to site and Discord.
+## Testing
 
-### Upcoming
-- **Salt All The Things** — WoW podcast. Launching 3/3/2026. Link to site.
-- **sv-tools** — Dev tools & automation. In progress. No external links yet.
+**Framework:** pytest + pytest-asyncio
 
-### Systems
-- **Podcast Show Planner** — Custom podcast planning tool. In use. Will have demo link. Features: episode timeline, topic queue, guest scheduling, rundown templates, research linking.
-- **Raid Team Manager** — Guild roster & comp management. In use. Will have demo link. Features: roster management, comp builder, attendance tracking, bench rotation, Discord integration.
+**Fixtures** (`tests/conftest.py`):
+- `test_settings` — Settings with test values
+- `mock_db` — AsyncMock DB session (dependency override)
+- `async_client` — FastAPI test client
 
-### Archive
-- **Meandering Muck (itch.io)** — Original game jam release, 2024. Link to itch.io page.
+**Coverage:** feedback ingest (auth, validation, privacy enforcement, AI degradation), feedback read (filtering, pagination, token truncation), AI response validation (bad tags filtered, unknown sentiment → neutral).
 
 ## Important Notes
 
-- **The reference mockup (`reference/mockup-v3.html`) is the design bible.** Match it closely.
-- sv-tools and sv-mcp are SEPARATE repos. Do not scaffold them here.
-- The Meandering Muck sub-pages are existing files. Copy them as-is during build. Do not modify their content or styling.
-- Keep client-side JavaScript minimal. Vanilla JS only. No React, Vue, or frameworks.
-- The site must load fast. Static files — no excuse for slow performance.
-- Mike is on Windows. All scripts must work on Windows (use Python for cross-platform compatibility).
-- Google Fonts (IBM Plex Sans, Share Tech Mono, Caveat) should be loaded from Google CDN, not self-hosted.
+- **No file moves/renames.** Existing Meandering Muck files stay at root. Build copies them to `dist/` unchanged.
+- **sv-tools and sv-mcp are SEPARATE repos.** Do not scaffold them here.
+- **`packages/core/` is a reusable library.** Keep it clean and importable.
+- **Vanilla JS only.** No React, Vue, or other frontend frameworks.
+- **No content hardcoded in templates.** Everything comes from JSON data files.
+- **Mike is on Windows.** All scripts must be cross-platform (Python preferred over shell).
+- **`rsync` is not available** in the Claude Code bash environment on this machine — use `scp -r`.
