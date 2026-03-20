@@ -7,7 +7,7 @@ Vote/favorite data lives in sv-site's own DB; idea IDs come from sv-tools.
 
 from fastapi import APIRouter, Depends, HTTPException, Path
 from pydantic import BaseModel, Field
-from sqlalchemy import delete, func, select
+from sqlalchemy import case, delete, func, select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -70,8 +70,8 @@ async def get_reactions(
         select(
             IdeaVote.idea_id,
             func.sum(IdeaVote.vote).label("score"),
-            func.sum(func.cast(IdeaVote.vote == 1,  type_=None)).label("ups"),
-            func.sum(func.cast(IdeaVote.vote == -1, type_=None)).label("downs"),
+            func.sum(case((IdeaVote.vote == 1,  1), else_=0)).label("ups"),
+            func.sum(case((IdeaVote.vote == -1, 1), else_=0)).label("downs"),
         ).group_by(IdeaVote.idea_id)
     )
     vote_rows = vote_agg.all()

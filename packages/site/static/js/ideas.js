@@ -28,9 +28,10 @@ function getToken() {
 // ---- Data ----
 
 var allIdeas = [];
+var reactions = {};   // keyed by idea_id string → {score, ups, downs, favorites, my_vote, my_favorite, voters?, favorited_by?}
 var isAdmin = false;
 var expandedTags = {};   // keyed by idea id string; true = expanded
-var currentSort = 'updated';  // 'updated' | 'name'
+var currentSort = 'votes';    // 'votes' | 'updated' | 'name'
 var currentStatus = '';       // '' | status value | '__secret__'
 var currentSearch = '';
 
@@ -46,9 +47,10 @@ async function loadIdeas() {
 
   try {
     // Fetch admin status and ideas in parallel
-    var [meResp, ideasResp] = await Promise.all([
+    var [meResp, ideasResp, reactResp] = await Promise.all([
       fetch(API_BASE + '/auth/me', { headers: authHeaders }),
       fetch(API_BASE + '/ideas?limit=200', { headers: authHeaders }),
+      fetch(API_BASE + '/ideas/reactions', { headers: authHeaders }),
     ]);
 
     if (meResp.status === 401 || ideasResp.status === 401) {
@@ -72,6 +74,10 @@ async function loadIdeas() {
     if (!ideasResp.ok) throw new Error('HTTP ' + ideasResp.status);
     var data = await ideasResp.json();
     allIdeas = data.ideas || [];
+    if (reactResp.ok) {
+      var reactData = await reactResp.json();
+      reactions = reactData.reactions || {};
+    }
     renderGrid();
   } catch (e) {
     document.getElementById('idea-grid').innerHTML =
@@ -97,8 +103,19 @@ function getFiltered() {
   }
   if (currentSort === 'name') {
     ideas.sort(function(a, b) { return a.title.localeCompare(b.title); });
-  } else {
+  } else if (currentSort === 'updated') {
     ideas.sort(function(a, b) { return b.updated_at.localeCompare(a.updated_at); });
+  } else {
+    // Default: favorites desc → score desc → updated desc
+    ideas.sort(function(a, b) {
+      var ra = reactions[String(a.id)] || {};
+      var rb = reactions[String(b.id)] || {};
+      var favDiff = (rb.favorites || 0) - (ra.favorites || 0);
+      if (favDiff !== 0) return favDiff;
+      var scoreDiff = (rb.score || 0) - (ra.score || 0);
+      if (scoreDiff !== 0) return scoreDiff;
+      return b.updated_at.localeCompare(a.updated_at);
+    });
   }
   return ideas;
 }
@@ -125,6 +142,157 @@ function daysAgo(dateStr) {
   if (diffDays === 0) return 'today';
   if (diffDays === 1) return '1 day ago';
   return diffDays + ' days ago';
+}
+
+// ---- Reaction helpers ----
+
+function getReaction(ideaId) {
+  return reactions[String(ideaId)] || {
+    score: 0, ups: 0, downs: 0, favorites: 0,
+    my_vote: null, my_favorite: false
+  };
+}
+
+function buildTooltip(r) {
+  // Only called for admins — r.voters and r.favorited_by will be present
+  var lines = [];
+  if (r.voters && r.voters.length) {
+    r.voters.forEach(function(v) {
+      lines.push((v.vote === 1 ? '▲ ' : '▼ ') + v.username);
+    });
+  }
+  if (r.favorited_by && r.favorited_by.length) {
+    lines.push('★ ' + r.favorited_by.join(', '));
+  }
+  return lines.length ? lines.join('\n') : '';
+}
+
+async function sendVote(ideaId, voteValue) {
+  // voteValue: 1, -1, or 0 (retract)
+  var token = getToken();
+  if (!token) return false;
+  try {
+    var resp;
+    if (voteValue === 0) {
+      resp = await fetch(API_BASE + '/ideas/' + ideaId + '/vote', {
+        method: 'DELETE',
+        headers: { 'Authorization': 'Bearer ' + token },
+      });
+    } else {
+      resp = await fetch(API_BASE + '/ideas/' + ideaId + '/vote', {
+        method: 'PUT',
+        headers: {
+          'Authorization': 'Bearer ' + token,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ vote: voteValue }),
+      });
+    }
+    return resp.ok;
+  } catch (e) { return false; }
+}
+
+async function sendFavorite(ideaId, isFavoriting) {
+  var token = getToken();
+  if (!token) return false;
+  try {
+    var resp = await fetch(API_BASE + '/ideas/' + ideaId + '/favorite', {
+      method: isFavoriting ? 'PUT' : 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + token },
+    });
+    return resp.ok;
+  } catch (e) { return false; }
+}
+
+async function handleReactionClick(ideaId, action, bar) {
+  var r = reactions[String(ideaId)] || {
+    score: 0, ups: 0, downs: 0, favorites: 0,
+    my_vote: null, my_favorite: false
+  };
+
+  // Snapshot for rollback
+  var prev = JSON.parse(JSON.stringify(r));
+
+  // Optimistic update
+  if (action === 'up') {
+    if (r.my_vote === 1) {
+      // retract
+      r.my_vote = null; r.ups = Math.max(0, r.ups - 1); r.score -= 1;
+    } else {
+      if (r.my_vote === -1) { r.downs = Math.max(0, r.downs - 1); r.score += 1; }
+      r.my_vote = 1; r.ups += 1; r.score += 1;
+    }
+  } else if (action === 'down') {
+    if (r.my_vote === -1) {
+      r.my_vote = null; r.downs = Math.max(0, r.downs - 1); r.score += 1;
+    } else {
+      if (r.my_vote === 1) { r.ups = Math.max(0, r.ups - 1); r.score -= 1; }
+      r.my_vote = -1; r.downs += 1; r.score -= 1;
+    }
+  } else if (action === 'star') {
+    if (r.my_favorite) {
+      r.my_favorite = false; r.favorites = Math.max(0, r.favorites - 1);
+    } else {
+      r.my_favorite = true; r.favorites += 1;
+    }
+  }
+
+  reactions[String(ideaId)] = r;
+  updateReactionBar(bar, r);
+
+  // Send to API
+  var ok = false;
+  if (action === 'up') {
+    ok = await sendVote(ideaId, r.my_vote === null ? 0 : 1);
+  } else if (action === 'down') {
+    ok = await sendVote(ideaId, r.my_vote === null ? 0 : -1);
+  } else if (action === 'star') {
+    ok = await sendFavorite(ideaId, r.my_favorite);
+  }
+
+  if (!ok) {
+    // Rollback
+    reactions[String(ideaId)] = prev;
+    updateReactionBar(bar, prev);
+  } else {
+    // Re-fetch reactions so the admin voter breakdown (tooltip) is up to date
+    var token = getToken();
+    if (token) {
+      try {
+        var refreshResp = await fetch(API_BASE + '/ideas/reactions', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (refreshResp.ok) {
+          var refreshData = await refreshResp.json();
+          reactions = refreshData.reactions || {};
+          updateReactionBar(bar, getReaction(ideaId));
+        }
+      } catch (e) { /* stale data is fine */ }
+    }
+  }
+}
+
+function updateReactionBar(bar, r) {
+  var upBtn   = bar.querySelector('[data-action="up"]');
+  var downBtn = bar.querySelector('[data-action="down"]');
+  var starBtn = bar.querySelector('[data-action="star"]');
+  var scoreEl = bar.querySelector('.reaction-score');
+
+  upBtn.classList.toggle('reaction-btn--active', r.my_vote === 1);
+  downBtn.classList.toggle('reaction-btn--active', r.my_vote === -1);
+  starBtn.classList.toggle('reaction-btn--active', !!r.my_favorite);
+  starBtn.classList.toggle('reaction-btn--starred', !!r.my_favorite);
+
+  upBtn.querySelector('.reaction-count').textContent   = r.ups || 0;
+  downBtn.querySelector('.reaction-count').textContent = r.downs || 0;
+  starBtn.querySelector('.reaction-count').textContent = r.favorites || 0;
+  scoreEl.textContent = (r.score >= 0 ? '+' : '') + (r.score || 0);
+
+  if (isAdmin) {
+    var tooltip = buildTooltip(r);
+    if (tooltip) scoreEl.setAttribute('title', tooltip);
+    else scoreEl.removeAttribute('title');
+  }
 }
 
 // ---- Card rendering ----
@@ -156,6 +324,13 @@ function renderGrid() {
       return '<span class="idea-tag">' + escapeHtml(t) + '</span>';
     }).join('');
 
+    var r = getReaction(idea.id);
+    var upActive   = r.my_vote === 1  ? ' reaction-btn--active' : '';
+    var downActive = r.my_vote === -1 ? ' reaction-btn--active' : '';
+    var starActive = r.my_favorite    ? ' reaction-btn--active reaction-btn--starred' : '';
+    var tooltip    = isAdmin ? buildTooltip(r) : '';
+    var scoreTitle = tooltip ? ' title="' + escapeHtml(tooltip) + '"' : '';
+
     return (
       '<div class="idea-card" data-id="' + idea.id + '">' +
         '<div class="idea-card-header">' +
@@ -169,6 +344,12 @@ function renderGrid() {
             '<button class="tags-toggle" style="display:none" data-id="' + idea.id + '" aria-label="expand tags">▾</button>'
           : '') +
         '<p class="idea-card-meta">' + escapeHtml(idea.status) + ' · updated ' + daysAgo(idea.updated_at) + '</p>' +
+        '<div class="idea-card-reactions" data-idea-id="' + idea.id + '">' +
+          '<button class="reaction-btn reaction-btn--up' + upActive + '" data-action="up" title="Thumbs up">▲ <span class="reaction-count">' + (r.ups || 0) + '</span></button>' +
+          '<button class="reaction-btn reaction-btn--down' + downActive + '" data-action="down" title="Thumbs down">▼ <span class="reaction-count">' + (r.downs || 0) + '</span></button>' +
+          '<span class="reaction-score"' + scoreTitle + '>' + (r.score >= 0 ? '+' : '') + (r.score || 0) + '</span>' +
+          '<button class="reaction-btn reaction-btn--star' + starActive + '" data-action="star" title="Favorite">★ <span class="reaction-count">' + (r.favorites || 0) + '</span></button>' +
+        '</div>' +
       '</div>'
     );
   }).join('');
@@ -177,8 +358,21 @@ function renderGrid() {
 
   grid.querySelectorAll('.idea-card').forEach(function(card) {
     card.addEventListener('click', function(e) {
+      // Don't open overlay when clicking reaction buttons
+      if (e.target.closest('.idea-card-reactions')) return;
       if (e.target.closest('.tags-toggle')) return;
       openOverlay(parseInt(card.dataset.id));
+    });
+  });
+
+  grid.querySelectorAll('.idea-card-reactions').forEach(function(bar) {
+    var ideaId = parseInt(bar.dataset.ideaId);
+
+    bar.querySelectorAll('.reaction-btn').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        handleReactionClick(ideaId, btn.dataset.action, bar);
+      });
     });
   });
 
