@@ -1079,3 +1079,94 @@ a:hover { text-decoration: underline; }
   .ideas-grid { grid-template-columns: 1fr; }
   .idea-overlay-panel { width: 100vw; border-left: none; }
 }
+
+/* ============================================================
+   Ideation Board — Reaction Buttons (votes + favorites)
+   ============================================================ */
+
+.idea-card-reactions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.75rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--divider);
+}
+
+/* Base button reset */
+.reaction-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  background: none;
+  border: 1px solid var(--divider);
+  border-radius: 3px;
+  padding: 3px 8px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: color 0.12s, border-color 0.12s, background 0.12s;
+  white-space: nowrap;
+}
+
+.reaction-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--text-secondary);
+}
+
+/* Up vote — active state: cyan */
+.reaction-btn--up.reaction-btn--active {
+  color: var(--cyan);
+  border-color: var(--cyan);
+  background: rgba(0, 212, 255, 0.08);
+}
+
+/* Down vote — active state: amber */
+.reaction-btn--down.reaction-btn--active {
+  color: var(--amber);
+  border-color: var(--amber);
+  background: rgba(240, 160, 48, 0.08);
+}
+
+/* Star — active state: gold */
+.reaction-btn--starred {
+  color: #f5c842;
+  border-color: #f5c842;
+  background: rgba(245, 200, 66, 0.08);
+}
+
+/* Net score display — sits between the thumbs buttons and the star */
+.reaction-score {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  min-width: 2.5ch;
+  text-align: center;
+  padding: 3px 6px;
+  border-radius: 3px;
+  /* Cursor hint for admins that there's tooltip data */
+  cursor: default;
+}
+
+/* Positive score: green tint */
+.reaction-score[data-positive="true"] {
+  color: #2ecc71;
+}
+
+/* Negative score: red tint */
+.reaction-score[data-negative="true"] {
+  color: #e74c3c;
+}
+
+/* Push star to the right of the row */
+.idea-card-reactions .reaction-btn--star {
+  margin-left: auto;
+}
+
+/* Admin tooltip — native <title> works fine for hover; no extra CSS needed.
+   If a richer tooltip is wanted later, the class below can be built out. */
+.reaction-score[title] {
+  cursor: help;
+  border: 1px dashed var(--divider);
+}

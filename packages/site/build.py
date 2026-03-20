@@ -187,6 +187,13 @@ def build() -> None:
     (ideas_dir / "index.html").write_text(ideas_html, encoding="utf-8")
     print("  Rendered dist/ideas/index.html")
 
+    # --- Copy ideas/viewer/ -> dist/ideas/viewer/ ---
+    viewer_src = STATIC_DIR / 'ideas' / 'viewer' / 'index.html'
+    viewer_dst = DIST_DIR / 'ideas' / 'viewer'
+    viewer_dst.mkdir(parents=True, exist_ok=True)
+    shutil.copy(viewer_src, viewer_dst / 'index.html')
+    print("  Copied ideas/viewer/index.html -> dist/ideas/viewer/index.html")
+
     # --- Copy hub/ -> dist/hub/ (authenticated tool pages) ---
     hub_src = REPO_ROOT / "hub"
     if hub_src.exists():
