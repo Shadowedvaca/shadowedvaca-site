@@ -153,3 +153,27 @@ class IdeaFavorite(Base):
     )
 
     user: Mapped["User"] = relationship()
+
+
+# ---------------------------------------------------------------------------
+# shadowedvaca.idea_access_overrides
+# ---------------------------------------------------------------------------
+
+
+class IdeaAccessOverride(Base):
+    __tablename__ = "idea_access_overrides"
+    __table_args__ = {"schema": "shadowedvaca"}
+
+    idea_id:    Mapped[int]      = mapped_column(Integer, primary_key=True)
+    user_id:    Mapped[int]      = mapped_column(
+        Integer, ForeignKey("shadowedvaca.users.id", ondelete="CASCADE"), primary_key=True
+    )
+    can_view:   Mapped[bool]     = mapped_column(Boolean, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), server_default=func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+    user: Mapped["User"] = relationship()
