@@ -75,6 +75,26 @@ async def get_idea(
             raise HTTPException(status_code=503, detail="sv-tools unavailable")
 
 
+@router.get("/{idea_id}/artifacts")
+async def get_idea_artifacts(
+    idea_id: str = Path(...),
+    _user: dict = Depends(require_auth),
+) -> dict:
+    """Proxy to sv-tools artifacts list for an idea."""
+    url = f"{_sv_tools_url()}/api/v1/ideas/{idea_id}/artifacts"
+    headers = _admin_headers()
+
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        try:
+            resp = await client.get(url, headers=headers)
+            resp.raise_for_status()
+            return resp.json()
+        except httpx.HTTPStatusError as e:
+            raise HTTPException(status_code=e.response.status_code, detail="sv-tools error")
+        except httpx.RequestError:
+            raise HTTPException(status_code=503, detail="sv-tools unavailable")
+
+
 @router.get("/{idea_id}/artifacts/{artifact_id}")
 async def get_idea_artifact(
     idea_id: str = Path(...),

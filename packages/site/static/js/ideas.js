@@ -287,6 +287,8 @@ function updateReactionBar(bar, r) {
   downBtn.querySelector('.reaction-count').textContent = r.downs || 0;
   starBtn.querySelector('.reaction-count').textContent = r.favorites || 0;
   scoreEl.textContent = (r.score >= 0 ? '+' : '') + (r.score || 0);
+  scoreEl.dataset.positive = (r.score > 0) ? 'true' : '';
+  scoreEl.dataset.negative = (r.score < 0) ? 'true' : '';
 
   if (isAdmin) {
     var tooltip = buildTooltip(r);
@@ -449,12 +451,15 @@ async function openOverlay(ideaId) {
   if (!token) return;
 
   try {
-    var resp = await fetch(API_BASE + '/ideas/' + ideaId, {
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
-    if (!resp.ok) throw new Error('HTTP ' + resp.status);
-    var data = await resp.json();
-    renderOverlayLinks(ideaId, data.documents || [], data.artifacts || []);
+    var authHeaders = { 'Authorization': 'Bearer ' + token };
+    var [ideaResp, artResp] = await Promise.all([
+      fetch(API_BASE + '/ideas/' + ideaId, { headers: authHeaders }),
+      fetch(API_BASE + '/ideas/' + ideaId + '/artifacts', { headers: authHeaders }),
+    ]);
+    if (!ideaResp.ok) throw new Error('HTTP ' + ideaResp.status);
+    var data = await ideaResp.json();
+    var artData = artResp.ok ? await artResp.json() : {};
+    renderOverlayLinks(ideaId, data.documents || [], artData.artifacts || []);
   } catch (e) {
     var docsEl = document.getElementById('overlay-docs-list');
     if (docsEl) docsEl.innerHTML = '<em class="overlay-error">Could not load details.</em>';
