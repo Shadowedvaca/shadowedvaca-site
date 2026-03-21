@@ -289,21 +289,19 @@
           art.artifact_type + ' · ' + art.format + ' · ' + art.created_at.slice(0, 10);
 
         var body = document.getElementById('viewer-body');
-        var extMap   = { markdown: 'md', mermaid: 'mmd', html: 'html' };
-        var mimeMap  = { markdown: 'text/markdown', mermaid: 'text/plain', html: 'text/html' };
-        var ext      = extMap[art.format]  || 'txt';
-        var mime     = mimeMap[art.format] || 'text/plain';
-        enableDownload(slugify(art.title) + '.' + ext, art.content, mime);
-
         if (art.format === 'markdown') {
           body.innerHTML = marked.parse(art.content);
+          enableDownload(slugify(art.title) + '.md', art.content, 'text/markdown');
         } else if (art.format === 'mermaid') {
           body.innerHTML = '<div class="mermaid">' + art.content + '</div>';
           mermaid.initialize({ startOnLoad: false, theme: 'dark' });
           mermaid.run({ nodes: body.querySelectorAll('.mermaid') });
+          enableDownload(slugify(art.title) + '.mmd', art.content, 'text/plain');
         } else {
-          // html format — content is trusted (our own data)
+          // html format — set innerHTML first so any injected <style> rules
+          // are in the DOM before we apply the inline display style
           body.innerHTML = art.content;
+          enableDownload(slugify(art.title) + '.html', art.content, 'text/html');
         }
       })
       .catch(function (e) { showError('Could not load artifact: ' + e.message); });
