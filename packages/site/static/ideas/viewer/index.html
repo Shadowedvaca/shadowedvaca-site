@@ -58,6 +58,21 @@
       flex-shrink: 0;
     }
 
+    #download-btn {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.72rem;
+      color: #6b7280;
+      background: none;
+      border: 1px solid #1e2533;
+      border-radius: 3px;
+      padding: 0.2rem 0.6rem;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      display: none;
+    }
+    #download-btn:hover { color: #00d4ff; border-color: #00d4ff; }
+
     #viewer-body {
       padding: 2rem 2rem 4rem;
     }
@@ -165,6 +180,7 @@
   <a href="javascript:history.back()" id="back-link">← back</a>
   <span id="viewer-title"></span>
   <span id="viewer-meta"></span>
+  <button id="download-btn">⬇ Download</button>
 </div>
 
 <div id="viewer-body">
@@ -198,6 +214,26 @@
   function showError(msg) {
     document.getElementById('viewer-body').innerHTML =
       '<p class="viewer-message viewer-message--error">' + msg + '</p>';
+  }
+
+  function slugify(title) {
+    return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'download';
+  }
+
+  function enableDownload(filename, content, mimeType) {
+    var btn = document.getElementById('download-btn');
+    btn.style.display = '';
+    btn.onclick = function () {
+      var blob = new Blob([content], { type: mimeType });
+      var url  = URL.createObjectURL(blob);
+      var a    = document.createElement('a');
+      a.href     = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    };
   }
 
   var params   = new URLSearchParams(location.search);
@@ -234,6 +270,7 @@
         document.getElementById('viewer-title').textContent = doc.title;
         document.getElementById('viewer-meta').textContent  = doc.created_at.slice(0, 10);
         document.getElementById('viewer-body').innerHTML    = marked.parse(doc.content);
+        enableDownload(slugify(doc.title) + '.md', doc.content, 'text/markdown');
       })
       .catch(function (e) { showError('Could not load document: ' + e.message); });
 
@@ -252,6 +289,12 @@
           art.artifact_type + ' · ' + art.format + ' · ' + art.created_at.slice(0, 10);
 
         var body = document.getElementById('viewer-body');
+        var extMap   = { markdown: 'md', mermaid: 'mmd', html: 'html' };
+        var mimeMap  = { markdown: 'text/markdown', mermaid: 'text/plain', html: 'text/html' };
+        var ext      = extMap[art.format]  || 'txt';
+        var mime     = mimeMap[art.format] || 'text/plain';
+        enableDownload(slugify(art.title) + '.' + ext, art.content, mime);
+
         if (art.format === 'markdown') {
           body.innerHTML = marked.parse(art.content);
         } else if (art.format === 'mermaid') {
