@@ -147,9 +147,8 @@ async def get_idea_artifact(
     _user: dict = Depends(require_auth),
 ) -> dict:
     """Proxy to sv-tools artifact detail. Returns full artifact content."""
-    is_admin: bool = _user.get("is_admin", False)
     url = f"{_sv_tools_url()}/api/v1/ideas/{idea_id}/artifacts/{artifact_id}"
-    headers = _admin_headers() if is_admin else {}
+    headers = _admin_headers()
 
     async with httpx.AsyncClient(timeout=10.0) as client:
         try:
