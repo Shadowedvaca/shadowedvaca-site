@@ -222,7 +222,7 @@
 
   function enableDownload(filename, content, mimeType) {
     var btn = document.getElementById('download-btn');
-    btn.style.display = '';
+    btn.style.display = 'inline-block';
     btn.onclick = function () {
       var blob = new Blob([content], { type: mimeType });
       var url  = URL.createObjectURL(blob);
