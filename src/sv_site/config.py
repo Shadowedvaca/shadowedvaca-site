@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     cors_origins: str = "https://shadowedvaca.com"
     sv_tools_url: str = "https://sv-tools.shadowedvaca.com"
     sv_tools_api_key: str = ""
+    sv_tools_callback_key: str = ""  # sv-tools sends this to call back into sv-site
 
     # JWT settings
     jwt_algorithm: str = "HS256"

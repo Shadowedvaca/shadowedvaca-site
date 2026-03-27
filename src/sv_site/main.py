@@ -9,6 +9,7 @@ from sv_site.routes.auth import router as auth_router
 from sv_site.routes.feedback_ingest import router as feedback_ingest_router
 from sv_site.routes.feedback_read import router as feedback_read_router
 from sv_site.routes.idea_access import router as idea_access_router
+from sv_site.routes.idea_engagement import router as idea_engagement_router
 from sv_site.routes.idea_reactions import router as idea_reactions_router
 from sv_site.routes.ideas import router as ideas_router
 
@@ -29,6 +30,7 @@ app.include_router(admin_router, prefix="/api")
 app.include_router(feedback_ingest_router)
 app.include_router(feedback_read_router)
 app.include_router(idea_access_router)
+app.include_router(idea_engagement_router)
 app.include_router(idea_reactions_router)
 app.include_router(ideas_router, prefix="/api")
 
