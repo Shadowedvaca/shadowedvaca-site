@@ -1,9 +1,8 @@
-name: Deploy → Prod
+name: Deploy → Test
 
 on:
   push:
-    tags:
-      - 'prod-v*'
+    branches: [main]
 
 jobs:
   deploy:
@@ -27,7 +26,7 @@ jobs:
       - name: Set up SSH
         env:
           SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
-          HOST: ${{ secrets.PROD_HOST }}
+          HOST: ${{ secrets.TEST_HOST }}
         run: |
           mkdir -p ~/.ssh
           echo "$SSH_KEY" > ~/.ssh/deploy_key
@@ -36,26 +35,27 @@ jobs:
 
       - name: Deploy static files
         env:
-          HOST: ${{ secrets.PROD_HOST }}
+          HOST: ${{ secrets.TEST_HOST }}
         run: |
           scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no -r \
-            dist/. root@$HOST:/var/www/shadowedvaca.com/
+            dist/. root@$HOST:/var/www/test.shadowedvaca.com/
 
-      - name: Rebuild and restart prod app container
+      - name: Rebuild and restart test app container
         env:
-          HOST: ${{ secrets.PROD_HOST }}
+          HOST: ${{ secrets.TEST_HOST }}
         run: |
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no root@$HOST bash << 'ENDSSH'
             set -e
             cd /opt/shadowedvaca-site
-            git fetch --tags --force --prune origin
-            git checkout ${{ github.ref_name }}
-            docker compose -f docker-compose.prod.yml build app
-            docker compose -f docker-compose.prod.yml up -d app
+            git fetch origin
+            git checkout main
+            git pull origin main
+            docker compose -f docker-compose.test.yml build app
+            docker compose -f docker-compose.test.yml up -d app
             docker image prune -f
           ENDSSH
 
       - name: Health check
         run: |
           sleep 10
-          curl --fail https://shadowedvaca.com/api/health
+          curl --fail https://test.shadowedvaca.com/api/health

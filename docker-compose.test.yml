@@ -1,0 +1,31 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: shadowedvaca_test
+      POSTGRES_USER: shadowedvaca
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - db_data_test:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shadowedvaca -d shadowedvaca_test"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    image: shadowedvaca-site-test
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .env
+    ports:
+      - "8200:8000"
+
+volumes:
+  db_data_test:
