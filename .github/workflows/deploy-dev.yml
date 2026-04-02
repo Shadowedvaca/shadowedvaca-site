@@ -60,7 +60,7 @@ jobs:
             git checkout $BRANCH
             git pull origin $BRANCH
             docker compose -f docker-compose.dev.yml build app
-            docker compose -f docker-compose.dev.yml up -d app
+            docker compose -f docker-compose.dev.yml up -d --force-recreate app
             docker image prune -f
           ENDSSH
 

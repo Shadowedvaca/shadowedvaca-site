@@ -53,7 +53,7 @@ jobs:
             git fetch --tags --force --prune origin
             git checkout ${{ github.ref_name }}
             docker compose -f docker-compose.prod.yml build app
-            docker compose -f docker-compose.prod.yml up -d app
+            docker compose -f docker-compose.prod.yml up -d --force-recreate app
             docker image prune -f
           ENDSSH
 
