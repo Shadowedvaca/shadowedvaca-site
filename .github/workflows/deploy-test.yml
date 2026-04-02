@@ -39,6 +39,8 @@ jobs:
         run: |
           scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no -r \
             dist/. root@$HOST:/var/www/test.shadowedvaca.com/
+          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no \
+            login.html register.html root@$HOST:/var/www/test.shadowedvaca.com/
 
       - name: Rebuild and restart test app container
         env:
