@@ -1250,3 +1250,56 @@ a:hover { text-decoration: underline; }
   color: var(--text-secondary);
 }
 .idea-access-error { color: #e05c5c; }
+
+/* ============================================================
+   Ideation Board — Mode Toggle (Ideas | Projects)
+   ============================================================ */
+
+.mode-toggle {
+  display: flex;
+  width: fit-content;
+  border: 1px solid var(--divider);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 1.25rem;
+}
+
+.mode-btn {
+  background: #0d1117;
+  border: none;
+  border-right: 1px solid var(--divider);
+  color: var(--text-secondary);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.85rem;
+  padding: 0.5rem 1.25rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  letter-spacing: 0.05em;
+}
+
+.mode-btn:last-child { border-right: none; }
+.mode-btn:hover { background: #111620; color: var(--text-primary); }
+.mode-btn.active { background: #111620; color: var(--accent); }
+
+/* ============================================================
+   Ideation Board — Project Cards & Overlay
+   ============================================================ */
+
+.idea-badge--type {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+  border: 1px solid var(--divider);
+}
+
+.project-phase-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.project-phase-name {
+  font-size: 0.88rem;
+  color: var(--text-primary);
+  flex: 1;
+}

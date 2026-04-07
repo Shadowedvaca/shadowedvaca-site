@@ -6,6 +6,12 @@
 var JWT_KEY = 'sv_site_jwt';
 var API_BASE = '/api';
 
+// ---- Mode ----
+
+var currentMode = 'ideas';  // 'ideas' | 'projects'
+var allProjects = [];
+var projectsLoaded = false;
+
 // ---- Auth gate ----
 
 function getToken() {
@@ -546,6 +552,210 @@ function renderGrid() {
   });
 }
 
+// ---- Projects ----
+
+var PROJECT_TYPE_COLORS = {
+  'product':   '#00d4ff',
+  'feature':   '#2ecc71',
+  'research':  '#a78bfa',
+  'tool':      '#f0a030',
+  'website':   '#00d4ff',
+  'game':      '#2ecc71',
+};
+
+var PHASE_STATUS_COLORS = {
+  'complete':    '#2ecc71',
+  'in_progress': '#f0a030',
+  'planned':     '#6b7280',
+};
+
+async function loadProjects() {
+  var token = getToken();
+  if (!token) {
+    location.href = '/login.html?next=' + encodeURIComponent(location.pathname);
+    return;
+  }
+
+  try {
+    var resp = await fetch(API_BASE + '/projects', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (resp.status === 401) {
+      localStorage.removeItem(JWT_KEY);
+      location.href = '/login.html';
+      return;
+    }
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    var data = await resp.json();
+    allProjects = data.projects || [];
+    projectsLoaded = true;
+    renderProjectGrid();
+  } catch (e) {
+    document.getElementById('idea-grid').innerHTML =
+      '<p class="ideas-state-msg ideas-error">Failed to load projects. ' + e.message + '</p>';
+  }
+}
+
+function getFilteredProjects() {
+  var projects = allProjects.slice();
+  if (currentSearch) {
+    var q = currentSearch.toLowerCase();
+    projects = projects.filter(function(p) {
+      return (p.name + ' ' + (p.type || '')).toLowerCase().indexOf(q) !== -1;
+    });
+  }
+  if (currentSort === 'name') {
+    projects.sort(function(a, b) { return a.name.localeCompare(b.name); });
+  } else {
+    projects.sort(function(a, b) {
+      var da = a.updated_at || '';
+      var db = b.updated_at || '';
+      return db.localeCompare(da);
+    });
+  }
+  return projects;
+}
+
+function renderProjectGrid() {
+  var grid = document.getElementById('idea-grid');
+  var projects = getFilteredProjects();
+
+  if (projects.length === 0) {
+    grid.innerHTML = '<p class="ideas-state-msg">No projects match your filters.</p>';
+    return;
+  }
+
+  var html = projects.map(function(proj) {
+    var type = proj.type || 'project';
+    var color = PROJECT_TYPE_COLORS[type] || '#c8cdd3';
+    var updatedBadge = proj.updated_at && isRecentlyUpdated(proj.updated_at)
+      ? '<span class="idea-badge idea-badge--updated">Updated</span>' : '';
+    var typeBadge = '<span class="idea-badge idea-badge--type">' + escapeHtml(type) + '</span>';
+
+    return (
+      '<div class="idea-card" data-project-name="' + escapeHtml(proj.name) + '">' +
+        '<div class="idea-card-header">' +
+          '<span class="idea-status-dot" style="background:' + color + '"></span>' +
+          '<h2 class="idea-card-title">' + escapeHtml(proj.name) + '</h2>' +
+        '</div>' +
+        '<div class="idea-card-badges">' + typeBadge + updatedBadge + '</div>' +
+        '<p class="idea-card-meta">' +
+          (proj.updated_at ? 'updated ' + daysAgo(proj.updated_at) : 'active') +
+        '</p>' +
+      '</div>'
+    );
+  }).join('');
+
+  grid.innerHTML = html;
+
+  grid.querySelectorAll('.idea-card[data-project-name]').forEach(function(card) {
+    card.addEventListener('click', function() {
+      openProjectOverlay(card.dataset.projectName);
+    });
+  });
+}
+
+async function openProjectOverlay(projectName) {
+  var proj = allProjects.find(function(p) { return p.name === projectName; });
+  if (!proj) return;
+
+  var overlay = document.getElementById('idea-overlay');
+  var content = document.getElementById('overlay-content');
+  overlay.hidden = false;
+  document.body.style.overflow = 'hidden';
+
+  var type = proj.type || 'project';
+  var color = PROJECT_TYPE_COLORS[type] || '#c8cdd3';
+
+  content.innerHTML =
+    '<h2 class="overlay-title">' + escapeHtml(proj.name) + '</h2>' +
+    '<div class="overlay-meta">' +
+      '<span class="idea-status-dot" style="background:' + color + '"></span>' +
+      ' ' + escapeHtml(type) +
+      (proj.updated_at ? ' · updated ' + daysAgo(proj.updated_at) : '') +
+    '</div>' +
+    '<div class="overlay-section">' +
+      '<div class="overlay-section-title">Documents</div>' +
+      '<div id="project-overlay-docs"><em class="overlay-loading">Loading...</em></div>' +
+    '</div>' +
+    '<div class="overlay-section">' +
+      '<div class="overlay-section-title">Phases</div>' +
+      '<div id="project-overlay-phases"><em class="overlay-loading">Loading...</em></div>' +
+    '</div>';
+
+  var token = getToken();
+  if (!token) return;
+
+  var encoded = encodeURIComponent(projectName);
+  try {
+    var [docsResp, phasesResp] = await Promise.all([
+      fetch(API_BASE + '/projects/' + encoded + '/documents', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      }),
+      fetch(API_BASE + '/projects/' + encoded + '/phases', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      }),
+    ]);
+
+    var docs   = docsResp.ok   ? ((await docsResp.json()).documents   || []) : [];
+    var phases = phasesResp.ok ? ((await phasesResp.json()).phases     || []) : [];
+
+    renderProjectDocs(docs);
+    renderProjectPhases(phases);
+  } catch (e) {
+    var docsEl = document.getElementById('project-overlay-docs');
+    if (docsEl) docsEl.innerHTML = '<em class="overlay-error">Could not load details.</em>';
+    var phasesEl = document.getElementById('project-overlay-phases');
+    if (phasesEl) phasesEl.innerHTML = '';
+  }
+}
+
+function renderProjectDocs(docs) {
+  var el = document.getElementById('project-overlay-docs');
+  if (!el) return;
+  if (docs.length === 0) {
+    el.innerHTML = '<em class="overlay-empty">No documents yet.</em>';
+    return;
+  }
+  var html = docs.map(function(doc) {
+    var meta = [];
+    if (doc.doc_class) meta.push(escapeHtml(doc.doc_class));
+    if (doc.version)   meta.push('v' + escapeHtml(doc.version));
+    return (
+      '<div class="overlay-link-row">' +
+        '<span class="overlay-link">' + escapeHtml(doc.title) + '</span>' +
+        (meta.length ? '<span class="overlay-link-meta">' + meta.join(' · ') + '</span>' : '') +
+      '</div>'
+    );
+  }).join('');
+  el.innerHTML = html;
+}
+
+function renderProjectPhases(phases) {
+  var el = document.getElementById('project-overlay-phases');
+  if (!el) return;
+  if (phases.length === 0) {
+    el.innerHTML = '<em class="overlay-empty">No phases defined.</em>';
+    return;
+  }
+  var html = phases.map(function(phase) {
+    var color = PHASE_STATUS_COLORS[phase.status] || '#6b7280';
+    var meta = [escapeHtml(phase.status)];
+    if (phase.version)      meta.push('v' + escapeHtml(phase.version));
+    if (phase.completed_at) meta.push('done ' + phase.completed_at.slice(0, 10));
+    return (
+      '<div class="project-phase-row">' +
+        '<span class="idea-status-dot" style="background:' + color + ';flex-shrink:0"></span>' +
+        '<span class="project-phase-name">' +
+          escapeHtml(phase.phase_number + '. ' + phase.phase_name) +
+        '</span>' +
+        '<span class="overlay-link-meta">' + meta.join(' · ') + '</span>' +
+      '</div>'
+    );
+  }).join('');
+  el.innerHTML = html;
+}
+
 function escapeHtml(str) {
   return String(str)
     .replace(/&/g, '&amp;')
@@ -667,12 +877,65 @@ function closeOverlay() {
 // ---- Controls ----
 
 document.addEventListener('DOMContentLoaded', function() {
+  // Mode toggle
+  document.querySelectorAll('.mode-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var mode = btn.dataset.mode;
+      if (mode === currentMode) return;
+      currentMode = mode;
+
+      document.querySelectorAll('.mode-btn').forEach(function(b) {
+        b.classList.toggle('active', b.dataset.mode === mode);
+      });
+
+      var subtitle = document.querySelector('.ideas-subtitle');
+      if (subtitle) {
+        subtitle.textContent = mode === 'ideas'
+          ? 'Live ideas — spark to ship'
+          : 'Active projects — shipping';
+      }
+
+      var statusFilter = document.getElementById('status-filter');
+      var sortVotes = document.getElementById('sort-votes');
+      var searchInput = document.getElementById('search-input');
+      if (statusFilter) statusFilter.style.display = mode === 'ideas' ? '' : 'none';
+      if (sortVotes) sortVotes.style.display = mode === 'ideas' ? '' : 'none';
+      if (searchInput) {
+        searchInput.placeholder = mode === 'ideas' ? 'Search ideas...' : 'Search projects...';
+      }
+
+      if (mode === 'projects' && currentSort === 'votes') {
+        document.querySelectorAll('.ideas-sort-btn').forEach(function(b) {
+          b.classList.remove('active');
+          if (b.dataset.sort === 'updated') b.classList.add('active');
+        });
+        currentSort = 'updated';
+      }
+
+      if (mode === 'projects') {
+        if (!projectsLoaded) {
+          document.getElementById('idea-grid').innerHTML =
+            '<div class="ideas-state-msg">Loading...</div>';
+          loadProjects();
+        } else {
+          renderProjectGrid();
+        }
+      } else {
+        renderGrid();
+      }
+    });
+  });
+
   document.querySelectorAll('.ideas-sort-btn').forEach(function(btn) {
     btn.addEventListener('click', function() {
       document.querySelectorAll('.ideas-sort-btn').forEach(function(b) { b.classList.remove('active'); });
       btn.classList.add('active');
       currentSort = btn.dataset.sort;
-      renderGrid();
+      if (currentMode === 'projects') {
+        renderProjectGrid();
+      } else {
+        renderGrid();
+      }
     });
   });
 
@@ -686,7 +949,11 @@ document.addEventListener('DOMContentLoaded', function() {
     clearTimeout(searchTimeout);
     searchTimeout = setTimeout(function() {
       currentSearch = e.target.value.trim();
-      renderGrid();
+      if (currentMode === 'projects') {
+        renderProjectGrid();
+      } else {
+        renderGrid();
+      }
     }, 200);
   });
 

@@ -12,6 +12,7 @@ from sv_site.routes.idea_access import router as idea_access_router
 from sv_site.routes.idea_engagement import router as idea_engagement_router
 from sv_site.routes.idea_reactions import router as idea_reactions_router
 from sv_site.routes.ideas import router as ideas_router
+from sv_site.routes.projects import router as projects_router
 
 _settings = get_settings()
 
@@ -33,6 +34,7 @@ app.include_router(idea_access_router)
 app.include_router(idea_engagement_router)
 app.include_router(idea_reactions_router)
 app.include_router(ideas_router, prefix="/api")
+app.include_router(projects_router, prefix="/api")
 
 
 @app.get("/api/health")
