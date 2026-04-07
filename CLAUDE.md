@@ -86,10 +86,10 @@ shadowedvaca-site/
 │
 ├── deploy/
 │   ├── nginx/
-│   │   ├── shadowedvaca.com.conf        ← Prod nginx (proxy → 8050 until Docker cutover)
+│   │   ├── shadowedvaca.com.conf        ← Prod nginx (proxy → 8055, Docker)
 │   │   ├── dev.shadowedvaca.com.conf    ← Dev nginx (proxy → 8200)
 │   │   └── test.shadowedvaca.com.conf   ← Test nginx (proxy → 8200)
-│   ├── systemd/shadowedvaca.service     ← Legacy systemd unit (prod only, until F.D.4 cutover)
+│   ├── systemd/shadowedvaca.service     ← Legacy systemd unit (stopped + disabled, kept for reference)
 │   └── scripts/create_schema.sql        ← Initial DB schema
 │
 ├── scripts/
@@ -146,8 +146,8 @@ shadowedvaca-site/
 | Env | Domain | Server alias | IP | App port | Status |
 |-----|--------|-------------|-----|----------|--------|
 | dev | `dev.shadowedvaca.com` | `my-web-apps-dev` | 91.99.112.160 | 8200 | Docker ✓ |
-| test | `test.shadowedvaca.com` | `my-web-apps-test` | 91.99.121.21 | 8200 | Not yet set up |
-| prod | `shadowedvaca.com` | `hetzner` | 5.78.114.224 | 8050 (systemd) → 8055 (Docker, pending cutover) | Systemd (legacy) |
+| test | `test.shadowedvaca.com` | `my-web-apps-test` | 91.99.121.21 | 8200 | Docker ✓ |
+| prod | `shadowedvaca.com` | `hetzner` | 5.78.114.224 | 8055 | Docker ✓ (systemd disabled) |
 
 SSH key for all servers: `~/.ssh/va_hetzner_openssh`
 
@@ -163,11 +163,17 @@ SSH key for all servers: `~/.ssh/va_hetzner_openssh`
 /var/www/test.shadowedvaca.com/  ← static files (test)
 ```
 
-### Dev Server Notes
+### Dev/Test Server Notes
 
-- 2 GiB swapfile at `/swapfile` (added 2026-04-01, persisted in `/etc/fstab`) — needed because shared server runs multiple app stacks
-- Other projects also run on `my-web-apps-dev`: guild-portal (port 8100), lsa (port 3000)
+- 2 GiB swapfile at `/swapfile` on dev server (added 2026-04-01, in `/etc/fstab`) — shared server runs multiple stacks
+- Other projects on `my-web-apps-dev`: guild-portal (port 8100), lsa (port 3000)
 - DB user in Docker: `shadowedvaca` (owns all tables). Migration files have `GRANT ... TO sv_site_user` — those fail harmlessly on Docker (role doesn't exist); tables still create fine.
+
+### Prod Server Notes
+
+- Repo: `/opt/shadowedvaca-site/` (active). Old `/opt/shadowedvaca/` still exists — do not use.
+- Legacy `shadowedvaca.service` (systemd) is stopped and disabled. Docker is the backend.
+- DB backups go to `/opt/backups/` on the prod server.
 
 ## Deploy Workflow
 
