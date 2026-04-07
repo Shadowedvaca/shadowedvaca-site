@@ -31,7 +31,8 @@ shadowedvaca-site/
 │           ├── feedback_read.py          ← GET /api/hub/feedback (admin JWT)
 │           ├── ideas.py                  ← /api/ideas/* (proxy to sv-tools, override enforcement)
 │           ├── idea_reactions.py         ← /api/ideas/reactions, vote + favorite endpoints
-│           └── idea_access.py            ← /api/admin/ideas/{id}/access (per-user override CRUD)
+│           ├── idea_access.py            ← /api/admin/ideas/{id}/access (per-user override CRUD)
+│           └── projects.py               ← /api/projects/* (proxy to sv-tools, JWT auth)
 │
 ├── packages/
 │   ├── core/                             ← Shared data layer (Pydantic schemas + JSON loaders)
@@ -250,7 +251,7 @@ Key settings (loaded from `.env`):
 - `jwt_algorithm` / `jwt_expire_minutes` — HS256, 480 min
 - `feedback_ingest_key` — Shared secret for `POST /api/feedback/ingest`
 - `anthropic_api_key` — Claude API key for feedback processing
-- `sv_tools_url` / `sv_tools_api_key` / `sv_tools_callback_key` — For ideas proxy
+- `sv_tools_url` / `sv_tools_api_key` / `sv_tools_callback_key` — For ideas + projects proxy
 
 ### Database Models (`models.py`)
 
@@ -333,6 +334,15 @@ Query params: `program_name`, `sentiment`, `tag`, `min_score`, `max_score`, `lim
 | DELETE | `/api/admin/ideas/{id}/access/{user_id}` | Admin JWT | Remove override (reverts to idea.public default) |
 
 Proxies to sv-tools API with 10-second timeout. Access rule: `visible = overrides_map.get(idea_id, idea.public)` — override wins, falls back to sv-tools `public` flag.
+
+#### Projects (`/api/projects/`)
+| Method | Path | Auth | Purpose |
+|--------|------|------|---------|
+| GET | `/api/projects` | JWT | List active projects (proxies sv-tools `active_only=true`) |
+| GET | `/api/projects/{name}/documents` | JWT | List project documents (no content) |
+| GET | `/api/projects/{name}/phases` | JWT | List project phases ordered by phase_number |
+
+No per-user access filtering — all authenticated users see all active projects.
 
 ## Static Site Builder
 
