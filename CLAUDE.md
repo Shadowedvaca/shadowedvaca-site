@@ -8,7 +8,7 @@ This repo is a hybrid platform:
 2. **FastAPI Backend** — `src/sv_site/` — an authenticated API powering the hub, feedback pipeline, ideas board, and user management.
 3. **Hub** — `hub/` — admin-only static HTML/JS pages (feedback review, user management, invite generation, settings).
 
-Hosted on Hetzner CPX11 (Ubuntu 24.04, Nginx 1.24, PostgreSQL, Certbot SSL).
+Hosted on Hetzner (Ubuntu 24.04, Nginx 1.24, PostgreSQL in Docker, Certbot SSL). Three environments: dev, test, prod — each with its own server and Docker stack.
 
 ## Repository Structure
 
@@ -79,28 +79,39 @@ shadowedvaca-site/
 │   ├── announcements.json
 │   └── profile.json
 │
+├── Dockerfile                           ← App image (python:3.12-slim, uvicorn 2 workers)
+├── docker-compose.dev.yml               ← Dev stack (app port 8200, DB internal)
+├── docker-compose.test.yml              ← Test stack (app port 8200, DB internal)
+├── docker-compose.prod.yml              ← Prod stack (app port 8055, DB internal)
+│
 ├── deploy/
-│   ├── nginx/shadowedvaca.com.conf      ← Nginx reverse proxy + static file config
-│   ├── systemd/shadowedvaca.service     ← Systemd unit for FastAPI (Uvicorn)
+│   ├── nginx/
+│   │   ├── shadowedvaca.com.conf        ← Prod nginx (proxy → 8050 until Docker cutover)
+│   │   ├── dev.shadowedvaca.com.conf    ← Dev nginx (proxy → 8200)
+│   │   └── test.shadowedvaca.com.conf   ← Test nginx (proxy → 8200)
+│   ├── systemd/shadowedvaca.service     ← Legacy systemd unit (prod only, until F.D.4 cutover)
 │   └── scripts/create_schema.sql        ← Initial DB schema
 │
 ├── scripts/
 │   ├── validate_data.py                 ← Validates JSON data against Pydantic schemas
-│   └── migrations/add_customer_feedback.sql
+│   └── migrations/
+│       ├── add_customer_feedback.sql
+│       ├── add_idea_reactions.sql
+│       └── add_idea_access_overrides.sql
 │
 ├── tests/
 │   ├── conftest.py                      ← Fixtures: async_client, mock_db, test_settings
 │   ├── test_feedback_ingest.py
 │   └── test_feedback_read.py
 │
-├── monitoring/                          ← Server health checks + alerting
-├── docs/                                ← Implementation plans and notes
-├── reference/
-│   └── mockup-v3.html                   ← Design reference (source of truth for UI)
+├── .github/workflows/
+│   ├── deploy-dev.yml                   ← Manual dispatch → dev server
+│   ├── deploy-test.yml                  ← Auto on push to main → test server
+│   └── deploy.yml                       ← Auto on prod-v* tag → prod server
 │
-├── .github/workflows/deploy.yml         ← GitHub Actions CI/CD
 ├── .env.example                         ← Environment variable template
-├── deploy.sh                            ← Local deploy: build → scp to server
+├── login.html                           ← Auth pages (root, copied to web root by deploy)
+├── register.html
 ├── requirements.txt
 ├── pyproject.toml                       ← Project config + pytest settings
 │
@@ -115,10 +126,11 @@ shadowedvaca-site/
 
 ## Tech Stack
 
-- **Python 3.11+** — Build system, data layer, and API backend
-- **FastAPI + Uvicorn** — Async API, 2 workers, listening on `127.0.0.1:8050`
+- **Python 3.12** — Build system, data layer, and API backend
+- **FastAPI + Uvicorn** — Async API, 2 workers, containerized
+- **Docker + Docker Compose** — All environments run as Docker stacks
 - **SQLAlchemy (async)** — ORM with asyncpg driver
-- **PostgreSQL** — Persistent storage (schema: `shadowedvaca`)
+- **PostgreSQL 16** — Persistent storage (schema: `shadowedvaca`), containerized
 - **Pydantic / pydantic-settings** — Schema validation and env config
 - **Jinja2** — Static site templating
 - **Anthropic Claude Haiku 4.5** — AI processing for feedback (graceful degradation if unavailable)
@@ -127,17 +139,112 @@ shadowedvaca-site/
 - **Let's Encrypt / Certbot** — Auto-renewing SSL
 - **Google Fonts** — IBM Plex Sans, Share Tech Mono, Caveat (loaded from CDN, not self-hosted)
 
+## Environments & Servers
+
+**Claude handles all server operations. Mike does not SSH into servers.**
+
+| Env | Domain | Server alias | IP | App port | Status |
+|-----|--------|-------------|-----|----------|--------|
+| dev | `dev.shadowedvaca.com` | `my-web-apps-dev` | 91.99.112.160 | 8200 | Docker ✓ |
+| test | `test.shadowedvaca.com` | `my-web-apps-test` | 91.99.121.21 | 8200 | Not yet set up |
+| prod | `shadowedvaca.com` | `hetzner` | 5.78.114.224 | 8050 (systemd) → 8055 (Docker, pending cutover) | Systemd (legacy) |
+
+SSH key for all servers: `~/.ssh/va_hetzner_openssh`
+
+### Server Layout (dev/test)
+
+```
+/opt/shadowedvaca-site/          ← git repo clone
+├── .env                         ← secrets (never committed, generated per-env)
+├── docker-compose.dev.yml       ← symlinked or present per server role
+└── ...
+
+/var/www/dev.shadowedvaca.com/   ← static files (dev)
+/var/www/test.shadowedvaca.com/  ← static files (test)
+```
+
+### Dev Server Notes
+
+- 2 GiB swapfile at `/swapfile` (added 2026-04-01, persisted in `/etc/fstab`) — needed because shared server runs multiple app stacks
+- Other projects also run on `my-web-apps-dev`: guild-portal (port 8100), lsa (port 3000)
+- DB user in Docker: `shadowedvaca` (owns all tables). Migration files have `GRANT ... TO sv_site_user` — those fail harmlessly on Docker (role doesn't exist); tables still create fine.
+
+## Deploy Workflow
+
+**This is how things get deployed. Claude runs these, not Mike.**
+
+### Dev (manual, any branch)
+
+```bash
+gh workflow run deploy-dev.yml -f branch=feature/my-branch
+```
+
+Workflow does: checkout → build static site → scp `dist/` + `login.html` + `register.html` to `/var/www/dev.shadowedvaca.com/` → git pull on server → `docker compose build app` → `docker compose up -d --force-recreate app`
+
+### Test (automatic on merge to main)
+
+Pushing or merging to `main` automatically triggers `deploy-test.yml`.
+
+### Prod (automatic on tag)
+
+```bash
+git tag prod-vX.Y.Z && git push origin prod-vX.Y.Z
+```
+
+Triggers `deploy.yml` → deploys to prod server.
+
+### Static site build (local, before manual deploy)
+
+```bash
+python packages/site/build.py      # from repo root
+python -m pytest tests/ -v         # run tests
+```
+
+**Windows gotchas:**
+- `shutil.rmtree(dist/)` fails if Explorer has the folder open → clear contents, keep dir
+- `strftime("%-d")` not supported → use `%d` + `.replace(" 0", " ")`
+- Use `namespace()` in Jinja2 for variables set inside loops
+- `rsync` is not available in Claude Code's bash environment — use `scp -r`
+
+## Docker Operations Reference
+
+**Claude uses these when managing servers. Do not run docker compose commands in parallel — one operation at a time.**
+
+```bash
+# Start stack (reads .env fresh — use this, not restart)
+docker compose -f docker-compose.dev.yml up -d --force-recreate app
+
+# Stop everything cleanly
+docker compose -f docker-compose.dev.yml down
+
+# View logs
+docker compose -f docker-compose.dev.yml logs app --tail=50
+
+# Check env vars loaded in container
+docker exec shadowedvaca-site-app-1 env | grep SV_TOOLS
+
+# Run a DB migration
+docker compose -f docker-compose.dev.yml exec -T db psql -U shadowedvaca -d shadowedvaca_dev < migrations/some_migration.sql
+
+# Check container health
+docker ps
+```
+
+**Critical gotcha:** `docker compose restart` does NOT reload `env_file`. Always use `up -d --force-recreate` when env vars may have changed. The deploy workflows already use `--force-recreate`.
+
+**Critical gotcha:** Never pipe complex SQL via SSH heredoc — it doesn't transmit reliably. Copy SQL files with `scp` first, then pipe them in.
+
 ## FastAPI Backend
 
 ### Config (`config.py`)
 
 Key settings (loaded from `.env`):
-- `database_url` — PostgreSQL async connection string
+- `database_url` — PostgreSQL async connection string (uses Docker service name `db`)
 - `secret_key` — JWT signing secret
 - `jwt_algorithm` / `jwt_expire_minutes` — HS256, 480 min
 - `feedback_ingest_key` — Shared secret for `POST /api/feedback/ingest`
 - `anthropic_api_key` — Claude API key for feedback processing
-- `sv_tools_url` / `sv_tools_api_key` — For ideas proxy
+- `sv_tools_url` / `sv_tools_api_key` / `sv_tools_callback_key` — For ideas proxy
 
 ### Database Models (`models.py`)
 
@@ -149,9 +256,9 @@ All tables live in the `shadowedvaca` schema.
 | `invite_codes` | code VARCHAR(16) PK, created_by_user_id FK, used_at, expires_at, permissions JSONB |
 | `user_permissions` | user_id FK, tool_slug — composite PK |
 | `customer_feedback` | id (SERIAL), program_name, received_at, score (1–10), raw_feedback, summary, sentiment, tags JSONB, privacy_token, processed_at, processing_error |
-| `idea_votes` | idea_id, user_id — composite PK, vote (1 or -1) |
-| `idea_favorites` | idea_id, user_id — composite PK |
-| `idea_access_overrides` | idea_id, user_id — composite PK, can_view BOOL, created_at, updated_at |
+| `idea_votes` | idea_id (INTEGER), user_id — composite PK, vote (1 or -1) |
+| `idea_favorites` | idea_id (INTEGER), user_id — composite PK |
+| `idea_access_overrides` | idea_id (INTEGER), user_id — composite PK, can_view BOOL, created_at, updated_at |
 
 `customer_feedback` is fully de-identified — no PII stored. Anonymous submissions force `privacy_token = NULL`.
 
@@ -232,10 +339,7 @@ Proxies to sv-tools API with 10-second timeout. Access rule: `visible = override
 4. Copy static assets (CSS, JS, 404, robots.txt, favicon) to `dist/`
 5. Copy Meandering Muck files to `dist/` unchanged
 
-**Windows gotchas:**
-- `shutil.rmtree(dist/)` fails if Explorer has the folder open → clear contents, keep dir
-- `strftime("%-d")` not supported → use `%d` + `.replace(" 0", " ")`
-- Use `namespace()` in Jinja2 for variables set inside loops
+**Note:** `login.html` and `register.html` live at repo root (not `dist/`) and are deployed separately by all three GitHub Actions workflows.
 
 ## Data Schemas (Pydantic)
 
@@ -286,46 +390,6 @@ The command center fills the viewport — NOT a scrolling page. Two zones:
 - **Tablet/Mobile (≤900px):** Stacks — main stage top, terminal below (max-height 40vh), page scrolls
 - **Small mobile (≤500px):** Reduced padding, smaller title font
 
-## Deployment
-
-### Local
-```bash
-python packages/site/build.py      # Build static site → dist/
-bash deploy.sh                     # Build + scp to server (Git Bash on Windows)
-python -m pytest tests/ -v         # Run tests
-```
-
-`deploy.sh` uses: `scp -r dist/* deploy@5.78.114.224:/var/www/shadowedvaca.com/`
-SSH key: `~/.ssh/va_hetzner_openssh`
-
-### Server Layout
-```
-/opt/shadowedvaca/          ← Git repo clone
-├── venv/                   ← Python venv
-├── .env                    ← Live secrets
-└── src/, deploy/, ...
-
-/var/www/shadowedvaca.com/  ← Static files (served by Nginx)
-```
-
-### Services
-- **Nginx** — reverse proxy + static files (ports 80/443)
-  - `/api/*` → proxy to `127.0.0.1:8050`
-  - `/ideas/*` → static SPA with fallback
-  - `/` → static files with 404 fallback
-  - Gzip on CSS/JS/JSON/SVG; 30-day cache on static assets
-- **shadowedvaca.service** — Uvicorn, 2 workers, runs as `www-data`
-- **PostgreSQL** — localhost:5432
-
-### CI/CD (GitHub Actions)
-
-`.github/workflows/deploy.yml`:
-1. Build static site
-2. Deploy `dist/` files to server
-3. Git pull + pip install on server
-4. Reload Nginx + restart systemd service
-5. Health check: `GET /api/health`
-
 ## Testing
 
 **Framework:** pytest + pytest-asyncio
@@ -346,3 +410,4 @@ SSH key: `~/.ssh/va_hetzner_openssh`
 - **No content hardcoded in templates.** Everything comes from JSON data files.
 - **Mike is on Windows.** All scripts must be cross-platform (Python preferred over shell).
 - **`rsync` is not available** in the Claude Code bash environment on this machine — use `scp -r`.
+- **Claude handles all server operations.** Mike does not SSH into servers or run docker commands manually.
