@@ -104,7 +104,7 @@ jobs:
         run: |
           set -euo pipefail
           curl --fail --silent --show-error \
-            --retry 10 --retry-delay 3 --retry-connrefused \
+            --retry 10 --retry-delay 3 --retry-connrefused --retry-all-errors \
             https://dev.shadowedvaca.com/api/health \
             | python -c 'import json,sys; assert json.load(sys.stdin)=={"ok": True}'
 

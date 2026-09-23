@@ -70,6 +70,13 @@ compose() {
     "$@"
 }
 
+local_health() {
+  curl --fail --silent --show-error \
+    --retry 10 --retry-delay 2 --retry-connrefused --retry-all-errors \
+    http://127.0.0.1:8200/api/health \
+    | python3 -c 'import json,sys; assert json.load(sys.stdin)=={"ok": True}'
+}
+
 release_lock() {
   status=$?
   trap - EXIT
@@ -80,7 +87,11 @@ release_lock() {
     if [ "$api_mutation_started" = true ] && [ "$prior_image_available" = true ]; then
       docker image tag "$image_name:previous" "$image_name" || true
       compose up -d --no-build --force-recreate app || true
-      echo "Attempted app rollback to the prior scoped image"
+      if local_health; then
+        echo "App rollback to the prior scoped image verified healthy"
+      else
+        echo "ERROR: prior app image rollback did not become healthy"
+      fi
     fi
     if [ "$static_mutation_started" = true ] && [ -d "$next_static" ]; then
       find "$web_root" -mindepth 1 -maxdepth 1 ! -name .well-known \
@@ -139,13 +150,7 @@ api_mutation_started=true
 compose build app
 compose up -d --force-recreate app
 
-health="$(
-  curl --fail --silent --show-error \
-    --retry 10 --retry-delay 2 --retry-connrefused \
-    http://127.0.0.1:8200/api/health
-)"
-printf '%s' "$health" | python3 -c \
-  'import json,sys; assert json.load(sys.stdin)=={"ok": True}'
+local_health
 test "$(cat "$web_root/.deployment-sha")" = "$deploy_sha"
 test "$(git rev-parse HEAD)" = "$deploy_sha"
 compose ps --status running --services | grep -qx app

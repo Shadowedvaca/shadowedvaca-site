@@ -32,6 +32,7 @@ def test_nonproduction_workflows_stage_and_activate_one_immutable_commit():
             f"'$DEPLOY_SHA' {environment}",
             f"https://{'dev' if environment == 'development' else 'test'}.shadowedvaca.com/api/health",
             "StrictHostKeyChecking=yes",
+            "--retry-all-errors",
             "Remove runner SSH material",
         ):
             assert required in source
@@ -71,7 +72,9 @@ def test_shared_host_script_admits_before_any_active_mutation():
         'compose logs --no-color --tail 100 app db',
         'docker image tag "$image_name:previous" "$image_name"',
         'compose up -d --no-build --force-recreate app',
+        "App rollback to the prior scoped image verified healthy",
         "Restored prior static files after failed deployment",
+        "--retry-all-errors",
         'exit "$status"',
         "deployment identity verified at commit $deploy_sha",
     ):
@@ -84,7 +87,7 @@ def test_shared_host_script_admits_before_any_active_mutation():
         'find "$web_root" -mindepth 1 -maxdepth 1 ! -name .well-known', checkout
     )
     build = source.index("compose build app")
-    health = source.index("http://127.0.0.1:8200/api/health")
+    health = source.index("\nlocal_health\n", build)
     identity = source.index("deployment identity verified at commit")
     assert lock < admission < checkout < static_activation < build < health < identity
     assert source.count("! -name .well-known") == 2
