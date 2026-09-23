@@ -8,7 +8,7 @@ This repo is a hybrid platform:
 2. **FastAPI Backend** — `src/sv_site/` — an authenticated API powering the hub, feedback pipeline, ideas board, and user management.
 3. **Hub** — `hub/` — admin-only static HTML/JS pages (feedback review, user management, invite generation, settings).
 
-Hosted on Hetzner (Ubuntu 24.04, Nginx 1.24, PostgreSQL in Docker, Certbot SSL). Three environments: dev, test, prod — each with its own server and Docker stack.
+Hosted on Hetzner (Ubuntu 24.04, Nginx 1.24, PostgreSQL in Docker, Certbot SSL). Development and test use separate shared-platform servers; production remains on its dedicated server. Each environment keeps its own Docker stack and application data.
 
 ## Repository Structure
 
@@ -146,8 +146,8 @@ shadowedvaca-site/
 
 | Env | Domain | Server alias | IP | App port | Status |
 |-----|--------|-------------|-----|----------|--------|
-| dev | `dev.shadowedvaca.com` | `my-web-apps-dev` | 91.99.112.160 | 8200 | Docker ✓ |
-| test | `test.shadowedvaca.com` | `my-web-apps-test` | 91.99.121.21 | 8200 | Docker ✓ |
+| dev | `dev.shadowedvaca.com` | `shared-dev-platforms` | 49.13.142.153 | 8200 | Docker ✓ |
+| test | `test.shadowedvaca.com` | `shared-test-platforms` | 2.28.104.99 | 8200 | Docker ✓ |
 | prod | `shadowedvaca.com` | `hetzner` | 5.78.114.224 | 8055 | Docker ✓ (systemd disabled) |
 
 SSH key for all servers: `~/.ssh/va_hetzner_openssh`
@@ -166,8 +166,17 @@ SSH key for all servers: `~/.ssh/va_hetzner_openssh`
 
 ### Dev/Test Server Notes
 
-- 2 GiB swapfile at `/swapfile` on dev server (added 2026-04-01, in `/etc/fstab`) — shared server runs multiple stacks
-- Other projects on `my-web-apps-dev`: guild-portal (port 8100), lsa (port 3000)
+- Both shared servers have 2 GiB swap configured and run multiple application
+  stacks. Laundromat Service App is no longer hosted on either server.
+- Every participating repository coordinates remote mutations with
+  `/run/lock/shared-platform-deployment.lock`. Shadowedvaca waits for at most
+  2700 seconds, then requires at least 12 GiB of free root-disk space, 1 GiB of
+  configured swap, and 2 GiB of combined available memory plus free swap before
+  changing active state.
+- Static bundles may be staged before lock acquisition only in a unique
+  exact-SHA path. Exact checkout, static activation, application build/recreate,
+  local health and identity checks, rollback capture, diagnostics, and scoped
+  cleanup occur while holding the lock. GitHub concurrency remains additive.
 - DB user in Docker: `shadowedvaca` (owns all tables). Migration files have `GRANT ... TO sv_site_user` — those fail harmlessly on Docker (role doesn't exist); tables still create fine.
 
 ### Prod Server Notes
@@ -183,10 +192,17 @@ SSH key for all servers: `~/.ssh/va_hetzner_openssh`
 ### Dev (manual, any branch)
 
 ```bash
-gh workflow run deploy-dev.yml -f branch=feature/my-branch
+gh workflow run deploy-dev.yml --ref feature/my-branch -f branch=feature/my-branch
 ```
 
-Workflow does: checkout → build static site → scp `dist/` + `login.html` + `register.html` to `/var/www/dev.shadowedvaca.com/` → git pull on server → `docker compose build app` → `docker compose up -d --force-recreate app`
+Workflow resolves one immutable commit, builds and stages its static bundle in a
+unique inactive path, then acquires the shared-platform lock. After resource
+admission it checks out that exact commit, captures one previous static tree and
+app image (with static rollback material under
+`/opt/backups/shadowedvaca-site/<environment>/`), activates static and API
+together, verifies local health plus checkout and static-marker identity, cleans
+only Shadowedvaca paths, releases the lock, and finally verifies public health.
+It never runs host-global Docker pruning.
 
 ### Test (automatic on merge to main)
 

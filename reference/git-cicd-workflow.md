@@ -16,21 +16,23 @@ Drop a reference to this file in each project's CLAUDE.md so the rules travel wi
 
 ## Server Architecture
 
-Three environments, **three separate servers**. This is not optional — blast radius isolation is the point.
-
-Dev and test are **shared CX23 nodes** that host multiple apps. Prod is per-project.
+Three isolated environment tiers are required. Development and test run on
+separate shared-platform servers; production is per-project and dedicated.
 
 ### Server Inventory
 
 | Environment | SSH Alias | Region | Spec | Purpose |
 |-------------|-----------|--------|------|---------|
-| **dev** | `my-web-apps-dev` | Falkenstein, DE | CX23 (2vCPU / 4GB) | Shared sandbox. All dev environments. |
-| **test** | `my-web-apps-test` | Falkenstein, DE | CX23 (2vCPU / 4GB) | Shared integration gate. All test environments. |
+| **dev** | `shared-dev-platforms` | Falkenstein, DE | CPX22 (2vCPU / 4GB / 80GB) | Shared sandbox. All dev environments. |
+| **test** | `shared-test-platforms` | Falkenstein, DE | CPX22 (2vCPU / 4GB / 80GB) | Shared integration gate. All test environments. |
 | **prod** | project-specific (e.g. `hetzner`) | Hillsboro, OR or Falkenstein | CPX21 / CX32 | Live. Real users/data. |
 
 **Why separate servers:**
 - Dev changes (schema experiments, model reloads, failed deploys) cannot cascade to prod or test
-- Test must mirror prod config exactly — shared servers allow drift
+- Dev and test remain separate so development changes cannot collide with the
+  integration gate
+- Shared-host resource controls are common; application state, credentials,
+  Compose projects, ports, and deployment ownership remain repository-specific
 - Prod is latency-sensitive where applicable; dev/test latency doesn't matter
 
 ### SSH Access
@@ -38,8 +40,8 @@ Dev and test are **shared CX23 nodes** that host multiple apps. Prod is per-proj
 The shared GitHub Actions deploy key and personal key are installed on all servers.
 
 ```bash
-ssh my-web-apps-dev   # shared dev server
-ssh my-web-apps-test  # shared test server
+ssh shared-dev-platforms   # shared dev server
+ssh shared-test-platforms  # shared test server
 ssh hetzner           # example prod alias (PATT)
 ```
 
@@ -51,7 +53,7 @@ Each app occupies one port slot. Nginx routes by subdomain to that port. The sam
 |------|-----|-----------------|------------------|--------|
 | **8100** | Pull All The Things (PATT) | `dev.pullallthethings.com` | `test.pullallthethings.com` | Active |
 | **8200** | shadowedvaca.com | `dev.shadowedvaca.com` | `test.shadowedvaca.com` | Active |
-| **8300** | _(open)_ | — | — | Available |
+| **8300** | Salt All The Things (SATT) | `dev.saltallthethings.com` | `test.saltallthethings.com` | Active |
 | **8400** | _(open)_ | — | — | Available |
 | **8500** | _(open)_ | — | — | Available |
 | **8600** | _(open)_ | — | — | Available |
@@ -65,6 +67,21 @@ Each app occupies one port slot. Nginx routes by subdomain to that port. The sam
 - App's `docker-compose.dev.yml` / `docker-compose.test.yml` maps `PORT:8100` (host:container)
 - Nginx vhost on each shared server proxies `subdomain → localhost:PORT`
 - Prod servers are single-app — no port coordination needed there
+- Every dev/test deployment holds `/run/lock/shared-platform-deployment.lock`
+  throughout its active remote mutation phase. The maximum wait is 2700
+  seconds. After acquiring the lock and before mutation, require at least 12
+  GiB free on `/`, 1 GiB configured swap, and 2 GiB of `MemAvailable +
+  SwapFree`.
+- Each repository implements and tests this contract in its own workflows or
+  checked-in scripts. There is no installed shared deployment helper or server
+  manager. Repository-level GitHub concurrency is additive.
+- Inactive exact-SHA artifact staging may occur before the lock. Active source
+  replacement, backups, builds, migrations, static activation, container
+  mutation, health/identity checks, diagnostics, and scoped cleanup remain
+  inside it.
+- Never run host-global cleanup such as `docker system prune`, `docker builder
+  prune`, unfiltered `docker image prune`, `docker volume prune`, or broad
+  shared-path deletion.
 
 ### Per-App Server Layout
 
@@ -102,8 +119,8 @@ Three environments, three gates:
 
 | Environment | Purpose | Deployed by |
 |-------------|---------|-------------|
-| **dev** | Fast feedback sandbox. Break things here. | Manual trigger from feature branch → `my-web-apps-dev` |
-| **test** | Integration gate. Matches prod config. | Auto on push to `main` (i.e. merged PR) → `my-web-apps-test` |
+| **dev** | Fast feedback sandbox. Break things here. | Manual trigger from feature branch → `shared-dev-platforms` |
+| **test** | Integration gate. Matches prod config. | Auto on push to `main` (i.e. merged PR) → `shared-test-platforms` |
 | **prod** | Live. Real users/data. | Auto on `prod-*` tag only → prod server |
 
 ---
@@ -112,78 +129,24 @@ Three environments, three gates:
 
 Each project must have **three workflow files** targeting the three servers:
 
-### deploy-dev.yml — Manual, targets `my-web-apps-dev`
+### deploy-dev.yml — Manual, targets `shared-dev-platforms`
 
-```yaml
-name: Deploy Dev
+The development workflow resolves the selected branch to one immutable SHA,
+stages only SHA-specific inactive artifacts, waits for the common lock, applies
+resource admission, and then checks out and activates that exact SHA. It keeps
+the lock through app-scoped backup/rollback capture, build, migration or static
+activation, local health and identity validation, bounded diagnostics, and
+scoped cleanup. Public health follows the successful remote phase. The workflow
+uses a non-cancelling repository concurrency group and a timeout that includes
+the 45-minute lock wait.
 
-on:
-  workflow_dispatch:
-    inputs:
-      branch:
-        description: 'Branch to deploy'
-        required: true
-        default: 'main'
+### deploy-test.yml — Auto on push to `main`, targets `shared-test-platforms`
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy to dev
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.DEV_HOST }}
-          username: root
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          script: |
-            cd /opt/<app-name>
-            git fetch origin
-            git checkout ${{ github.event.inputs.branch }}
-            git pull origin ${{ github.event.inputs.branch }}
-            docker compose -f docker-compose.dev.yml build app
-            docker compose -f docker-compose.dev.yml up -d app
-            docker image prune -f
-
-      - name: Health check
-        run: |
-          sleep 10
-          curl --fail https://dev.<app-domain>/api/health
-```
-
-### deploy-test.yml — Auto on push to `main`, targets `my-web-apps-test`
-
-```yaml
-name: Deploy Test
-
-on:
-  push:
-    branches:
-      - main
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy to test
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.TEST_HOST }}
-          username: root
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          script: |
-            cd /opt/<app-name>
-            git fetch origin
-            git checkout main
-            git pull origin main
-            docker compose -f docker-compose.test.yml build app
-            docker compose -f docker-compose.test.yml up -d app
-            docker image prune -f
-
-      - name: Health check
-        run: |
-          sleep 10
-          curl --fail https://test.<app-domain>/api/health
-```
+The test workflow uses the pushed `github.sha` as its immutable source and
+implements the same shared lock, admission, mutation boundary, application
+scope, evidence, timeout, and cleanup contract as development. A mutable
+`git pull` is not deployment identity, and no shared-host workflow may perform
+global Docker cleanup.
 
 ### deploy.yml (prod) — Auto on `prod-*` tag, targets prod server
 
@@ -226,8 +189,8 @@ Each project repo needs these secrets set under **Settings → Secrets → Actio
 
 | Secret | Value |
 |--------|-------|
-| `DEV_HOST` | IP of `my-web-apps-dev` (shared dev server — same for all projects) |
-| `TEST_HOST` | IP of `my-web-apps-test` (shared test server — same for all projects) |
+| `DEV_HOST` | IP of `shared-dev-platforms` (shared dev server — same for all projects) |
+| `TEST_HOST` | IP of `shared-test-platforms` (shared test server — same for all projects) |
 | `PROD_HOST` | IP of the prod server for this app |
 | `DEPLOY_SSH_KEY` | Private key that has root access on all three servers |
 
@@ -243,7 +206,7 @@ When setting up CI/CD for a new project:
 2. Claim the next open port in the Port Assignments table above; update the row and copy back
 3. Create three workflow files matching the templates above; replace `<app-name>` and `<app-domain>`
 4. Set `DEV_HOST`, `TEST_HOST`, `PROD_HOST`, and `DEPLOY_SSH_KEY` in GitHub repo secrets
-5. On `my-web-apps-dev` and `my-web-apps-test`: clone the repo to `/opt/<app-name>`, create `.env`
+5. On `shared-dev-platforms` and `shared-test-platforms`: clone the repo to `/opt/<app-name>`, create `.env`
 6. On each shared server: create nginx vhost proxying the assigned port, get SSL cert via certbot
 7. On the prod server: set up repo, `.env`, nginx, SSL as appropriate
 
@@ -261,15 +224,15 @@ When setting up CI/CD for a new project:
 
 3. Deploy to dev — verify it works
    git push origin feature/my-thing
-   gh workflow run deploy-dev.yml -f branch=feature/my-thing
-   # Deploys to my-web-apps-dev → https://dev.<app-domain>
+   gh workflow run deploy-dev.yml --ref feature/my-thing -f branch=feature/my-thing
+   # Deploys to shared-dev-platforms → https://dev.<app-domain>
    [verify in dev environment]
 
 4. Merge to main → test auto-deploys
    git checkout main
    git merge feature/my-thing --no-ff
    git push origin main
-   # deploy-test.yml fires → my-web-apps-test → https://test.<app-domain>
+   # deploy-test.yml fires → shared-test-platforms → https://test.<app-domain>
    [verify in test environment]
 
 5. Tag to release to prod
@@ -299,7 +262,7 @@ Hotfixes follow the same branch discipline — no shortcuts on that — but they
 
 3. Deploy to dev — confirm the fix works
    git push origin hotfix/describe-the-break
-   gh workflow run deploy-dev.yml -f branch=hotfix/describe-the-break
+   gh workflow run deploy-dev.yml --ref hotfix/describe-the-break -f branch=hotfix/describe-the-break
    [verify fix in dev]
 
 4. Merge directly to main and tag — test will auto-deploy but don't wait for it
@@ -343,8 +306,8 @@ git checkout main && git pull
 git checkout -b feature/thing
 # ... work ...
 git push origin feature/thing
-gh workflow run deploy-dev.yml -f branch=feature/thing   # → my-web-apps-dev
-git checkout main && git merge feature/thing --no-ff && git push origin main  # → my-web-apps-test (auto)
+gh workflow run deploy-dev.yml --ref feature/thing -f branch=feature/thing   # → shared-dev-platforms
+git checkout main && git merge feature/thing --no-ff && git push origin main  # → shared-test-platforms (auto)
 git tag prod-vX.Y.Z && git push origin prod-vX.Y.Z       # → prod (auto)
 
 # --- HOTFIX ---
@@ -352,11 +315,11 @@ git checkout main && git pull
 git checkout -b hotfix/what-is-broken
 # ... minimal fix ...
 git push origin hotfix/what-is-broken
-gh workflow run deploy-dev.yml -f branch=hotfix/what-is-broken  # → my-web-apps-dev
+gh workflow run deploy-dev.yml --ref hotfix/what-is-broken -f branch=hotfix/what-is-broken  # → shared-dev-platforms
 git checkout main && git merge hotfix/what-is-broken --no-ff && git push origin main
 git tag prod-vX.Y.Z && git push origin prod-vX.Y.Z  # → prod immediately
 ```
 
 ---
 
-*Last updated: 2026-04-01*
+*Last updated: 2026-09-23*

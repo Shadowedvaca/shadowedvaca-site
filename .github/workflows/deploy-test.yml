@@ -4,13 +4,34 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: shadowedvaca-test-deploy
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 75
 
     steps:
-      - name: Checkout repo
+      - name: Checkout immutable main commit
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+
+      - name: Record immutable deployment commit
+        id: release
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha="$(git rev-parse HEAD)"
+          test "$sha" = "$GITHUB_SHA"
+          printf '%s\n' "$sha" | grep -Eq '^[0-9a-f]{40}$'
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -23,41 +44,67 @@ jobs:
       - name: Build static site
         run: python packages/site/build.py
 
+      - name: Package immutable static artifact
+        shell: bash
+        env:
+          DEPLOY_SHA: ${{ steps.release.outputs.sha }}
+        run: |
+          set -euo pipefail
+          artifact_root="$RUNNER_TEMP/shadowedvaca-site-static-$DEPLOY_SHA"
+          archive="$RUNNER_TEMP/shadowedvaca-site-static-$DEPLOY_SHA.tar.gz"
+          install -d "$artifact_root"
+          cp -a dist/. "$artifact_root/"
+          install -m 0644 login.html register.html "$artifact_root/"
+          tar -C "$artifact_root" -czf "$archive" .
+          test -s "$archive"
+          echo "STATIC_ARCHIVE=$archive" >> "$GITHUB_ENV"
+
       - name: Set up SSH
         env:
           SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
           HOST: ${{ secrets.TEST_HOST }}
         run: |
-          mkdir -p ~/.ssh
-          echo "$SSH_KEY" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H $HOST >> ~/.ssh/known_hosts 2>/dev/null
+          set -euo pipefail
+          test -n "$SSH_KEY"
+          test -n "$HOST"
+          install -d -m 0700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 0600 ~/.ssh/deploy_key
+          ssh-keyscan -H "$HOST" >> ~/.ssh/known_hosts 2>/dev/null
 
-      - name: Deploy static files
+      - name: Stage inactive exact-SHA deployment artifacts
         env:
           HOST: ${{ secrets.TEST_HOST }}
+          DEPLOY_SHA: ${{ steps.release.outputs.sha }}
         run: |
-          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no -r \
-            dist/. root@$HOST:/var/www/test.shadowedvaca.com/
-          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no \
-            login.html register.html root@$HOST:/var/www/test.shadowedvaca.com/
+          set -euo pipefail
+          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
+            "$STATIC_ARCHIVE" \
+            "root@$HOST:/tmp/shadowedvaca-site-test-$DEPLOY_SHA.tar.gz"
+          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
+            deploy/shadowedvaca-shared-host-deploy.sh \
+            "root@$HOST:/tmp/shadowedvaca-site-test-$DEPLOY_SHA-deploy.sh"
 
-      - name: Rebuild and restart test app container
+      - name: Activate exact-SHA test deployment
         env:
           HOST: ${{ secrets.TEST_HOST }}
+          DEPLOY_SHA: ${{ steps.release.outputs.sha }}
         run: |
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no root@$HOST bash << 'ENDSSH'
-            set -e
-            cd /opt/shadowedvaca-site
-            git fetch origin
-            git checkout main
-            git pull origin main
-            docker compose -f docker-compose.test.yml build app
-            docker compose -f docker-compose.test.yml up -d --force-recreate app
-            docker image prune -f
-          ENDSSH
+          set -euo pipefail
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
+            "root@$HOST" \
+            "bash '/tmp/shadowedvaca-site-test-$DEPLOY_SHA-deploy.sh' \
+              '$DEPLOY_SHA' test \
+              '/tmp/shadowedvaca-site-test-$DEPLOY_SHA.tar.gz'"
 
-      - name: Health check
+      - name: Verify public test health
         run: |
-          sleep 10
-          curl --fail https://test.shadowedvaca.com/api/health
+          set -euo pipefail
+          curl --fail --silent --show-error \
+            --retry 10 --retry-delay 3 --retry-connrefused --retry-all-errors \
+            https://test.shadowedvaca.com/api/health \
+            | python -c 'import json,sys; assert json.load(sys.stdin)=={"ok": True}'
+
+      - name: Remove runner SSH material
+        if: always()
+        run: rm -f ~/.ssh/deploy_key ~/.ssh/known_hosts
